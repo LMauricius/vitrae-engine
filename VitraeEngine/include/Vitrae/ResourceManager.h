@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include "Types.h"
-#include "Util/UniqueCtr.h"
+#include "Vitrae/Util/Types.h"
+#include "Vitrae/Util/UniqueCtr.h"
 
 namespace Vitrae
 {
@@ -32,7 +32,7 @@ namespace Vitrae
 		{
 			mResMan = o.mResMan;
 			mPtr = o.mPtr;
-			return mResMan->increaseCount(mPtr);
+			mResMan->increaseCount(mPtr);
 		}
 
 		/*bool operator==(const resource_ptr&) const = default;
