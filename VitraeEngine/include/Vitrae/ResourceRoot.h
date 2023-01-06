@@ -39,7 +39,7 @@ namespace Vitrae
 		ResourceManager<ResT> &getManager()
 		{
 			Unique<AnyResourceManager> &myvar = getManagerStorageVariable<ResT>();
-			return static_cast<ResourceManager<ResT>>(myvar.get());
+			return *static_cast<ResourceManager<ResT>*>(myvar.get());
 		}
 
 	protected:

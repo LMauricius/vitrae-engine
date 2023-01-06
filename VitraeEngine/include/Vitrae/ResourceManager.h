@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include "Types.h"
-#include "Vitrae/Util/UniqueCtr.h"
+#include "Util/UniqueCtr.h"
 
 namespace Vitrae
 {
@@ -21,26 +21,26 @@ namespace Vitrae
 			mResMan(o.mResMan),
 			mPtr(o.mPtr)
 		{
-			return mResMan->increaseCount(mPtr);
+			mResMan->increaseCount(mPtr);
 		}
 		~resource_ptr()
 		{
-			return mResMan->decreaseCount(mPtr);
+			mResMan->decreaseCount(mPtr);
 		}
 
-		resource_ptr& operator=(const resource_ptr&)
+		resource_ptr& operator=(const resource_ptr& o)
 		{
 			mResMan = o.mResMan;
 			mPtr = o.mPtr;
 			return mResMan->increaseCount(mPtr);
 		}
 
-		bool operator==(const resource_ptr&) const = default;
+		/*bool operator==(const resource_ptr&) const = default;
 		bool operator!=(const resource_ptr&) const = default;
 		bool operator>(const resource_ptr&) const = default;
 		bool operator<(const resource_ptr&) const = default;
 		bool operator>=(const resource_ptr&) const = default;
-		bool operator<=(const resource_ptr&) const = default;
+		bool operator<=(const resource_ptr&) const = default;*/
 
 		ResT *operator->()
 		{
@@ -64,7 +64,7 @@ namespace Vitrae
 			mResMan(resMan),
 			mPtr(ptr)
 		{
-			return mResMan->increaseCount(mPtr);
+			mResMan->increaseCount(mPtr);
 		}
 
 	private:
@@ -82,6 +82,8 @@ namespace Vitrae
 	class ResourceManager: public ClassWithID<ResourceManager<ResT>>, public AnyResourceManager
 	{
 	public:
+		friend class resource_ptr<ResT>;
+
 		virtual ~ResourceManager() = 0;
 
 		virtual resource_ptr<ResT> createResource(const String &name) = 0;

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.7.0)
 
+set(CXX_STANDARD 20)
+
 file(GLOB_RECURSE SrcFiles CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB_RECURSE HeaderFiles CONFIGURE_DEPENDS include/*.h)
 
