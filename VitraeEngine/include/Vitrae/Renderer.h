@@ -1,9 +1,13 @@
+#pragma once
+
 #include "Types.h"
-#include "Mesh.h"
+#include "ResourceManager.h"
 
 namespace Vitrae
 {
-    
+    class Mesh;
+    class Material;
+
     class Renderer
     {
     public:
@@ -13,7 +17,8 @@ namespace Vitrae
         virtual void free() = 0;
         virtual void render() = 0;
         
-        virtual Unique<Mesh> newMesh() = 0;
+        virtual Unique<ResourceManager<Mesh>> newMeshManager() = 0;
+        virtual Unique<ResourceManager<Material>> newMaterialManager() = 0;
     };
 
 }

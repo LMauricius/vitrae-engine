@@ -1,7 +1,11 @@
+#pragma once
+
 #include "Vitrae/Renderer.h"
 
 namespace Vitrae
 {
+    class Mesh;
+    class Material;
     
     class OpenGLRenderer
     {
@@ -12,7 +16,8 @@ namespace Vitrae
         void free();
         void render();
         
-        Unique<Mesh> newMesh();
+        Unique<ResourceManager<Mesh>> newMeshManager();
+        Unique<ResourceManager<Material>> newMaterialManager();
     };
 
 }

@@ -24,9 +24,14 @@ namespace Vitrae
         
     }
 
-    Unique<Mesh> OpenGLRenderer::newMesh()
+    Unique<ResourceManager<Mesh>> OpenGLRenderer::newMeshManager()
     {
-        return Unique<Mesh>(new OpenGLMesh());
+
+    }
+
+    Unique<ResourceManager<Material>> OpenGLRenderer::newMaterialManager()
+    {
+
     }
 
 
