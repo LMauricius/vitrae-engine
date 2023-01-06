@@ -11,8 +11,9 @@ namespace Vitrae
     };
     struct Vertex
     {
-        glm::vec3 pos, col, normal;
-        glm::vec2 uv;
+        glm::vec3 pos, normal;
+        glm::vec4 col;
+        glm::vec3 uvw;
     };
 
 }
