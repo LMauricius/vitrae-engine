@@ -33,6 +33,8 @@ namespace Vitrae
 			mResMan = o.mResMan;
 			mPtr = o.mPtr;
 			mResMan->increaseCount(mPtr);
+
+			return *this;
 		}
 
 		/*bool operator==(const resource_ptr&) const = default;
@@ -59,6 +61,11 @@ namespace Vitrae
 			return *(mResMan->getResource(mPtr));
 		}
 
+		inline inner_ptr get_inner_ptr() const
+		{
+			return mPtr;
+		}
+
 	protected:
 		resource_ptr(ResourceManager<ResT> *resMan, inner_ptr ptr):
 			mResMan(resMan),
@@ -78,6 +85,11 @@ namespace Vitrae
 		virtual ~AnyResourceManager() = 0;
 	};
 
+
+	/**
+	 * @brief Creates and loads resources on demand
+	 * @param ResT The type of resource. The resource must have a LoadParams type defined in its scope.
+	 */
 	template <class ResT>
 	class ResourceManager: public ClassWithID<ResourceManager<ResT>>, public AnyResourceManager
 	{
@@ -86,7 +98,7 @@ namespace Vitrae
 
 		virtual ~ResourceManager() = 0;
 
-		virtual resource_ptr<ResT> createResource(const String &name) = 0;
+		virtual resource_ptr<ResT> createResource(const String &name, ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams) = 0;
 		virtual resource_ptr<ResT> getResource(const String &name) = 0;
 
 		/**
@@ -107,5 +119,10 @@ namespace Vitrae
 		virtual ResT *getResource(const typename resource_ptr<ResT>::inner_ptr ptr) = 0;
 		virtual void increaseCount(const typename resource_ptr<ResT>::inner_ptr ptr) = 0;
 		virtual void decreaseCount(const typename resource_ptr<ResT>::inner_ptr ptr) = 0;
+
+		resource_ptr<ResT> get_resource_ptr(const typename resource_ptr<ResT>::inner_ptr ptr)
+		{
+			return resource_ptr<ResT>(this, ptr);
+		}
 	};
 }
