@@ -7,5 +7,5 @@ namespace Vitrae
 	struct RefCounted
 	{
 		std::size_t count;
-	}
+	};
 }
