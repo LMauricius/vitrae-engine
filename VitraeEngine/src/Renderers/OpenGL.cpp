@@ -1,8 +1,59 @@
 #include "Vitrae/Renderers/OpenGL.h"
 #include "Vitrae/Renderers/OpenGL/Mesh.h"
 
+#include "Vitrae/ResourceManagers/Simple.h"
+
 namespace Vitrae
 {
+
+    namespace
+    {
+        struct OpenGLMeshLoader: public std::allocator<OpenGLMesh>
+        {
+            OpenGLRenderer *rend;
+
+            inline OpenGLMeshLoader(OpenGLRenderer *rend):
+                rend(rend)
+            {
+
+            }
+
+            inline void setup(OpenGLMesh *m, const Mesh::SetupParams &params)
+            {
+                m->load(params, *rend);
+            }
+
+            inline void load(OpenGLMesh *m, const Mesh::LoadParams &params)
+            {
+            }
+
+            inline void unload(OpenGLMesh *m, const Mesh::LoadParams &params)
+            {
+                
+            }
+        };
+
+        /*struct OpenGLMaterialLoader: public std::allocator<OpenGLMaterial>
+        {
+            OpenGLRenderer *rend;
+
+            inline OpenGLMaterialLoader(OpenGLRenderer *rend):
+                rend(rend)
+            {
+
+            }
+
+            inline void load(OpenGLMaterial *m, const Mesh::LoadParams &params)
+            {
+                m->load(params, *rend);
+            }
+
+            inline void unload(OpenGLMaterial *m, const Mesh::LoadParams &params)
+            {
+                
+            }
+        };*/
+    }
 
     OpenGLRenderer::OpenGLRenderer():
         mBufferSpecCtr(0)
@@ -69,7 +120,9 @@ namespace Vitrae
 
     Unique<ResourceManager<Mesh>> OpenGLRenderer::newMeshManager()
     {
-
+        return Unique<ResourceManager<Mesh>>(
+            new SimpleResourceManager<Mesh, OpenGLMeshLoader>(OpenGLMeshLoader(this))
+        );
     }
 
     Unique<ResourceManager<Material>> OpenGLRenderer::newMaterialManager()
