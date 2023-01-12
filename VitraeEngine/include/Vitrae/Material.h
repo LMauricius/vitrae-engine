@@ -1,5 +1,7 @@
 #pragma once
 
+#include "assimp/material.h"
+
 namespace Vitrae
 {
 
@@ -8,6 +10,8 @@ namespace Vitrae
 	public:
         struct SetupParams
         {
+            const aiMaterial& extMaterial;
+            ResourceRoot &resRoot;
         };
         struct LoadParams {};
 

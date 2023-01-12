@@ -21,8 +21,7 @@ namespace Vitrae
     public:
         struct SetupParams
         {
-            const aiMesh& mesh;
-            const aiScene& scene;
+            const aiMesh& extMesh;
             ResourceRoot &resRoot;
         };
         struct LoadParams {};

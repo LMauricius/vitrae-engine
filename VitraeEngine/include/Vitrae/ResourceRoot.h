@@ -42,6 +42,13 @@ namespace Vitrae
 			return *static_cast<ResourceManager<ResT>*>(myvar.get());
 		}
 
+		inline std::ostream &getErrStream() {return *mErrStream;}
+		inline std::ostream &getInfoStream() {return *mInfoStream;}
+		inline std::ostream &getWarningStream() {return *mWarningStream;}
+		inline void setErrStream(std::ostream &os) {mErrStream = &os;}
+		inline void setInfoStream(std::ostream &os) {mInfoStream = &os;}
+		inline void setWarningStr(std::ostream &os) {mWarningStream = &os;}
+
 	protected:
 
 		/*
@@ -51,11 +58,13 @@ namespace Vitrae
 		template<class ResT>
 		Unique<AnyResourceManager> &getManagerStorageVariable()
 		{
-			return mCustomManagers[ResourceManager<ResT>::getClassID()];
+			return mCustomManagers.at(ResourceManager<ResT>::getClassID());
 		}
 
 		Unique<AnyResourceManager> mMaterialManPtr;
 		std::map<size_t, Unique<AnyResourceManager>> mCustomManagers;
+
+		std::ostream *mErrStream, *mInfoStream, *mWarningStream;
 	};
 
 	template<>
