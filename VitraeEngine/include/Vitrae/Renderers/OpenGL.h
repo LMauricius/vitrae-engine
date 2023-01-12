@@ -84,6 +84,8 @@ namespace Vitrae
             specs.back().layoutInd = mBufferSpecCtr;
 
             mBufferSpecCtr++;
+
+            return specs.back();
         }
 
     protected:
