@@ -18,20 +18,19 @@ namespace Vitrae
 
     OpenGLMesh::~OpenGLMesh()
     {
-        const size_t s = sizeof(std::map<int, int>::iterator);
     }
 
     void OpenGLMesh::load(const SetupParams &params, OpenGLRenderer & rend)
     {
         // prepare vertices
-        mVertices.resize(params.mesh.mNumVertices);
-        mTriangles.resize(params.mesh.mNumFaces);
+        mVertices.resize(params.extMesh.mNumVertices);
+        mTriangles.resize(params.extMesh.mNumFaces);
 
         // load triangles
-        if (params.mesh.HasFaces()) {
-            for (int i = 0; i < params.mesh.mNumFaces; i++) {
-                for (int j = 0; j < params.mesh.mFaces[i].mNumIndices; j++) {
-                    mTriangles[i].ind[j] = params.mesh.mFaces[i].mIndices[j];
+        if (params.extMesh.HasFaces()) {
+            for (int i = 0; i < params.extMesh.mNumFaces; i++) {
+                for (int j = 0; j < params.extMesh.mFaces[i].mNumIndices; j++) {
+                    mTriangles[i].ind[j] = params.extMesh.mFaces[i].mIndices[j];
                 }
             }
         }
@@ -53,22 +52,22 @@ namespace Vitrae
             for (auto &spec : vertexBufferSpecs)
             {
                 // get buffers
-                const aiType *src = spec.srcGetter(params.mesh);
+                const aiType *src = spec.srcGetter(params.extMesh);
                 std::vector<glmType> &buffer = namedBuffers[spec.name];
                 GLuint &vbo = VBOs[spec.layoutInd];
 
                 // fill buffers
-                namedBuffers[spec.name].resize(params.mesh.mNumVertices);
+                namedBuffers[spec.name].resize(params.extMesh.mNumVertices);
                 if (src != nullptr)
                 {
-                    for (int i = 0; i < params.mesh.mNumVertices; i++)
+                    for (int i = 0; i < params.extMesh.mNumVertices; i++)
                     {
                         buffer[i] = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
                 }
                 if (spec.vertexStorage != nullptr)
                 {
-                    for (int i = 0; i < params.mesh.mNumVertices; i++)
+                    for (int i = 0; i < params.extMesh.mNumVertices; i++)
                     {
                         mVertices[i].*(spec.vertexStorage) = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
@@ -76,7 +75,7 @@ namespace Vitrae
 
                 // send to OpenGL
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*params.mesh.mNumVertices, buffer.data(), GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*params.extMesh.mNumVertices, buffer.data(), GL_STATIC_DRAW);
                 glVertexAttribPointer(
                     spec.layoutInd, // layout pos
                     spec.NumComponents, spec.ComponentTypeId, GL_FALSE, // data structure info
@@ -96,13 +95,6 @@ namespace Vitrae
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * mTriangles.size(), (void *)(mTriangles.data()), GL_STATIC_DRAW);
 
         glBindVertexArray(0);
-
-        // get material
-        if (params.mesh.mMaterialIndex >= 0) {
-            String name = toString(params.scene.mMaterials[params.mesh.mMaterialIndex]->GetName());
-
-            auto mat = params.resRoot.getManager<Material>().getResource(name);
-        }
     }
 
     void OpenGLMesh::setMaterial(resource_ptr<Material> mat)
