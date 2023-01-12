@@ -2,3 +2,7 @@
 	path = VitraeEngine/dependencies/glad
 	url = https://github.com/Dav1dde/glad.git
 	branch = c
+[submodule "VitraeEngine/dependencies/stb"]
+	path = VitraeEngine/dependencies/stb
+	url = https://github.com/nothings/stb.git
+	branch = master
