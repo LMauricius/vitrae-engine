@@ -19,6 +19,14 @@ namespace Vitrae
     class Mesh
     {
     public:
+        struct SetupParams
+        {
+            const aiMesh& mesh;
+            const aiScene& scene;
+            ResourceRoot &resRoot;
+        };
+        struct LoadParams {};
+        
         virtual ~Mesh() = 0;
 
         virtual void setMaterial(resource_ptr<Material> mat) = 0;

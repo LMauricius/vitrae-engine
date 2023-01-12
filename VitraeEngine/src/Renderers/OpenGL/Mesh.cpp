@@ -4,6 +4,7 @@
 #include "Vitrae/Util/AssimpTypeConvert.h"
 #include "Vitrae/Util/GraphicPrimitives.h"
 #include "Vitrae/ResourceRoot.h"
+#include "Vitrae/Material.h"
 
 #include <vector>
 #include <map>
@@ -20,17 +21,17 @@ namespace Vitrae
         const size_t s = sizeof(std::map<int, int>::iterator);
     }
 
-    void OpenGLMesh::load(const aiMesh& mesh, const aiScene& scene, ResourceRoot &resRoot, OpenGLRenderer & rend)
+    void OpenGLMesh::load(const SetupParams &params, OpenGLRenderer & rend)
     {
         // prepare vertices
-        mVertices.resize(mesh.mNumVertices);
-        mTriangles.resize(mesh.mNumFaces);
+        mVertices.resize(params.mesh.mNumVertices);
+        mTriangles.resize(params.mesh.mNumFaces);
 
         // load triangles
-        if (mesh.HasFaces()) {
-            for (int i = 0; i < mesh.mNumFaces; i++) {
-                for (int j = 0; j < mesh.mFaces[i].mNumIndices; j++) {
-                    mTriangles[i].ind[j] = mesh.mFaces[i].mIndices[j];
+        if (params.mesh.HasFaces()) {
+            for (int i = 0; i < params.mesh.mNumFaces; i++) {
+                for (int j = 0; j < params.mesh.mFaces[i].mNumIndices; j++) {
+                    mTriangles[i].ind[j] = params.mesh.mFaces[i].mIndices[j];
                 }
             }
         }
@@ -52,22 +53,22 @@ namespace Vitrae
             for (auto &spec : vertexBufferSpecs)
             {
                 // get buffers
-                const aiType *src = spec.srcGetter(mesh);
+                const aiType *src = spec.srcGetter(params.mesh);
                 std::vector<glmType> &buffer = namedBuffers[spec.name];
                 GLuint &vbo = VBOs[spec.layoutInd];
 
                 // fill buffers
-                namedBuffers[spec.name].resize(mesh.mNumVertices);
+                namedBuffers[spec.name].resize(params.mesh.mNumVertices);
                 if (src != nullptr)
                 {
-                    for (int i = 0; i < mesh.mNumVertices; i++)
+                    for (int i = 0; i < params.mesh.mNumVertices; i++)
                     {
                         buffer[i] = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
                 }
                 if (spec.vertexStorage != nullptr)
                 {
-                    for (int i = 0; i < mesh.mNumVertices; i++)
+                    for (int i = 0; i < params.mesh.mNumVertices; i++)
                     {
                         mVertices[i].*(spec.vertexStorage) = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
@@ -75,7 +76,7 @@ namespace Vitrae
 
                 // send to OpenGL
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*mesh.mNumVertices, buffer.data(), GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*params.mesh.mNumVertices, buffer.data(), GL_STATIC_DRAW);
                 glVertexAttribPointer(
                     spec.layoutInd, // layout pos
                     spec.NumComponents, spec.ComponentTypeId, GL_FALSE, // data structure info
@@ -97,10 +98,10 @@ namespace Vitrae
         glBindVertexArray(0);
 
         // get material
-        if (mesh.mMaterialIndex >= 0) {
-            String name = toString(scene.mMaterials[mesh.mMaterialIndex]->GetName());
+        if (params.mesh.mMaterialIndex >= 0) {
+            String name = toString(params.scene.mMaterials[params.mesh.mMaterialIndex]->GetName());
 
-            auto mat = resRoot.getManager<Material>().getResource(name);
+            auto mat = params.resRoot.getManager<Material>().getResource(name);
         }
     }
 
