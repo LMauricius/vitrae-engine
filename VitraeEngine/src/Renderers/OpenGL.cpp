@@ -1,5 +1,6 @@
 #include "Vitrae/Renderers/OpenGL.h"
 #include "Vitrae/Renderers/OpenGL/Mesh.h"
+#include "Vitrae/Renderers/OpenGL/Texture.h"
 
 #include "Vitrae/ResourceManagers/Simple.h"
 
@@ -25,34 +26,41 @@ namespace Vitrae
 
             inline void load(OpenGLMesh *m, const Mesh::LoadParams &params)
             {
+                m->loadToGPU(*rend);
             }
 
             inline void unload(OpenGLMesh *m, const Mesh::LoadParams &params)
             {
-                
+                m->unloadFromGPU(*rend);
             }
         };
 
-        /*struct OpenGLMaterialLoader: public std::allocator<OpenGLMaterial>
+        struct OpenGLTextureLoader: public std::allocator<OpenGLTexture>
         {
             OpenGLRenderer *rend;
 
-            inline OpenGLMaterialLoader(OpenGLRenderer *rend):
+            inline OpenGLTextureLoader(OpenGLRenderer *rend):
                 rend(rend)
             {
 
             }
 
-            inline void load(OpenGLMaterial *m, const Mesh::LoadParams &params)
+            inline void setup(OpenGLTexture *t, const Texture::SetupParams &params)
             {
-                m->load(params, *rend);
             }
 
-            inline void unload(OpenGLMaterial *m, const Mesh::LoadParams &params)
+            inline void load(OpenGLTexture *t, const Texture::LoadParams &params)
             {
-                
+                t->load(params, *rend);
+                t->loadToGPU(*rend);
             }
-        };*/
+
+            inline void unload(OpenGLTexture *t, const Texture::LoadParams &params)
+            {
+                t->unload();
+                t->unloadFromGPU(*rend);
+            }
+        };
     }
 
     OpenGLRenderer::OpenGLRenderer():
@@ -125,9 +133,11 @@ namespace Vitrae
         );
     }
 
-    Unique<ResourceManager<Material>> OpenGLRenderer::newMaterialManager()
+    Unique<ResourceManager<Texture>> OpenGLRenderer::newTextureManager()
     {
-
+        return Unique<ResourceManager<Texture>>(
+            new SimpleResourceManager<Texture, OpenGLTextureLoader>(OpenGLTextureLoader(this))
+        );
     }
 
 

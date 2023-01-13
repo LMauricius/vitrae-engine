@@ -14,7 +14,7 @@
 namespace Vitrae
 {
     class Mesh;
-    class Material;
+    class Texture;
 
     template<class AssimpT>
     struct VertexBufferSpec
@@ -58,7 +58,7 @@ namespace Vitrae
         void render();
         
         Unique<ResourceManager<Mesh>> newMeshManager();
-        Unique<ResourceManager<Material>> newMaterialManager();
+        Unique<ResourceManager<Texture>> newTextureManager();
 
         template<class T>
         const std::vector<VertexBufferSpec<T>> &getVertexBufferSpecs() const

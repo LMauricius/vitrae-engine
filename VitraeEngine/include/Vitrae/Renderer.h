@@ -6,7 +6,7 @@
 namespace Vitrae
 {
     class Mesh;
-    class Material;
+    class Texture;
 
     class Renderer
     {
@@ -18,7 +18,7 @@ namespace Vitrae
         virtual void render() = 0;
         
         virtual Unique<ResourceManager<Mesh>> newMeshManager() = 0;
-        virtual Unique<ResourceManager<Material>> newMaterialManager() = 0;
+        virtual Unique<ResourceManager<Texture>> newTextureManager() = 0;
     };
 
 }

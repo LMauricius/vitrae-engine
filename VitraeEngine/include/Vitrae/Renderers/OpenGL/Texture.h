@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vitrae/Texture.h"
 #include "Vitrae/ResourceManager.h"
 #include "glad/glad.h"
 
@@ -13,15 +14,9 @@ namespace Vitrae
     /**
      * A Texture is a single image-like resource
     */
-    class OpenGLTexture
+    class OpenGLTexture: public Texture
     {
     public:
-        struct SetupParams {};
-        struct LoadParams {
-            std::filesystem::path filepath;
-            ResourceRoot &resRoot;
-        };
-        
         OpenGLTexture();
         ~OpenGLTexture();
 
