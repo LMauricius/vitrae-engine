@@ -35,16 +35,7 @@ namespace Vitrae
             }
         }
 
-        // prepare OpenGL buffers
-		glGenVertexArrays(1, &VAO);
-        VBOs.resize(rend.getNumVertexBuffers());
-		glGenBuffers(rend.getNumVertexBuffers(), VBOs.data());
-		glGenBuffers(1, &EBO);
-
-
         // load vertices
-		glBindVertexArray(VAO);
-
         auto loadVertexData = [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
             std::vector<VertexBufferSpec<aiType>> vertexBufferSpecs,
             std::map<String, std::vector<glmType>> &namedBuffers)
@@ -72,10 +63,39 @@ namespace Vitrae
                         mVertices[i].*(spec.vertexStorage) = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
                 }
+                
+            }
+        };
+        
+        loadVertexData(rend.getVertexBufferSpecs<aiVector2D>(), namedVec2Buffers);
+        loadVertexData(rend.getVertexBufferSpecs<aiVector3D>(), namedVec3Buffers);
+        loadVertexData(rend.getVertexBufferSpecs<aiColor3D>(), namedVec3Buffers);
+        loadVertexData(rend.getVertexBufferSpecs<aiColor4D>(), namedVec4Buffers);
+    }
+
+    void OpenGLMesh::loadToGPU(OpenGLRenderer & rend)
+    {
+        // prepare OpenGL buffers
+		glGenVertexArrays(1, &VAO);
+        VBOs.resize(rend.getNumVertexBuffers());
+		glGenBuffers(rend.getNumVertexBuffers(), VBOs.data());
+		glGenBuffers(1, &EBO);
+
+        // load vertices
+		glBindVertexArray(VAO);
+
+        auto loadVertexData = [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
+            std::vector<VertexBufferSpec<aiType>> vertexBufferSpecs,
+            std::map<String, std::vector<glmType>> &namedBuffers)
+        {
+            for (auto &spec : vertexBufferSpecs)
+            {
+                std::vector<glmType> &buffer = namedBuffers[spec.name];
+                GLuint &vbo = VBOs[spec.layoutInd];
 
                 // send to OpenGL
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*params.extMesh.mNumVertices, buffer.data(), GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*buffer.size(), buffer.data(), GL_STATIC_DRAW);
                 glVertexAttribPointer(
                     spec.layoutInd, // layout pos
                     spec.NumComponents, spec.ComponentTypeId, GL_FALSE, // data structure info
@@ -95,6 +115,13 @@ namespace Vitrae
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * mTriangles.size(), (void *)(mTriangles.data()), GL_STATIC_DRAW);
 
         glBindVertexArray(0);
+    }
+
+    void OpenGLMesh::unloadFromGPU(OpenGLRenderer & rend)
+    {
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(rend.getNumVertexBuffers(), VBOs.data());
+		glDeleteBuffers(1, &EBO);
     }
 
     void OpenGLMesh::setMaterial(resource_ptr<Material> mat)

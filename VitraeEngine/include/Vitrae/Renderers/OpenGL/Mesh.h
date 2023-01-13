@@ -20,6 +20,8 @@ namespace Vitrae
         ~OpenGLMesh();
 
         void load(const SetupParams &params, OpenGLRenderer & rend);
+        void loadToGPU(OpenGLRenderer & rend);
+        void unloadFromGPU(OpenGLRenderer & rend);
 
         void setMaterial(resource_ptr<Material> mat);
         resource_ptr<Material> getMaterial() const;
