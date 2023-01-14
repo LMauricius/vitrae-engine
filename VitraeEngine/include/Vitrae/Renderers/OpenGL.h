@@ -30,7 +30,7 @@ namespace Vitrae
          * @returns a pointer to array of data from an aiMesh,
          * or nullptr if data cannot be found
         */
-        std::function<const AssimpT*(const aiMesh&)> srcGetter;
+        std::function<const AssimpT*(const aiMesh& extMesh)> srcGetter;
 
         /**
          * Pointer to the field inside a Vertex struct,
