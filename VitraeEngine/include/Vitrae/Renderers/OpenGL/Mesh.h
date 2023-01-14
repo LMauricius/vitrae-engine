@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Mesh.h"
+#include "Vitrae/Resources/Mesh.h"
 #include "assimp/mesh.h"
 #include "assimp/scene.h"
 #include "glad/glad.h"

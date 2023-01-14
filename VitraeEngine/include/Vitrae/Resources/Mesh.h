@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vitrae/Util/GraphicPrimitives.h"
-#include "ResourceManager.h"
+#include "Vitrae/ResourceManager.h"
 #include "assimp/mesh.h"
 #include "assimp/scene.h"
 

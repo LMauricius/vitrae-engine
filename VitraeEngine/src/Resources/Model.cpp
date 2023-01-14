@@ -1,7 +1,7 @@
-#include "Vitrae/Model.h"
+#include "Vitrae/Resources/Model.h"
 #include "Vitrae/ResourceRoot.h"
-#include "Vitrae/Mesh.h"
-#include "Vitrae/Material.h"
+#include "Vitrae/Resources/Mesh.h"
+#include "Vitrae/Resources/Material.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"

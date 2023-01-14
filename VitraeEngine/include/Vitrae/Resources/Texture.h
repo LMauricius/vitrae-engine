@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ResourceManager.h"
+#include "Vitrae/ResourceManager.h"
 
 #include <filesystem>
 

@@ -4,7 +4,7 @@
 #include "Vitrae/Util/AssimpTypeConvert.h"
 #include "Vitrae/Util/GraphicPrimitives.h"
 #include "Vitrae/ResourceRoot.h"
-#include "Vitrae/Material.h"
+#include "Vitrae/Resources/Material.h"
 
 #include <vector>
 #include <map>

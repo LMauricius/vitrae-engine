@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vitrae/Util/Types.h"
-#include "ResourceManager.h"
+#include "Vitrae/ResourceManager.h"
 
 namespace Vitrae
 {
