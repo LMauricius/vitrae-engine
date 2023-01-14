@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ResourceManager.h"
+#include "Vitrae/ResourceManager.h"
 
 #include <memory>
 #include <map>
@@ -9,7 +9,10 @@ namespace Vitrae
 {
 	template <class ResT> class ResourceManager;
 
+	class Texture;
 	class Material;
+	class Mesh;
+	class Model;
 
 	/*
 	A HUB of multiple resource managers.
@@ -19,6 +22,7 @@ namespace Vitrae
 	{
 	public:
 		ResourceRoot();
+		~ResourceRoot();
 
 		/**
 		Sets the manager for a particular resource type and
@@ -26,10 +30,10 @@ namespace Vitrae
 		@param man The resource manager pointer to set
 		*/
 		template<class ResT>
-		void setManager(ResourceManager<ResT> *man)
+		void setManager(Unique<ResourceManager<ResT>> &&man)
 		{
 			Unique<AnyResourceManager> &myvar = getManagerStorageVariable<ResT>();
-			myvar = Unique<AnyResourceManager>(man);
+			myvar = Unique<AnyResourceManager>(man.release());
 		}
 
 		/**
@@ -61,12 +65,14 @@ namespace Vitrae
 			return mCustomManagers.at(ResourceManager<ResT>::getClassID());
 		}
 
-		Unique<AnyResourceManager> mMaterialManPtr;
+		Unique<AnyResourceManager> mMaterialManPtr, mMeshManPtr, mTextureManPtr, mModelManPtr;
 		std::map<size_t, Unique<AnyResourceManager>> mCustomManagers;
 
 		std::ostream *mErrStream, *mInfoStream, *mWarningStream;
 	};
-
-	template<>
-	Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Material>() {return mMaterialManPtr;}
+	
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Texture>() {return mTextureManPtr;}
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Material>() {return mMaterialManPtr;}
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Mesh>() {return mMeshManPtr;}
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Model>() {return mModelManPtr;}
 }
