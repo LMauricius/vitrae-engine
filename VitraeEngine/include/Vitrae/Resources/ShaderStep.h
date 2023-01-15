@@ -6,12 +6,14 @@
 #include "assimp/mesh.h"
 #include "assimp/scene.h"
 
-#include <span>
 #include <map>
+#include <set>
 
 namespace Vitrae
 {
     class SourceShaderStep;
+    class GroupShaderStep;
+    class SwitchShaderStep;
 
     /**
      * A ShaderStep describes a modular reusable part of a Shader
@@ -21,12 +23,10 @@ namespace Vitrae
     public:
         virtual ~ShaderStep() = 0;
 
-        virtual std::span<String> getInputPropertyNames() const = 0;
-        virtual std::span<String> getInputVariableNames() const = 0;
-        virtual std::span<String> getOutputVariableNames() const = 0;
-
-        virtual bool isEnabled(const std::map<String, ShaderProperty> &properties) = 0;
-        virtual void extractSourceShaderSteps(std::vector<SourceShaderStep> &outSteps, const std::map<String, ShaderProperty> &properties) = 0;
+        virtual void extractInputPropertyNames(std::set<String*> &outNames) const = 0;
+        virtual void extractInputVariableNames(std::set<String*> &outNames) const = 0;
+        virtual void extractOutputVariableNames(std::set<String*> &outNames) const = 0;
+        virtual void extractSourceShaderSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, ShaderProperty> &properties) = 0;
 
     };
     
