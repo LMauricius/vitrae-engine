@@ -4,6 +4,7 @@
 #include "Vitrae/Util/RefCounted.h"
 
 #include <map>
+#include <list>
 #include <memory>
 #include <stdexcept>
 
@@ -55,9 +56,10 @@ namespace Vitrae
 			ResT *ptr;
 			[[no_unique_address]] ResT::LoadParams loadParams;
 		};
-		std::map<String, RefCountedWrapper> mResourcesByName;
+		std::list<RefCountedWrapper> mResources;
+		std::map<String, resource_ptr<ResT>> mResourcesByName;
 
-		using real_inner_ptr = decltype(mResourcesByName)::iterator;
+		using real_inner_ptr = decltype(mResources)::iterator;
 		static_assert(
 			sizeof(real_inner_ptr) <= sizeof(typename resource_ptr<ResT>::inner_ptr),
 			"Our inner hack isn't supported! Can't store inner pointer inside resource_ptr<>!"
@@ -75,25 +77,37 @@ namespace Vitrae
 		{}
 		~SimpleResourceManager()
 		{
-			for (auto& p : mResourcesByName) {
-				mLoader.deallocate(static_cast<Loader::value_type*>(p.second.ptr), 1);
+			mResourcesByName.clear();
+			for (auto& w : mResources) {
+				mLoader.deallocate(static_cast<Loader::value_type*>(w.ptr), 1);
 			}
 		}
 
-		resource_ptr<ResT> createResource(const String &name, ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams)
+		resource_ptr<ResT> createUnnamedResource(ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams)
 		{
-			auto res = mResourcesByName.insert(std::make_pair<String, RefCountedWrapper>(
-				String(name),
+			mResources.push_back(
 				RefCountedWrapper(static_cast<ResT*>(mLoader.allocate(1)), std::move(loadParams))
+			);
+
+			mLoader.setup(static_cast<Loader::value_type*>(mResources.back().ptr), setupParams);
+			real_inner_ptr it = mResources.end();
+			it--;
+			return this->get_resource_ptr(toExt(it));
+		}
+
+		resource_ptr<ResT> createNamedResource(const String &name, ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams)
+		{
+			auto insRes = mResourcesByName.insert(std::make_pair<String, resource_ptr<ResT>>(
+				String(name),
+				createUnnamedResource(std::move(setupParams), std::move(loadParams))
 			));
 
-			if (!res.second) {
+			if (!insRes.second) {
+				mLoader.deallocate(static_cast<Loader::value_type*>(mResources.back().ptr), 1);
 				throw std::runtime_error("Resource with this name already exists!");
 			}
 
-			mLoader.setup(static_cast<Loader::value_type*>(res.first->second.ptr), setupParams);
-			real_inner_ptr it = res.first;
-			return this->get_resource_ptr(toExt(it));
+			return insRes.first->second;
 		}
 
 		resource_ptr<ResT> getResource(const String &name)
@@ -101,19 +115,24 @@ namespace Vitrae
 			auto it = mResourcesByName.find(name);
 
 			if (it == mResourcesByName.end()) {
-				throw std::runtime_error("Resource with this name doesn't exists!");
+				throw std::runtime_error("Resource with this name doesn't exist!");
 			}
 
-			return this->get_resource_ptr(toExt(it));
+			return it->second;
+		}
+
+		void forgetResource(const String &name)
+		{
+			mResourcesByName.erase(name);
 		}
 
 		void loadResource(const resource_ptr<ResT> ptr)
 		{
 			real_inner_ptr it = toReal(ptr.get_inner_ptr());
 
-			if (!it->second.loaded) {
-				mLoader.load(static_cast<Loader::value_type*>(it->second.ptr), it->second.loadParams);
-				it->second.loaded = true;
+			if (!it->loaded) {
+				mLoader.load(static_cast<Loader::value_type*>(it->ptr), it->loadParams);
+				it->loaded = true;
 			}
 		}
 
@@ -121,9 +140,9 @@ namespace Vitrae
 		{
 			real_inner_ptr it = toReal(ptr.get_inner_ptr());
 
-			if (it->second.loaded) {
-				mLoader.unload(static_cast<Loader::value_type*>(it->second.ptr), it->second.loadParams);
-				it->second.loaded = false;
+			if (it->loaded) {
+				mLoader.unload(static_cast<Loader::value_type*>(it->ptr), it->loadParams);
+				it->loaded = false;
 			}
 		}
 
@@ -141,24 +160,23 @@ namespace Vitrae
 		ResT *getResource(const resource_ptr<ResT>::inner_ptr ptr)
 		{
 			real_inner_ptr it = toReal(ptr);
-			return it->second.ptr;
+			return it->ptr;
 		}
 		void increaseCount(const resource_ptr<ResT>::inner_ptr ptr)
 		{
 			real_inner_ptr it = toReal(ptr);
-			it->second.count++;
+			it->count++;
 		}
 		void decreaseCount(const resource_ptr<ResT>::inner_ptr ptr)
 		{
 			real_inner_ptr it = toReal(ptr);
-			it->second.count--;
+			it->count--;
 		
-			if (it->second.count == 0) {
-				if (it->second.loaded) {
-					mLoader.unload(static_cast<Loader::value_type*>(it->second.ptr), it->second.loadParams);
+			if (it->count == 0) {
+				if (it->loaded) {
+					mLoader.unload(static_cast<Loader::value_type*>(it->ptr), it->loadParams);
 				}
-				mLoader.deallocate(static_cast<Loader::value_type*>(it->second.ptr), 1);
-				mResourcesByName.erase(it);
+				mLoader.deallocate(static_cast<Loader::value_type*>(it->ptr), 1);
 			}
 		}
 	};

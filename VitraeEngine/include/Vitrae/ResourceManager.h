@@ -98,8 +98,10 @@ namespace Vitrae
 
 		virtual ~ResourceManager() = 0;
 
-		virtual resource_ptr<ResT> createResource(const String &name, ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams) = 0;
+		virtual resource_ptr<ResT> createUnnamedResource(ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams) = 0;
+		virtual resource_ptr<ResT> createNamedResource(const String &name, ResT::SetupParams &&setupParams, ResT::LoadParams &&loadParams) = 0;
 		virtual resource_ptr<ResT> getResource(const String &name) = 0;
+		virtual void forgetResource(const String &name) = 0;
 
 		/**
 		 * Can be called multiple times; loads the resource only once

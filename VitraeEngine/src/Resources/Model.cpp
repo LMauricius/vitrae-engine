@@ -34,7 +34,7 @@ namespace Vitrae
         // load materials
         if (extScenePtr->HasMaterials()) {
             for (int i=0; i<extScenePtr->mNumMaterials; i++) {
-                params.resRoot.getManager<Material>().createResource(
+                params.resRoot.getManager<Material>().createNamedResource(
                     toString(extScenePtr->mMaterials[i]->GetName()),
                     Material::SetupParams{
                         *(extScenePtr->mMaterials[i]),
@@ -49,7 +49,7 @@ namespace Vitrae
         if (extScenePtr->HasMeshes()) {
             for (int i=0; i<extScenePtr->mNumMeshes; i++) {
 
-                auto mesh = params.resRoot.getManager<Mesh>().createResource(
+                auto mesh = params.resRoot.getManager<Mesh>().createNamedResource(
                     toString(extScenePtr->mMeshes[i]->mName),
                     Mesh::SetupParams{
                         *(extScenePtr->mMeshes[i]),
