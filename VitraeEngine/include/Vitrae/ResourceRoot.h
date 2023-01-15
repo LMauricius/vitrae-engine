@@ -9,10 +9,16 @@ namespace Vitrae
 {
 	template <class ResT> class ResourceManager;
 
+	class SourceShaderStep;
+	class GroupShaderStep;
+	class SwitchShaderStep;
+	class Shader;
 	class Texture;
 	class Material;
 	class Mesh;
 	class Model;
+	class RenderStep;
+	class RenderPlan;
 
 	/*
 	A HUB of multiple resource managers.
@@ -65,7 +71,8 @@ namespace Vitrae
 			return mCustomManagers.at(ResourceManager<ResT>::getClassID());
 		}
 
-		Unique<AnyResourceManager> mMaterialManPtr, mMeshManPtr, mTextureManPtr, mModelManPtr;
+		Unique<AnyResourceManager> mShaderManPtr, mTextureManPtr, mMaterialManPtr, mMeshManPtr, mModelManPtr;
+		Unique<AnyResourceManager> mSourceShaderStepManPtr, mGroupShaderStepManPtr, mSwitchShaderStepManPtr;
 		std::map<size_t, Unique<AnyResourceManager>> mCustomManagers;
 
 		std::ostream *mErrStream, *mInfoStream, *mWarningStream;
@@ -75,4 +82,9 @@ namespace Vitrae
 	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Material>() {return mMaterialManPtr;}
 	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Mesh>() {return mMeshManPtr;}
 	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Model>() {return mModelManPtr;}
+
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<SourceShaderStep>() {return mSourceShaderStepManPtr;}
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<GroupShaderStep>() {return mGroupShaderStepManPtr;}
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<SwitchShaderStep>() {return mSwitchShaderStepManPtr;}
+	template<> Unique<AnyResourceManager> &ResourceRoot::getManagerStorageVariable<Shader>() {return mShaderManPtr;}
 }
