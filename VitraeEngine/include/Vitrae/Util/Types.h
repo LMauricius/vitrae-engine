@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <variant>
 
 namespace Vitrae
 {
@@ -15,4 +16,6 @@ namespace Vitrae
     using Pointer = _T*;
 
     using String = std::string;
+
+    using EmptyType = std::monostate;
 }
