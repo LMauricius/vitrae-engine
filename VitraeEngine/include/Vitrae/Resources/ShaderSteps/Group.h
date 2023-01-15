@@ -25,9 +25,9 @@ namespace Vitrae
         GroupShaderStep();
         ~GroupShaderStep();
 
-        void extractInputPropertyNames(std::set<String*> &outNames) const;
-        void extractInputVariableNames(std::set<String*> &outNames) const;
-        void extractOutputVariableNames(std::set<String*> &outNames) const;
+        void extractInputPropertyNames(std::set<String> &outNames) const;
+        void extractInputVariableNames(std::set<String> &outNames) const;
+        void extractOutputVariableNames(std::set<String> &outNames) const;
         void extractSourceShaderSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, ShaderProperty> &properties);
 
         std::vector<casted_resource_ptr<ShaderStep>> stepList;

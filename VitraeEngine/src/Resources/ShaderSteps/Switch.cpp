@@ -13,7 +13,7 @@ namespace Vitrae
 
         }
 
-        void SwitchShaderStep::extractInputPropertyNames(std::set<String*> &outNames) const
+        void SwitchShaderStep::extractInputPropertyNames(std::set<String> &outNames) const
         {
             for (auto &c : cases) {
                 c.choice->extractInputPropertyNames(outNames);
@@ -23,7 +23,7 @@ namespace Vitrae
             }
         }
         
-        void SwitchShaderStep::extractInputVariableNames(std::set<String*> &outNames) const
+        void SwitchShaderStep::extractInputVariableNames(std::set<String> &outNames) const
         {
             for (auto &c : cases) {
                 c.choice->extractInputVariableNames(outNames);
@@ -33,7 +33,7 @@ namespace Vitrae
             }
         }
         
-        void SwitchShaderStep::extractOutputVariableNames(std::set<String*> &outNames) const
+        void SwitchShaderStep::extractOutputVariableNames(std::set<String> &outNames) const
         {
             for (auto &c : cases) {
                 c.choice->extractOutputVariableNames(outNames);

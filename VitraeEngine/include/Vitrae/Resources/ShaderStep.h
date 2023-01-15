@@ -23,9 +23,9 @@ namespace Vitrae
     public:
         virtual ~ShaderStep() = 0;
 
-        virtual void extractInputPropertyNames(std::set<String*> &outNames) const = 0;
-        virtual void extractInputVariableNames(std::set<String*> &outNames) const = 0;
-        virtual void extractOutputVariableNames(std::set<String*> &outNames) const = 0;
+        virtual void extractInputPropertyNames(std::set<String> &outNames) const = 0;
+        virtual void extractInputVariableNames(std::set<String> &outNames) const = 0;
+        virtual void extractOutputVariableNames(std::set<String> &outNames) const = 0;
         virtual void extractSourceShaderSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, ShaderProperty> &properties) = 0;
 
     };
