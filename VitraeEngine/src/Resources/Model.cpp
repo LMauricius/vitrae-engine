@@ -2,6 +2,7 @@
 #include "Vitrae/ResourceRoot.h"
 #include "Vitrae/Resources/Mesh.h"
 #include "Vitrae/Resources/Material.h"
+#include "Vitrae/Util/StringConvert.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
