@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <concepts>
 #include "Vitrae/Util/Types.h"
 #include "Vitrae/Util/UniqueCtr.h"
 
@@ -8,8 +9,15 @@ namespace Vitrae
 {
 	template <class ResT> class ResourceManager;
 
+	class void_resource_ptr
+	{
+	public:
+		virtual ~void_resource_ptr() = 0;
+		virtual void_resource_ptr* new_copy() const = 0;
+	};
+
 	template<class ResT>
-	class resource_ptr
+	class resource_ptr final: public void_resource_ptr
 	{
 	public:
 		friend class ResourceManager<ResT>;
@@ -37,13 +45,6 @@ namespace Vitrae
 			return *this;
 		}
 
-		/*bool operator==(const resource_ptr&) const = default;
-		bool operator!=(const resource_ptr&) const = default;
-		bool operator>(const resource_ptr&) const = default;
-		bool operator<(const resource_ptr&) const = default;
-		bool operator>=(const resource_ptr&) const = default;
-		bool operator<=(const resource_ptr&) const = default;*/
-
 		ResT *operator->()
 		{
 			return mResMan->getResource(mPtr);
@@ -66,6 +67,11 @@ namespace Vitrae
 			return mPtr;
 		}
 
+		void_resource_ptr* new_copy() const
+		{
+			return new resource_ptr(*this);
+		}
+
 	protected:
 		resource_ptr(ResourceManager<ResT> *resMan, inner_ptr ptr):
 			mResMan(resMan),
@@ -77,6 +83,71 @@ namespace Vitrae
 	private:
 		inner_ptr mPtr;
 		ResourceManager<ResT> *mResMan;
+	};
+
+	template<class ResT>
+	class casted_resource_ptr
+	{
+	public:
+		casted_resource_ptr(casted_resource_ptr&&) = default;
+		casted_resource_ptr(const casted_resource_ptr& o):
+			mInner((*o.mInner).new_copy()),
+			mRawInner(o.mRawInner)
+		{}
+		~casted_resource_ptr() = default;
+
+		casted_resource_ptr& operator=(casted_resource_ptr&& o) = default;
+		casted_resource_ptr& operator=(const casted_resource_ptr& o)
+		{
+			mInner = Unique((*o.mInner).new_copy());
+			mRawInner = o.mRawInner;
+			return *this;
+		}
+
+		ResT *operator->()
+		{
+			return mRawInner;
+		}
+		const ResT *operator->() const
+		{
+			return mRawInner;
+		}
+		ResT& operator*()
+		{
+			return *mRawInner;
+		}
+		const ResT& operator*() const
+		{
+			return *mRawInner;
+		}
+
+		template<class T, class U> requires std::convertible_to<T, U>
+		friend casted_resource_ptr<T> static_pointer_cast(casted_resource_ptr<U>&& o)
+		{
+			return Vitrae::casted_resource_ptr<T>(std::move(o.mInner), static_cast<T*>(o.mRawInner));
+		}
+
+		template<class T, class U> requires std::convertible_to<T, U>
+		friend casted_resource_ptr<T> static_pointer_cast(const casted_resource_ptr<U>& o)
+		{
+			return Vitrae::casted_resource_ptr<T>((*o.mInner).new_copy(), static_cast<T*>(o.mRawInner));
+		}
+
+		template<class T, class U> requires std::convertible_to<T, U>
+		friend casted_resource_ptr<T> static_pointer_cast(const resource_ptr<U>& o)
+		{
+			return Vitrae::casted_resource_ptr<T>(o.new_copy(), static_cast<ResT*>(&*o));
+		}
+
+	protected:
+		Unique<void_resource_ptr> mInner;
+		ResT *mRawInner;
+
+		casted_resource_ptr(Unique<void_resource_ptr> inner, ResT *rawInner):
+			mInner(inner),
+			mRawInner(rawInner)
+		{
+		}
 	};
 
 	class AnyResourceManager
