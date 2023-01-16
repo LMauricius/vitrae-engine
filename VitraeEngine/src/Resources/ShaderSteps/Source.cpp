@@ -1,10 +1,30 @@
 #include "Vitrae/Resources/ShaderSteps/Source.h"
 
+#include <fstream>
+
 namespace Vitrae
 {
 
-    void SourceShaderStep::setParamNames(const ShaderFileParams& params)
+    SourceShaderStep::SourceShaderStep()
     {
+        
+    }
+
+    SourceShaderStep::~SourceShaderStep()
+    {
+
+    }
+
+    void SourceShaderStep::load(const ShaderFileParams& params)
+    {
+        std::ifstream file;
+        file.open(params.shaderFilepath);
+
+        mSrcString.assign(
+            std::istreambuf_iterator<char>(file),
+            std::istreambuf_iterator<char>()
+        );
+        
         mInputPropertyNames = params.propertyNames;
         mInputVariableNames = params.inputVariableNames;
         mOutputVariableNames = params.outputVariableNames;
@@ -30,6 +50,11 @@ namespace Vitrae
         if (!enablingCondition || enablingCondition(properties)) {
             outSteps.push_back(this);
         }
+    }
+
+    void SourceShaderStep::extractSource(std::ostream &os)
+    {
+        os << mSrcString;
     }
     
 }

@@ -7,6 +7,7 @@
 #include "assimp/mesh.h"
 #include "assimp/scene.h"
 
+#include <ostream>
 #include <span>
 #include <map>
 #include <functional>
@@ -32,12 +33,16 @@ namespace Vitrae
         using SetupParams = std::variant<ShaderFileParams>;
         using LoadParams = std::variant<EmptyType>;
 
-        ~SourceShaderStep() = 0;
+        SourceShaderStep();
+        ~SourceShaderStep();
+
+        void load(const ShaderFileParams& params);
 
         void extractInputPropertyNames(std::set<String> &outNames) const;
         void extractInputVariableNames(std::set<String> &outNames) const;
         void extractOutputVariableNames(std::set<String> &outNames) const;
         void extractSourceShaderSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, ShaderProperty> &properties);
+        void extractSource(std::ostream &os);
 
         std::function<bool(const std::map<String, ShaderProperty> &properties)> enablingCondition;
 
@@ -45,8 +50,7 @@ namespace Vitrae
         std::set<String> mInputPropertyNames;
         std::set<String> mInputVariableNames;
         std::set<String> mOutputVariableNames;
-
-        void setParamNames(const ShaderFileParams& params);
+        String mSrcString;
     };
     
 }
