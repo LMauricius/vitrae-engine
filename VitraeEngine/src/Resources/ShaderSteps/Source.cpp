@@ -35,17 +35,19 @@ namespace Vitrae
         outNames.insert(mInputPropertyNames.begin(), mInputPropertyNames.end());
     }
     
-    void SourceShaderStep::extractInputVariableNames(std::set<String> &outNames) const
+    void SourceShaderStep::extractInputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const
     {
-        outNames.insert(mInputVariableNames.begin(), mInputVariableNames.end());
+        outSpecs.insert(mInputVariableNames.begin(), mInputVariableNames.end());
     }
     
-    void SourceShaderStep::extractOutputVariableNames(std::set<String> &outNames) const
+    void SourceShaderStep::extractOutputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const
     {
-        outNames.insert(mOutputVariableNames.begin(), mOutputVariableNames.end());
+        if (!enablingCondition) {
+            outSpecs.insert(mOutputVariableNames.begin(), mOutputVariableNames.end());
+        }
     }
     
-    void SourceShaderStep::extractSourceShaderSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, ShaderProperty> &properties)
+    void SourceShaderStep::extractPrimitiveSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties)
     {
         if (!enablingCondition || enablingCondition(properties)) {
             outSteps.push_back(this);

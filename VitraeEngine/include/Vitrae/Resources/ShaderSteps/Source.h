@@ -39,12 +39,12 @@ namespace Vitrae
         void load(const ShaderFileParams& params);
 
         void extractInputPropertyNames(std::set<String> &outNames) const;
-        void extractInputVariableNames(std::set<String> &outNames) const;
-        void extractOutputVariableNames(std::set<String> &outNames) const;
-        void extractSourceShaderSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, ShaderProperty> &properties);
+        void extractInputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const;
+        void extractOutputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const;
+        void extractPrimitiveSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties);
         void extractSource(std::ostream &os);
 
-        std::function<bool(const std::map<String, ShaderProperty> &properties)> enablingCondition;
+        std::function<bool(const std::map<String, VariantProperty> &properties)> enablingCondition;
 
     protected:
         std::set<String> mInputPropertyNames;
