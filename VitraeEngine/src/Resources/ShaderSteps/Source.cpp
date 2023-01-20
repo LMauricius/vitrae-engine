@@ -47,14 +47,14 @@ namespace Vitrae
         }
     }
     
-    void SourceShaderStep::extractPrimitiveSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties)
+    void SourceShaderStep::extractPrimitiveSteps(std::vector<const SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties) const
     {
         if (!enablingCondition || enablingCondition(properties)) {
             outSteps.push_back(this);
         }
     }
 
-    void SourceShaderStep::extractSource(std::ostream &os)
+    void SourceShaderStep::extractSource(std::ostream &os) const
     {
         os << mSrcString;
     }

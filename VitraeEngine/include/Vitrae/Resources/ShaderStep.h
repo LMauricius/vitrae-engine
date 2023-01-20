@@ -26,7 +26,7 @@ namespace Vitrae
         virtual void extractInputPropertyNames(std::set<String> &outNames) const = 0;
         virtual void extractInputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const = 0;
         virtual void extractOutputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const = 0;
-        virtual void extractPrimitiveSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties) = 0;
+        virtual void extractPrimitiveSteps(std::vector<const SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties) const = 0;
 
     };
     

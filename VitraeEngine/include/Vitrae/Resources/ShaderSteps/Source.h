@@ -41,8 +41,8 @@ namespace Vitrae
         void extractInputPropertyNames(std::set<String> &outNames) const;
         void extractInputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const;
         void extractOutputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const;
-        void extractPrimitiveSteps(std::vector<SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties);
-        void extractSource(std::ostream &os);
+        void extractPrimitiveSteps(std::vector<const SourceShaderStep*> &outSteps, const std::map<String, VariantProperty> &properties) const;
+        void extractSource(std::ostream &os) const;
 
         std::function<bool(const std::map<String, VariantProperty> &properties)> enablingCondition;
 

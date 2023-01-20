@@ -51,7 +51,7 @@ namespace Vitrae
             }
         }
         
-        void extractPrimitiveSteps(std::vector<PrimitiveStepT*> &outSteps, const std::map<String, VariantProperty> &properties)
+        void extractPrimitiveSteps(std::vector<const PrimitiveStepT*> &outSteps, const std::map<String, VariantProperty> &properties) const
         {
             if (!enablingCondition || enablingCondition(properties)) {
                 for (auto &step : stepList) {
