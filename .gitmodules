@@ -6,3 +6,6 @@
 	path = VitraeEngine/dependencies/stb
 	url = https://github.com/nothings/stb.git
 	branch = master
+[submodule "VitraeEngine/dependencies/DynAsMa"]
+	path = VitraeEngine/dependencies/DynAsMa
+	url = https://github.com/LMauricius/DynAsMa.git
