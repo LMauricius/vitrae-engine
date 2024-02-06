@@ -1,8 +1,8 @@
 #include "Vitrae/Renderers/OpenGL/Shader.h"
 #include "Vitrae/Renderers/OpenGL.h"
-#include "Vitrae/Resources/ShaderSteps/Source.h"
+#include "Vitrae/Assets/ShaderSteps/Source.h"
 #include "Vitrae/Util/StringConvert.h"
-#include "Vitrae/ResourceRoot.h"
+#include "Vitrae/ComponentRoot.h"
 
 #include <fstream>
 
@@ -19,7 +19,7 @@ namespace Vitrae
 
     }
     
-    void GLSLShader::setOutputStep(const String& outputName, casted_resource_ptr<ShaderStep> step)
+    void GLSLShader::setOutputStep(const String& outputName, casted_asset_ptr<ShaderStep> step)
     {
         auto insRes = mNamedOutputData.insert_or_assign(outputName, OutputData{
             step,
@@ -42,7 +42,7 @@ namespace Vitrae
     CompiledGLSLProgram::CompiledGLSLProgram(
         const GLSLShader::OutputData &geom, const GLSLShader::OutputData &vertex, const GLSLShader::OutputData &fragment,
         const std::map<String, VariantProperty> &properties,
-        const OpenGLRenderer &rend, ResourceRoot &resRoot
+        const OpenGLRenderer &rend, ComponentRoot &resRoot
     )
     {
         struct CompilationHelp

@@ -1,14 +1,13 @@
 #pragma once
 
-#include "Vitrae/Resources/Texture.h"
-#include "Vitrae/ResourceManager.h"
+#include "Vitrae/Assets/Texture.h"
 #include "glad/glad.h"
 
 #include <filesystem>
 
 namespace Vitrae
 {
-    class ResourceRoot;
+    class ComponentRoot;
     class OpenGLRenderer;
 
     /**
@@ -17,11 +16,9 @@ namespace Vitrae
     class OpenGLTexture: public Texture
     {
     public:
-        OpenGLTexture();
+        OpenGLTexture(const FileLoadParams &params);
         ~OpenGLTexture();
 
-        void load(const LoadParams &params, OpenGLRenderer &rend);
-        void unload();
         void loadToGPU(OpenGLRenderer &rend);
         void unloadFromGPU(OpenGLRenderer &rend);
 

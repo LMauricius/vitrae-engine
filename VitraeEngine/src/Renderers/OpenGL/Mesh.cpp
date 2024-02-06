@@ -3,8 +3,8 @@
 #include "Vitrae/Util/Types.h"
 #include "Vitrae/Util/AssimpTypeConvert.h"
 #include "Vitrae/Util/GraphicPrimitives.h"
-#include "Vitrae/ResourceRoot.h"
-#include "Vitrae/Resources/Material.h"
+#include "Vitrae/ComponentRoot.h"
+#include "Vitrae/Assets/Material.h"
 
 #include <vector>
 #include <map>
@@ -122,16 +122,6 @@ namespace Vitrae
 		glDeleteVertexArrays(1, &VAO);
 		glDeleteBuffers(rend.getNumVertexBuffers(), VBOs.data());
 		glDeleteBuffers(1, &EBO);
-    }
-
-    void OpenGLMesh::setMaterial(resource_ptr<Material> mat)
-    {
-        mMaterial = mat;
-    }
-
-    resource_ptr<Material> OpenGLMesh::getMaterial() const
-    {
-        return mMaterial.value();
     }
 
     const std::vector<Vertex> &OpenGLMesh::getVertices() const

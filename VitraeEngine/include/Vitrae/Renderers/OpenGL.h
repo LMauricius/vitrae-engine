@@ -56,9 +56,9 @@ namespace Vitrae
         void setup();
         void free();
         void render();
-        
-        Unique<ResourceManager<Mesh>> newMeshManager();
-        Unique<ResourceManager<Texture>> newTextureManager();
+
+        Unique<MeshKeeper> newMeshManager();
+        Unique<TextureManager> newTextureManager();
 
         template<class T>
         const std::vector<VertexBufferSpec<T>> &getVertexBufferSpecs() const

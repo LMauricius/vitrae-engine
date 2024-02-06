@@ -1,19 +1,17 @@
-#include "Vitrae/ResourceRoot.h"
-#include "Vitrae/ResourceManager.h"
+#include "Vitrae/ComponentRoot.h"
 
 #include <iostream>
 
 namespace Vitrae
 {
-	ResourceRoot::ResourceRoot():
-		mInfoStream(&std::cout),
-		mWarningStream(&std::cout),
-		mErrStream(&std::cerr)
+	ComponentRoot::ComponentRoot() : mInfoStream(&std::cout),
+									 mWarningStream(&std::cout),
+									 mErrStream(&std::cerr)
 	{
 
 	}
-	
-	ResourceRoot::~ResourceRoot()
+
+	ComponentRoot::~ComponentRoot()
 	{
 
 	}

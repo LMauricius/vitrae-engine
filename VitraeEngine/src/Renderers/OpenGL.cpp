@@ -2,67 +2,10 @@
 #include "Vitrae/Renderers/OpenGL/Mesh.h"
 #include "Vitrae/Renderers/OpenGL/Texture.h"
 
-#include "Vitrae/ResourceManagers/Simple.h"
-
+#include "dynasma/keepers/naive.hpp"
+#include "dynasma/managers/basic.hpp"
 namespace Vitrae
 {
-
-    namespace
-    {
-        struct OpenGLMeshLoader: public std::allocator<OpenGLMesh>
-        {
-            OpenGLRenderer *rend;
-
-            inline OpenGLMeshLoader(OpenGLRenderer *rend):
-                rend(rend)
-            {
-
-            }
-
-            inline void setup(OpenGLMesh *m, const Mesh::SetupParams &params)
-            {
-                m->load(params, *rend);
-            }
-
-            inline void load(OpenGLMesh *m, const Mesh::LoadParams &params)
-            {
-                m->loadToGPU(*rend);
-            }
-
-            inline void unload(OpenGLMesh *m, const Mesh::LoadParams &params)
-            {
-                m->unloadFromGPU(*rend);
-            }
-        };
-
-        struct OpenGLTextureLoader: public std::allocator<OpenGLTexture>
-        {
-            OpenGLRenderer *rend;
-
-            inline OpenGLTextureLoader(OpenGLRenderer *rend):
-                rend(rend)
-            {
-
-            }
-
-            inline void setup(OpenGLTexture *t, const Texture::SetupParams &params)
-            {
-            }
-
-            inline void load(OpenGLTexture *t, const Texture::LoadParams &params)
-            {
-                t->load(params, *rend);
-                t->loadToGPU(*rend);
-            }
-
-            inline void unload(OpenGLTexture *t, const Texture::LoadParams &params)
-            {
-                t->unload();
-                t->unloadFromGPU(*rend);
-            }
-        };
-    }
-
     OpenGLRenderer::OpenGLRenderer():
         mBufferSpecCtr(0)
     {
@@ -126,19 +69,13 @@ namespace Vitrae
         
     }
 
-    Unique<ResourceManager<Mesh>> OpenGLRenderer::newMeshManager()
+    Unique<MeshKeeper> OpenGLRenderer::newMeshManager()
     {
-        return Unique<ResourceManager<Mesh>>(
-            new SimpleResourceManager<Mesh, OpenGLMeshLoader>(OpenGLMeshLoader(this))
-        );
+        return Unique<MeshKeeper>(new dynasma::NaiveKeeper<ImmediateMeshSeed, std::allocator<OpenGLMesh>>());
     }
 
-    Unique<ResourceManager<Texture>> OpenGLRenderer::newTextureManager()
+    Unique<TextureManager> OpenGLRenderer::newTextureManager()
     {
-        return Unique<ResourceManager<Texture>>(
-            new SimpleResourceManager<Texture, OpenGLTextureLoader>(OpenGLTextureLoader(this))
-        );
+        return Unique<TextureManager>(new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>());
     }
-
-
 }

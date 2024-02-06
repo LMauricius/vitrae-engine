@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vitrae/Resources/Mesh.h"
-#include "assimp/mesh.h"
-#include "assimp/scene.h"
+#include "Vitrae/Util/Types.h"
+#include "Vitrae/Assets/Mesh.h"
+
 #include "glad/glad.h"
 
 #include <vector>
@@ -16,18 +16,17 @@ namespace Vitrae
     class OpenGLMesh : public Mesh
     {
     public:
-        OpenGLMesh();
+        OpenGLMesh(const AssimpLoadParams &params);
         ~OpenGLMesh();
 
-        void load(const SetupParams &params, OpenGLRenderer & rend);
         void loadToGPU(OpenGLRenderer & rend);
         void unloadFromGPU(OpenGLRenderer & rend);
 
-        void setMaterial(resource_ptr<Material> mat);
-        resource_ptr<Material> getMaterial() const;
-        const std::vector<Vertex> &getVertices() const;
-        const std::vector<Triangle> &getTriangles() const;
-        
+        void setMaterial(dynasma::LazyPtr<Material> mat);
+        dynasma::LazyPtr<Material> getMaterial() const;
+        virtual std::span<const Vertex> getVertices() const;
+        virtual std::span<const Triangle> getTriangles() const;
+
         GLuint VAO;
         std::vector<GLuint> VBOs;
         std::map<String, std::vector<glm::vec1>> namedVec1Buffers;
@@ -37,7 +36,7 @@ namespace Vitrae
         GLuint EBO;
 
     protected:
-        std::optional<resource_ptr<Material>> mMaterial;
+        std::optional<dynasma::LazyPtr<Material>> mMaterial;
         std::vector<Vertex> mVertices;
         std::vector<Triangle> mTriangles;
     };

@@ -65,6 +65,6 @@ namespace Vitrae
     template<class T> requires requires(T t) {toString(t);}
     String toStringOrErr(const T& val)
     {
-        return toString(t);
+        return toString(val);
     }
 }

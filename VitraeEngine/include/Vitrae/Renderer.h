@@ -1,13 +1,13 @@
 #pragma once
 
+#include "Vitrae/Assets/Mesh.h"
+#include "Vitrae/Assets/Texture.h"
 #include "Vitrae/Util/Types.h"
-#include "Vitrae/ResourceManager.h"
+
+#include "dynasma/managers/abstract.hpp"
 
 namespace Vitrae
 {
-    class Mesh;
-    class Texture;
-
     class Renderer
     {
     public:
@@ -16,9 +16,9 @@ namespace Vitrae
         virtual void setup() = 0;
         virtual void free() = 0;
         virtual void render() = 0;
-        
-        virtual Unique<ResourceManager<Mesh>> newMeshManager() = 0;
-        virtual Unique<ResourceManager<Texture>> newTextureManager() = 0;
+
+        virtual Unique<MeshKeeper> newMeshManager() = 0;
+        virtual Unique<TextureManager> newTextureManager() = 0;
     };
 
 }

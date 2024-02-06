@@ -2,7 +2,7 @@
 
 #include "Vitrae/Util/Types.h"
 #include "Vitrae/Util/Property.h"
-#include "Vitrae/ResourceManager.h"
+#include "Vitrae/AssetManager.h"
 
 #include <span>
 #include <map>

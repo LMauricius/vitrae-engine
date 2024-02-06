@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Vitrae/Resources/Shader.h"
+#include "Vitrae/Util/Types.h"
+#include "Vitrae/Util/Property.h"
 
+#include "dynasma/pointer.hpp"
 #include "glad/glad.h"
 
 #include <map>
@@ -11,14 +13,14 @@ namespace Vitrae
 {
     class OpenGLRenderer;
     class ShaderStep;
-    class ResourceRoot;
+    class AssetRoot;
 
-    class GLSLShader: public Shader
+    class GLSLShader
     {
     public:
         struct OutputData
         {
-            casted_resource_ptr<ShaderStep> mainStep;
+            dynasma::LazyPtr<ShaderStep> mainStep;
             std::set<String> inputPropertyNames;
             std::map<String, VariantPropertySpec> inputVariableNames;
             std::map<String, VariantPropertySpec> outputVariableNames;
@@ -27,7 +29,7 @@ namespace Vitrae
         GLSLShader();
         ~GLSLShader();
 
-        void setOutputStep(const String& outputName, casted_resource_ptr<ShaderStep> step);
+        void setOutputStep(const String &outputName, dynasma::LazyPtr<ShaderStep> step);
         const OutputData &getOutputData(const String& outputName) const;
 
     protected:
@@ -47,8 +49,7 @@ namespace Vitrae
         CompiledGLSLProgram(
             const GLSLShader::OutputData &geom, const GLSLShader::OutputData &vertex, const GLSLShader::OutputData &fragment,
             const std::map<String, VariantProperty> &properties,
-            const OpenGLRenderer &rend, ResourceRoot &resRoot
-        );
+            const OpenGLRenderer &rend, AssetRoot &resRoot);
         ~CompiledGLSLProgram();
 
 
