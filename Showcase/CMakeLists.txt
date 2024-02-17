@@ -5,3 +5,6 @@ file(GLOB_RECURSE HeaderFiles CONFIGURE_DEPENDS include/*.h)
 
 add_executable(VitraeShowcase ${SrcFiles} ${HeaderFiles})
 target_include_directories(VitraeShowcase PUBLIC include)
+target_include_directories(VitraeEngine PUBLIC dependencies/)
+target_include_directories(VitraeEngine PUBLIC dependencies/glad/include)
+target_include_directories(VitraeEngine PUBLIC dependencies/DynAsMa/include)
