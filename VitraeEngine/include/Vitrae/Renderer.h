@@ -2,7 +2,7 @@
 
 #include "Vitrae/Assets/Mesh.h"
 #include "Vitrae/Assets/Texture.h"
-#include "Vitrae/Util/Types.h"
+#include "Vitrae/Types/Typedefs.h"
 
 #include "dynasma/managers/abstract.hpp"
 

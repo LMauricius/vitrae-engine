@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Util/GraphicPrimitives.h"
+#include "Vitrae/Types/GraphicPrimitives.h"
 #include "Vitrae/Assets/Material.h"
 #include "Vitrae/Util/NonCopyable.h"
 

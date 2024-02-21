@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Util/Types.h"
+#include "Vitrae/Types/Typedefs.h"
 #include "Vitrae/Util/Property.h"
 
 #include "dynasma/pointer.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Vitrae/Util/Types.h"
-#include "Vitrae/Util/UniqueAnyPtr.h"
+#include "Vitrae/Types/Typedefs.h"
+#include "Vitrae/Types/UniqueAnyPtr.h"
 #include "Vitrae/Util/UniqueId.h"
 
 #include "dynasma/managers/abstract.hpp"

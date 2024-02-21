@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Vitrae/Renderer.h"
-#include "Vitrae/Util/GraphicPrimitives.h"
-#include "Vitrae/Util/AssimpTypeConvert.h"
-#include "Vitrae/Util/VectorInfo.h"
-#include "Vitrae/Util/GLTypeInfo.h"
+#include "Vitrae/Types/GraphicPrimitives.h"
+#include "Vitrae/TypeConversion/AssimpTypeConvert.h"
+#include "Vitrae/TypeConversion/VectorInfo.h"
+#include "Vitrae/TypeConversion/GLTypeInfo.h"
 #include "assimp/mesh.h"
 
 #include <map>
