@@ -1,89 +1,86 @@
 #pragma once
 
-#include "Vitrae/Util/Types.h"
-#include "Vitrae/Util/Property.h"
-#include "Vitrae/AssetManager.h"
+#include "Vitrae/Pipelines/Task.h"
 
-#include <span>
-#include <map>
-#include <functional>
-#include <optional>
-
-namespace Vitrae
+namespace Vitrae {
+template<TaskChild BasicTask>
+class Switch : public BasicTask
 {
-    template<class BaseStepT, class PrimitiveStepT>
-    class GenericSwitchStep: public BaseStepT
-    {
-    public:
-        struct SetupParams {};
-        struct LoadParams {};
+protected:
+  std::map<Property, dynasma::FirmPtr<BasicTask>> m_taskMap;
+  std::pair<StringId, PropertySpec> m_selectionProperty;
 
-        struct Case
-        {
-            casted_resource_ptr<ShaderStep> choice;
-            std::function<bool(const std::map<String, VariantProperty> &properties)> enablingCondition;
-        };
+  void updateInputOutputProperties()
+  {
 
-        GenericSwitchStep() = default;
-        ~GenericSwitchStep() = default;
+    this->m_inputSpecs.clear();
+    this->m_outputSpecs.clear();
 
-        void extractInputPropertyNames(std::set<String> &outNames) const
-        {
-            for (auto &c : cases) {
-                c.choice->extractInputPropertyNames(outNames);
-            }
-            if (defaultChoice.has_value()) {
-                defaultChoice.value()->extractInputPropertyNames(outNames);
-            }
+    if (!m_taskMap.empty()) {
+      this->m_outputSpecs = m_taskMap.begin()->second->m_outputSpecs;
+    }
+
+    for (auto& pair : m_taskMap) {
+      this->m_inputSpecs.insert(pair.second->m_inputSpecs.begin(), pair.second->m_inputSpecs.end());
+
+      for (auto it = this->m_outputSpecs.begin(); it != this->m_outputSpecs.end();) {
+        if (pair.second->m_outputSpecs.find(it->first) == pair.second->m_outputSpecs.end()) {
+          this->m_outputSpecs.erase(it++);
+        } else {
+          ++it;
         }
+      }
+    }
 
-        void extractInputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const
-        {
-            for (auto &c : cases) {
-                c.choice->extractInputVariableNames(outSpecs);
-            }
-            if (defaultChoice.has_value()) {
-                defaultChoice.value()->extractInputVariableNames(outSpecs);
-            }
-        }
-        
-        void extractOutputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const
-        {
-            if (defaultChoice.has_value()) {
-                std::map<String, VariantPropertySpec> interOut, out;
-                defaultChoice.value()->extractOutputVariableNames(interOut);
+    m_inputSpecs.insert(m_selectionProperty);
+  }
 
-                for (auto &c : cases) {
-                    c.choice->extractOutputVariableNames(out);
-                    for (auto it = interOut.begin(); it != interOut.end();) {
-                        if (out.find(it->first) == out.end()) {
-                            interOut.erase(it++);
-                        }
-                        else {
-                            it++;
-                        }
-                    }
-                    out.clear();
-                }
-            }
-        }
-        
-        void extractPrimitiveSteps(std::vector<const PrimitiveStepT*> &outSteps, const std::map<String, VariantProperty> &properties) const
-        {
-            for (auto &c : cases) {
-                if (!c.enablingCondition || c.enablingCondition(properties)) {
-                    c.choice->extractPrimitiveSteps(outSteps, properties);
-                    return;
-                }
-            }
-            if (defaultChoice.has_value()) {
-                defaultChoice.value()->extractPrimitiveSteps(outSteps, properties);
-            }
-        }   
+public:
+  Switch(std::map<Property, dynasma::FirmPtr<BasicTask>> taskMap,
+         std::pair<StringId, PropertySpec> selectionProperty)
+    : m_taskMap(taskMap)
+    , m_selectionProperty(selectionProperty)
+  {
+    updateInputOutputProperties();
+  }
 
+  ~Switch() = default;
 
-        std::vector<Case> cases;
-        std::optional<casted_resource_ptr<BaseStepT>> defaultChoice;
-    };
-    
-}
+  /**
+   * Adds an option to the task map and updates the input/output properties.
+   *
+   * @param property The property to associate with the task.
+   * @param task The task to be associated with the property.
+   */
+  void addOption(Property property, dynasma::FirmPtr<BasicTask> task)
+  {
+
+    m_taskMap.insert({ property, task });
+    updateInputOutputProperties();
+  }
+
+  /**
+   * Removes the specified option from the task map and updates the
+   * input/output properties.
+   *
+   * @param property the property to be removed
+   */
+  void removeOption(Property property)
+  {
+
+    m_taskMap.erase(property);
+    updateInputOutputProperties();
+  }
+
+  /**
+   * Retrieves a task associated with the given property.
+   *
+   * @param property the property used to look up the task
+   *
+   * @return a pointer to the task associated with the property
+   *
+   * @throws std::out_of_range if the property is not found in the task map
+   */
+  dynasma::FirmPtr<BasicTask> getTask(Property property) { return m_taskMap.at(property); }
+};
+} // namespace Vitrae

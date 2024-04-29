@@ -1,68 +1,66 @@
 #pragma once
 
-#include "Vitrae/Util/Types.h"
-#include "Vitrae/Util/Property.h"
-#include "Vitrae/AssetManager.h"
+#include "Vitrae/Pipelines/Task.h"
 
-#include <span>
-#include <map>
-#include <functional>
+namespace Vitrae {
 
-namespace Vitrae
+template<TaskChild BasicTask>
+class Group : public BasicTask
 {
-    
-    template<class BaseStepT, class PrimitiveStepT>
-    class GenericGroupStep: public ShaderStep
-    {
-    public:
-        struct SetupParams {};
-        struct LoadParams {};
+public:
+  struct GroupItemEntry
+  {
+    dynasma::FirmPtr<BasicTask> task;
+    std::map<StringId, StringId> inputParamsToSharedVariables;
+    std::map<StringId, StringId> outputParamsToSharedVariables;
+  };
 
-        GenericGroupStep() = default;
-        ~GenericGroupStep() = default;
+protected:
+  std::vector<GroupItemEntry> m_items;
+  std::map<StringId, PropertySpec> m_localSpecs;
 
-        void extractInputPropertyNames(std::set<String> &outNames) const
-        {
-            for (auto &step : stepList) {
-                step->extractInputPropertyNames(outNames);
-            }
+  void updateInputOutputProperties()
+  {
+    this->m_inputSpecs.clear();
+    this->m_outputSpecs.clear();
+
+    for (auto& item : m_items) {
+      for (auto [inputName, spec] : item->m_inputSpecs) {
+        StringId localName = item.m_inputParamsToSharedVariables.at(inputName);
+        auto i_localSpec = m_localSpecs.find(localName);
+
+        if (i_localSpec == m_localSpecs.end()) {
+          this->m_inputSpecs.insert({ localName, spec });
         }
-        
-        void extractInputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const
-        {
-            std::map<String, VariantPropertySpec> in, out;
-            for (auto &step : stepList) {
-                step->extractInputVariableNames(in);
-                for (const auto &nameSpecP : out) {
-                    in.erase(nameSpecP.first);
-                }
-                outSpecs.insert(in.begin(), in.end());
-                in.clear();
-                step->extractOutputVariableNames(out);
-            }
+      }
+
+      for (auto [outputName, spec] : item->m_outputSpecs) {
+        StringId localName = item.m_outputParamsToSharedVariables.at(outputName);
+        auto i_localSpec = m_localSpecs.find(localName);
+
+        if (i_localSpec == m_localSpecs.end()) {
+          m_localSpecs.insert({ localName, spec });
         }
+      }
+    }
+  }
 
-        void extractOutputVariableNames(std::map<String, VariantPropertySpec> &outSpecs) const
-        {
-            if (!enablingCondition) {
-                for (auto &step : stepList) {
-                    step->extractOutputVariableNames(outSpecs);
-                }
-            }
-        }
-        
-        void extractPrimitiveSteps(std::vector<const PrimitiveStepT*> &outSteps, const std::map<String, VariantProperty> &properties) const
-        {
-            if (!enablingCondition || enablingCondition(properties)) {
-                for (auto &step : stepList) {
-                    step->extractPrimitiveSteps(outSteps, properties);
-                }
-            }
-        } 
+public:
+  Group() = default;
+  Group(const std::map<StringId, PropertySpec>& outputSpecs,
+        const std::vector<GroupItemEntry>& items)
+    : m_items(items)
+  {
+    this->m_outputSpecs = outputSpecs;
+    updateInputOutputProperties();
+  }
+  Group(std::map<StringId, PropertySpec>&& outputSpecs, std::vector<GroupItemEntry>&& items)
+    : m_items(std::move(items))
+  {
+    this->m_outputSpecs = std::move(outputSpecs);
+    updateInputOutputProperties();
+  }
 
-
-        std::vector<casted_resource_ptr<BaseStepT>> stepList;
-        std::function<bool(const std::map<String, VariantProperty> &properties)> enablingCondition;
-    };
-    
-}
+  ~Group() = default;
+};
+} // namespace Vitrae
