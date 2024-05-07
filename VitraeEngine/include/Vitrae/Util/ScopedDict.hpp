@@ -1,25 +1,84 @@
 #pragma once
 
 #include "Vitrae/Util/Property.h"
+#include "Vitrae/Util/StringId.h"
 
 #include <map>
 
 namespace Vitrae
 {
-
+/**
+ * @brief ScopedDict class provides a dictionary-like data structure with a parent-child
+ * relationship.
+ *
+ * The ScopedDict class allows you to set key-value pairs and retrieve values using keys. It also
+ * supports checking if a key exists in the dictionary. The dictionary can have a parent ScopedDict,
+ * which allows for inheritance of values. If a key is not found in the current dictionary, the
+ * search continues in the parent dictionary.
+ */
 class ScopedDict
 {
     const ScopedDict *m_parent;
-    std::map<StringID, Property> m_dict;
+    std::map<StringId, Property> m_dict;
 
   public:
+    /**
+     * @brief Default constructor.
+     *
+     * Creates an empty ScopedDict without a parent.
+     */
     ScopedDict();
+
+    /**
+     * @brief Constructor with a parent ScopedDict.
+     *
+     * Creates a ScopedDict with the specified parent.
+     *
+     * @param parent Pointer to the parent ScopedDict.
+     */
     ScopedDict(const ScopedDict *parent);
 
-    void set(StringID key, const Property &value);
-    void set(StringID key, Property &&value);
-    const Property &get(StringID key) const;
-    bool has(StringID key) const;
-};
+    /**
+     * @brief Set a key-value pair in the dictionary.
+     *
+     * If the key already exists in the dictionary, the corresponding value is updated.
+     *
+     * @param key The key.
+     * @param value The value.
+     */
+    void set(StringId key, const Property &value);
 
+    /**
+     * @brief Set a key-value pair in the dictionary using move semantics.
+     *
+     * If the key already exists in the dictionary, the corresponding value is updated.
+     *
+     * @param key The key.
+     * @param value The value, moved into the dictionary.
+     */
+    void set(StringId key, Property &&value);
+
+    /**
+     * @brief Get the value associated with a key.
+     *
+     * If the key is not found in the current dictionary, the search continues in the parent
+     * dictionary.
+     *
+     * @param key The key.
+     * @return The value associated with the key.
+     * @throws std::runtime_error If the key is not found in any dictionary.
+     */
+    const Property &get(StringId key) const;
+
+    /**
+     * @brief Check if a key exists in the dictionary.
+     *
+     * If the key is not found in the current dictionary, the search continues in the parent
+     * dictionary.
+     *
+     * @param key The key.
+     * @return True if the key exists, false otherwise.
+     */
+    bool has(StringId key) const;
+};
 } // namespace Vitrae
