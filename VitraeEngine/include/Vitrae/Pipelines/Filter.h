@@ -6,25 +6,26 @@ namespace Vitrae {
 template<TaskChild BasicTask>
 class Filter : public BasicTask
 {
-protected:
-  dynasma::FirmPtr<BasicTask> m_task;
-  StringId m_conditionProperty;
-  Property m_trueValue;
+  public:
+    using FilterConditionType = bool;
 
-public:
-  Filter(dynasma::FirmPtr<BasicTask> containedTask, StringId conditionProperty, Property trueValue)
-    : m_containedTask(containedTask)
-    , m_conditionProperty(conditionProperty)
-    , m_trueValue(trueValue)
-  {
-    this->m_inputSpecs = m_containedTask->m_inputSpecs;
-    this->m_outputSpecs = m_containedTask->m_outputSpecs;
+  protected:
+    dynasma::FirmPtr<BasicTask> m_task;
+    StringId m_conditionProperty;
 
-    if (this->m_inputSpecs != this->m_outputSpecs) {
-      throw std::runtime_error("Input and output specs must be equal");
-    }
+  public:
+    Filter(dynasma::FirmPtr<BasicTask> containedTask, StringId conditionProperty)
+        : m_containedTask(containedTask), m_conditionProperty(conditionProperty)
+    {
+        this->m_inputSpecs = m_containedTask->m_inputSpecs;
+        this->m_outputSpecs = m_containedTask->m_outputSpecs;
 
-    this->m_inputSpecs.insert({ m_conditionProperty, m_trueValue.type() });
+        if (this->m_inputSpecs != this->m_outputSpecs)
+        {
+            throw std::runtime_error("Input and output specs must be equal");
+        }
+
+        this->m_inputSpecs.insert({m_conditionProperty, m_trueValue.type()});
   }
 
   ~Filter() = default;

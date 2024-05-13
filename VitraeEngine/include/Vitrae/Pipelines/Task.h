@@ -7,22 +7,31 @@
 #include <map>
 #include <span>
 
-namespace Vitrae {
-
-class Task
+namespace Vitrae
 {
-protected:
-  std::map<StringId, PropertySpec> m_inputSpecs;
-  std::map<StringId, PropertySpec> m_outputSpecs;
 
-public:
-  virtual ~Task() = default;
+class Task : public dynasma::PolymorphicBase
+{
+  protected:
+    std::map<StringId, PropertySpec> m_inputSpecs;
+    std::map<StringId, PropertySpec> m_outputSpecs;
 
-  inline std::map<StringId, PropertySpec>& getInputSpecs() { return m_inputSpecs; }
-  inline std::map<StringId, PropertySpec>& getOutputSpecs() { return m_outputSpecs; }
+  public:
+    virtual ~Task() = default;
+
+    virtual std::size_t memory_cost() const = 0;
+
+    inline std::map<StringId, PropertySpec> &getInputSpecs()
+    {
+        return m_inputSpecs;
+    }
+    inline std::map<StringId, PropertySpec> &getOutputSpecs()
+    {
+        return m_outputSpecs;
+    }
 };
 
-template<class T>
+template <class T>
 concept TaskChild = std::is_base_of_v<Task, T>;
 
 } // namespace Vitrae
