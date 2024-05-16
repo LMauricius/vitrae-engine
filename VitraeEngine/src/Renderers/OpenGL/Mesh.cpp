@@ -10,7 +10,11 @@
 
 namespace Vitrae
 {
-OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params)
+OpenGLMesh::OpenGLMesh() : m_sentToGPU(false)
+{
+}
+
+OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
 {
     OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(params.root.getComponent<Renderer>());
 
@@ -67,54 +71,63 @@ OpenGLMesh::~OpenGLMesh()
 
 void OpenGLMesh::loadToGPU(OpenGLRenderer &rend)
 {
-    // prepare OpenGL buffers
-    glGenVertexArrays(1, &VAO);
-    VBOs.resize(rend.getNumVertexBuffers());
-    glGenBuffers(rend.getNumVertexBuffers(), VBOs.data());
-    glGenBuffers(1, &EBO);
+    if (!m_sentToGPU)
+    {
+        m_sentToGPU = true;
 
-    // load vertices
-    glBindVertexArray(VAO);
+        // prepare OpenGL buffers
+        glGenVertexArrays(1, &VAO);
+        VBOs.resize(rend.getNumVertexBuffers());
+        glGenBuffers(rend.getNumVertexBuffers(), VBOs.data());
+        glGenBuffers(1, &EBO);
 
-    auto sendVertexData = [&]<class glmType>(
-                              const std::map<StringId, std::valarray<glmType>> &namedBuffers) {
-        for (auto [name, buffer] : namedBuffers)
-        {
-            std::size_t layoutInd = rend.getVertexBufferLayoutIndex(name);
-            GLuint &vbo = VBOs[layoutInd];
+        // load vertices
+        glBindVertexArray(VAO);
 
-            // send to OpenGL
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(glmType) * buffer.size(), &(buffer[0]),
-                         GL_STATIC_DRAW);
-            glVertexAttribPointer(
-                layoutInd, // layout pos
-                VectorTypeInfo<glmType>::NumComponents,
-                GLTypeInfo<typename VectorTypeInfo<glmType>::value_type>::GlTypeId,
-                GL_FALSE,                  // data structure info
-                sizeof(glmType), (void *)0 // data location info
-            );
-            glEnableVertexAttribArray(layoutInd);
-        }
-    };
+        auto sendVertexData =
+            [&]<class glmType>(const std::map<StringId, std::valarray<glmType>> &namedBuffers) {
+                for (auto [name, buffer] : namedBuffers)
+                {
+                    std::size_t layoutInd = rend.getVertexBufferLayoutIndex(name);
+                    GLuint &vbo = VBOs[layoutInd];
 
-    sendVertexData(namedVec2Buffers);
-    sendVertexData(namedVec3Buffers);
-    sendVertexData(namedVec3Buffers);
-    sendVertexData(namedVec4Buffers);
+                    // send to OpenGL
+                    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(glmType) * buffer.size(), &(buffer[0]),
+                                 GL_STATIC_DRAW);
+                    glVertexAttribPointer(
+                        layoutInd, // layout pos
+                        VectorTypeInfo<glmType>::NumComponents,
+                        GLTypeInfo<typename VectorTypeInfo<glmType>::value_type>::GlTypeId,
+                        GL_FALSE,                  // data structure info
+                        sizeof(glmType), (void *)0 // data location info
+                    );
+                    glEnableVertexAttribArray(layoutInd);
+                }
+            };
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * mTriangles.size(),
-                 (void *)(mTriangles.data()), GL_STATIC_DRAW);
+        sendVertexData(namedVec2Buffers);
+        sendVertexData(namedVec3Buffers);
+        sendVertexData(namedVec3Buffers);
+        sendVertexData(namedVec4Buffers);
 
-    glBindVertexArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * mTriangles.size(),
+                     (void *)(mTriangles.data()), GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
+    }
 }
 
-void OpenGLMesh::unloadFromGPU(OpenGLRenderer &rend)
+void OpenGLMesh::unloadFromGPU()
 {
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(rend.getNumVertexBuffers(), VBOs.data());
-    glDeleteBuffers(1, &EBO);
+    if (m_sentToGPU)
+    {
+        m_sentToGPU = false;
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(VBOs.size(), VBOs.data());
+        glDeleteBuffers(1, &EBO);
+    }
 }
 
 std::span<const Triangle> OpenGLMesh::getTriangles() const
