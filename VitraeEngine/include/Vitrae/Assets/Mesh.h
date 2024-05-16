@@ -35,7 +35,6 @@ namespace Vitrae
 
         virtual void setMaterial(dynasma::LazyPtr<Material> mat) = 0;
         virtual dynasma::LazyPtr<Material> getMaterial() const = 0;
-        virtual std::span<const Vertex> getVertices() const = 0;
         virtual std::span<const Triangle> getTriangles() const = 0;
 
         virtual std::size_t memory_cost() const = 0;
@@ -50,6 +49,17 @@ namespace Vitrae
 
         inline std::size_t load_cost() const { return 1; }
     };
+
+    /**
+     * Namespace containing all standard vertex buffer names
+     */
+    namespace StandardVertexBufferNames
+    {
+    constexpr const char POSITION[] = "position";
+    constexpr const char NORMAL[] = "normal";
+    constexpr const char TEXTURE_COORD[] = "textureCoord0";
+    constexpr const char COLOR[] = "color0";
+    } // namespace StandardVertexBufferNames
 
     // using MeshManager = dynasma::AbstractManager<MeshSeed>;
     using MeshKeeper = dynasma::AbstractKeeper<ImmediateMeshSeed>;
