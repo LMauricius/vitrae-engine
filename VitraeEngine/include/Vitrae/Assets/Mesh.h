@@ -40,12 +40,11 @@ namespace Vitrae
         virtual std::size_t memory_cost() const = 0;
     };
 
-    struct ImmediateMeshSeed
+    struct MeshKeeperSeed : NonCopyable
     {
         using Asset = Mesh;
 
         std::variant<Mesh::AssimpLoadParams> kernel;
-        [[no_unique_address]] NonCopyable _ = {};
 
         inline std::size_t load_cost() const { return 1; }
     };
@@ -62,5 +61,5 @@ namespace Vitrae
     } // namespace StandardVertexBufferNames
 
     // using MeshManager = dynasma::AbstractManager<MeshSeed>;
-    using MeshKeeper = dynasma::AbstractKeeper<ImmediateMeshSeed>;
+    using MeshKeeper = dynasma::AbstractKeeper<MeshKeeperSeed>;
 }
