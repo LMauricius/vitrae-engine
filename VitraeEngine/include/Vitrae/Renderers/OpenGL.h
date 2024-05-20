@@ -48,12 +48,9 @@ class OpenGLRenderer : public Renderer
     OpenGLRenderer();
     ~OpenGLRenderer();
 
-    void setup();
-    void free();
-    void render();
-
-    Unique<MeshKeeper> newMeshManager();
-    Unique<TextureManager> newTextureManager();
+    void setup(ComponentRoot& root) override;
+    void free() override;
+    void render() override;
 
     template <class T> const std::vector<VertexBufferSpec<T>> &getVertexBufferSpecs() const
     {

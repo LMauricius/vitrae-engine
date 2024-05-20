@@ -46,7 +46,7 @@ namespace Vitrae
         takes its ownership.
         @param man The component pointer to set
         */
-        template <class T> void setComponent(Unique<T> &&comp)
+        template <class T> void setComponent(Unique<T> comp)
         {
             UniqueAnyPtr &myvar = getGenericStorageVariable<T>();
             myvar = std::move(comp);

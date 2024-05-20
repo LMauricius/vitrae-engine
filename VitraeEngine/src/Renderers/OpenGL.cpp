@@ -1,6 +1,7 @@
 #include "Vitrae/Renderers/OpenGL.h"
 #include "Vitrae/Renderers/OpenGL/Mesh.h"
 #include "Vitrae/Renderers/OpenGL/Texture.h"
+#include "Vitrae/ComponentRoot.h"
 
 #include "dynasma/keepers/naive.hpp"
 #include "dynasma/managers/basic.hpp"
@@ -14,8 +15,12 @@ OpenGLRenderer::OpenGLRenderer()
     getVertexBufferLayoutIndex(StandardVertexBufferNames::COLOR);
 }
 
-void OpenGLRenderer::setup()
+void OpenGLRenderer::setup(ComponentRoot& root)
 {
+    root.setComponent<MeshKeeper>(Unique<MeshKeeper>(
+        new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>()));
+    root.setComponent<TextureManager>(Unique<TextureManager>(
+        new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>()));
 }
 
 void OpenGLRenderer::free()
@@ -24,17 +29,6 @@ void OpenGLRenderer::free()
 
 void OpenGLRenderer::render()
 {
-}
-Unique<MeshKeeper> OpenGLRenderer::newMeshManager()
-{
-    return Unique<MeshKeeper>(
-        new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>());
-}
-
-Unique<TextureManager> OpenGLRenderer::newTextureManager()
-{
-    return Unique<TextureManager>(
-        new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>());
 }
 
 std::size_t OpenGLRenderer::getNumVertexBuffers() const

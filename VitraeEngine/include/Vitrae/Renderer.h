@@ -8,17 +8,16 @@
 
 namespace Vitrae
 {
+    class ComponentRoot;
+
     class Renderer
     {
     public:
         virtual ~Renderer() = 0;
 
-        virtual void setup() = 0;
+        virtual void setup(ComponentRoot& root) = 0;
         virtual void free() = 0;
         virtual void render() = 0;
-
-        virtual Unique<MeshKeeper> newMeshManager() = 0;
-        virtual Unique<TextureManager> newTextureManager() = 0;
     };
 
 }
