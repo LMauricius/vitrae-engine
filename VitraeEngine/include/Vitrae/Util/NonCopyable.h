@@ -4,7 +4,6 @@ namespace Vitrae
 {
     struct NonCopyable
     {
-      protected:
         NonCopyable() = default;
         NonCopyable(NonCopyable &&) = default;
         NonCopyable &operator=(NonCopyable &&) = default;
