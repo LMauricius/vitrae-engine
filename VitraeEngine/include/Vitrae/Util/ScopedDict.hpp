@@ -71,6 +71,18 @@ class ScopedDict
     const Property &get(StringId key) const;
 
     /**
+     * @brief Get the value associated with a key.
+     *
+     * If the key is not found in the current dictionary, the search continues in the parent
+     * dictionary.
+     *
+     * @param key The key.
+     * @return The value associated with the key, or nullptr if the key is not found.
+     * @throws nothing
+     */
+    const Property *getPtr(StringId key) const;
+
+    /**
      * @brief Check if a key exists in the dictionary.
      *
      * If the key is not found in the current dictionary, the search continues in the parent

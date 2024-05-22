@@ -31,7 +31,19 @@ const Property &ScopedDict::get(StringId key) const
     if (m_parent)
         return m_parent->get(key);
 
-    throw std::runtime_error{"Key not found: " + std::string(key)};
+    throw std::runtime_error{"Key not found"};
+}
+
+const Property *ScopedDict::getPtr(StringId key) const
+{
+    auto it = m_dict.find(key);
+    if (it != m_dict.end())
+        return &(it->second);
+
+    if (m_parent)
+        return m_parent->getPtr(key);
+
+    return nullptr;
 }
 
 bool ScopedDict::has(StringId key) const
