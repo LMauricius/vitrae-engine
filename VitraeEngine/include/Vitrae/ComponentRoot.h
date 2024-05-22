@@ -13,6 +13,9 @@
 #include <map>
 #include <memory>
 #include <span>
+#include <vector>
+
+class aiMesh;
 
 namespace Vitrae
 {
@@ -55,9 +58,9 @@ namespace Vitrae
         /**
         @return The component of a particular type T
         */
-        template <class T> T &getComponent()
+        template <class T> T &getComponent() const
         {
-            UniqueAnyPtr &myvar = getGenericStorageVariable<T>();
+            const UniqueAnyPtr &myvar = getGenericStorageVariable<T>();
             return *(myvar.get<T>());
         }
 
@@ -95,7 +98,7 @@ namespace Vitrae
         template <class aiType>
         std::span<const AiMeshBufferInfo<aiType>> getAiMeshBufferInfos() const
         {
-            auto &myvar = getMeshBufferInfoList<aiType>();
+            auto &myvar = this->getMeshBufferInfoList<aiType>();
             return std::span(myvar);
         }
 
@@ -106,7 +109,7 @@ namespace Vitrae
          */
         template <class aiType> void addAiMeshBufferInfo(const AiMeshBufferInfo<aiType> &newInfo)
         {
-            getMeshBufferInfoList<aiType>().push_back(newInfo);
+            this->getMeshBufferInfoList<aiType>().push_back(newInfo);
         }
 
         /*
@@ -145,15 +148,24 @@ namespace Vitrae
         */
         template <class T> UniqueAnyPtr &getGenericStorageVariable()
         {
+            return mCustomComponents[getClassID<T>()];
+        }
+        template <class T> const UniqueAnyPtr &getGenericStorageVariable() const
+        {
             return mCustomComponents.at(getClassID<T>());
         }
 
-        template <class aiType> using MeshBufferInfoList = std::vector<MeshBufferInfo<aiType>>;
+        template <class aiType> using MeshBufferInfoList = std::vector<AiMeshBufferInfo<aiType>>;
 
         template <class aiType> MeshBufferInfoList<aiType> &getMeshBufferInfoList()
         {
-            return m_aiMeshInfoLists.at(getClassID<MeshBufferInfoList<aiType>>())
-                .get<MeshBufferInfoList<aiType>>();
+            return *(m_aiMeshInfoLists[getClassID<MeshBufferInfoList<aiType>>()]
+                         .template get<MeshBufferInfoList<aiType>>());
+        }
+        template <class aiType> const MeshBufferInfoList<aiType> &getMeshBufferInfoList() const
+        {
+            return *(m_aiMeshInfoLists.at(getClassID<MeshBufferInfoList<aiType>>())
+                         .template get<MeshBufferInfoList<aiType>>());
         }
 
         std::map<size_t, UniqueAnyPtr> mCustomComponents;
