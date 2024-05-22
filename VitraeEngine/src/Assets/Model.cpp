@@ -1,8 +1,8 @@
 #include "Vitrae/Assets/Model.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Assets/Mesh.h"
 #include "Vitrae/Assets/Material.h"
-#include "Vitrae/Util/StringConvert.h"
+#include "Vitrae/Assets/Mesh.h"
+#include "Vitrae/ComponentRoot.h"
+#include "Vitrae/TypeConversion/StringConvert.h"
 
 #include "dynasma/keepers/abstract.hpp"
 
@@ -44,9 +44,7 @@ namespace Vitrae
             for (int i = 0; i < extScenePtr->mNumMaterials; i++)
             {
                 auto p_mat = matKeeper.new_asset({
-                    Material::AssimpLoadParams{
-                        *(extScenePtr->mMaterials[i]),
-                        params.root},
+                    Material::AssimpLoadParams{extScenePtr->mMaterials[i], params.root},
                 });
                 matById.emplace_back(p_mat);
             }
@@ -58,11 +56,10 @@ namespace Vitrae
             for (int i = 0; i < extScenePtr->mNumMeshes; i++)
             {
 
-                auto p_mesh = meshKeeper.new_asset({
-                                                       Mesh::AssimpLoadParams{
-                                                           *(extScenePtr->mMeshes[i]),
-                                                           params.root},
-                                                   })
+                auto p_mesh = meshKeeper
+                                  .new_asset({
+                                      Mesh::AssimpLoadParams{extScenePtr->mMeshes[i], params.root},
+                                  })
                                   .getLoaded();
 
                 // set material

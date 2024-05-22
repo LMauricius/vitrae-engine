@@ -27,7 +27,7 @@ namespace Vitrae
     public:
         struct AssimpLoadParams
         {
-            const aiMesh &extMesh;
+            const aiMesh *p_extMesh;
             ComponentRoot &root;
         };
 
@@ -40,7 +40,7 @@ namespace Vitrae
         virtual std::size_t memory_cost() const = 0;
     };
 
-    struct MeshKeeperSeed : NonCopyable
+    struct MeshKeeperSeed
     {
         using Asset = Mesh;
 

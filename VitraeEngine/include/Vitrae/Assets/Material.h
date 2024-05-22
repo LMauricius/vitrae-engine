@@ -19,7 +19,7 @@ namespace Vitrae
     public:
         struct AssimpLoadParams
         {
-            const aiMaterial &extMaterial;
+            const aiMaterial *p_extMaterial;
             ComponentRoot &root;
         };
 
@@ -34,7 +34,6 @@ namespace Vitrae
         using Asset = Material;
 
         std::variant<Material::AssimpLoadParams> kernel;
-        [[no_unique_address]] NonCopyable _ = {};
 
         inline std::size_t load_cost() const { return 1; }
     };
