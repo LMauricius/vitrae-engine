@@ -3,6 +3,8 @@
 #include "Vitrae/Pipelines/Task.h"
 #include "Vitrae/Util/ScopedDict.hpp"
 
+#include "dynasma/util/dynamic_typing.hpp"
+
 #include <functional>
 #include <vector>
 

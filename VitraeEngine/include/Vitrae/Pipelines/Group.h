@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Task.h"
+#include "dynasma/pointer.hpp"
 
+#include <vector>
 namespace Vitrae
 {
 

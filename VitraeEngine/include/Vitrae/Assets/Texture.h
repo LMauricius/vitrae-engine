@@ -22,6 +22,8 @@ namespace Vitrae
             ComponentRoot &root;
         };
 
+        virtual std::size_t memory_cost() const = 0;
+
         virtual ~Texture() = 0;
     };
 

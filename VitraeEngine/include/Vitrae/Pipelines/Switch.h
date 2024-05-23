@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Task.h"
+#include "dynasma/pointer.hpp"
 
 namespace Vitrae
 {
@@ -12,6 +13,7 @@ template <TaskChild BasicTask> class Switch : public BasicTask
   protected:
     std::map<SwitchEnumType, dynasma::FirmPtr<BasicTask>> m_taskMap;
     StringId m_selectionProperty;
+    PropertySpec m_selectionPropertySpec;
 
     void updateInputOutputProperties()
     {
@@ -26,13 +28,14 @@ template <TaskChild BasicTask> class Switch : public BasicTask
                                        pair.second->m_outputSpecs.end());
         }
 
-        m_inputSpecs.insert(m_selectionProperty);
+        this->m_inputSpecs.insert({m_selectionProperty, m_selectionPropertySpec});
     }
 
   public:
     Switch(std::map<SwitchEnumType, dynasma::FirmPtr<BasicTask>> taskMap,
-           StringId selectionProperty)
-        : m_taskMap(taskMap), m_selectionProperty(selectionProperty)
+           StringId selectionProperty, StringId selectionPropertySpec)
+        : m_taskMap(taskMap), m_selectionProperty(selectionProperty),
+          m_selectionPropertySpec(selectionPropertySpec)
     {
         updateInputOutputProperties();
     }
@@ -61,7 +64,7 @@ template <TaskChild BasicTask> class Switch : public BasicTask
     void removeOption(SwitchEnumType value)
     {
 
-        m_taskMap.erase(property);
+        m_taskMap.erase(value);
         updateInputOutputProperties();
     }
 

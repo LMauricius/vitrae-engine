@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Task.h"
+#include "dynasma/pointer.hpp"
 
 namespace Vitrae {
 template<TaskChild BasicTask>
@@ -15,17 +16,17 @@ class Filter : public BasicTask
 
   public:
     Filter(dynasma::FirmPtr<BasicTask> containedTask, StringId conditionProperty)
-        : m_containedTask(containedTask), m_conditionProperty(conditionProperty)
+        : m_task(containedTask), m_conditionProperty(conditionProperty)
     {
-        this->m_inputSpecs = m_containedTask->m_inputSpecs;
-        this->m_outputSpecs = m_containedTask->m_outputSpecs;
+        this->m_inputSpecs = m_task->m_inputSpecs;
+        this->m_outputSpecs = m_task->m_outputSpecs;
 
         if (this->m_inputSpecs != this->m_outputSpecs)
         {
             throw std::runtime_error("Input and output specs must be equal");
         }
 
-        this->m_inputSpecs.insert({m_conditionProperty, m_trueValue.type()});
+        this->m_inputSpecs.insert({m_conditionProperty, typeid(bool)});
   }
 
   ~Filter() = default;

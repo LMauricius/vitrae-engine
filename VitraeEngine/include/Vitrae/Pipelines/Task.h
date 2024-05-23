@@ -4,6 +4,8 @@
 #include "Vitrae/Util/Property.h"
 #include "Vitrae/Util/StringId.h"
 
+#include "dynasma/util/dynamic_typing.hpp"
+
 #include <map>
 #include <span>
 
