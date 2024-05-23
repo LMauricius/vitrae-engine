@@ -18,13 +18,13 @@ class StringId
     StringId(StringId &&) = default;
     StringId(const StringId &) = default;
 
-    inline bool operator=(StringId id);
+    bool operator=(StringId id);
 
-    inline bool operator==(StringId id) const;
-    inline bool operator!=(StringId id) const;
-    inline bool operator>=(StringId id) const;
-    inline bool operator<=(StringId id) const;
-    inline bool operator>(StringId id) const;
-    inline bool operator<(StringId id) const;
+    bool operator==(StringId id) const;
+    bool operator!=(StringId id) const;
+    bool operator>=(StringId id) const;
+    bool operator<=(StringId id) const;
+    bool operator>(StringId id) const;
+    bool operator<(StringId id) const;
 };
 } // namespace Vitrae
