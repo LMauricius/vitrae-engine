@@ -3,6 +3,7 @@
 #include <any>
 #include <sstream>
 #include <stdexcept>
+#include <string>
 #include <typeinfo>
 
 namespace Vitrae
@@ -26,6 +27,8 @@ class Property
         bool (*isEqual)(const Property &lhs, const Property &rhs);
         bool (*isLessThan)(const Property &lhs, const Property &rhs);
         bool (*toBool)(const Property &p);
+        std::string (*toString)(const Property &p);
+        std::size_t (*hash)(const Property &p);
     };
 
     /**
@@ -85,6 +88,44 @@ class Property
             table.toBool = [](const Property &p) -> bool {
                 std::stringstream ss;
                 ss << "operator bool is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        // operator (std::string)
+        if constexpr (requires(T v, std::stringstream ss) {
+                          { ss << v };
+                      })
+        {
+            table.toString = [](const Property &p) -> std::string {
+                std::stringstream ss;
+                ss << std::any_cast<T>(p.m_val);
+                return ss.str();
+            };
+        }
+        else
+        {
+            table.toString = [](const Property &p) -> std::string {
+                std::stringstream ss;
+                ss << "operator std::string is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        // hash function
+        if constexpr (requires(T v) {
+                          { std::hash<T>{}(v) } -> std::convertible_to<std::size_t>;
+                      })
+        {
+            table.hash = [](const Property &p) -> std::size_t {
+                return std::hash<T>{}(std::any_cast<T>(p.m_val));
+            };
+        }
+        else
+        {
+            table.hash = [](const Property &p) -> std::size_t {
+                std::stringstream ss;
+                ss << "std::hash is not implemented for type " << typeid(T).name();
                 throw std::runtime_error(ss.str());
             };
         }
@@ -183,5 +224,33 @@ class Property
     {
         return m_table->toBool(*this);
     }
+    /**
+     * @returns A string representation of the stored value.
+     * @throws std::runtime_error If the stored type is not convertible to std::string.
+     */
+    inline std::string toString() const
+    {
+        return m_table->toString(*this);
+    }
+    /**
+     * @returns A hash value for the stored value.
+     * @throws std::runtime_error If the stored type is not hashable.
+     */
+    inline std::size_t hash() const
+    {
+        return m_table->hash(*this) ^ (std::size_t)m_table;
+    }
 };
+
 } // namespace Vitrae
+
+namespace std
+{
+template <> struct hash<Vitrae::Property>
+{
+    size_t operator()(const Vitrae::Property &x) const
+    {
+        return x.hash();
+    }
+};
+} // namespace std
