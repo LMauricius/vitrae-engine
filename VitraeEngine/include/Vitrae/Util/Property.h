@@ -1,6 +1,7 @@
 #pragma once
 
 #include <any>
+#include <cstdlib>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -8,48 +9,288 @@
 
 namespace Vitrae
 {
-using PropertySpec = std::type_info;
+
+class Variant;
+
+/**
+ * A structure that contains type info and function pointers to compare and convert properties.
+ * Used to implement type-specific functionality in a generic way.
+ * Similar to a vtable, except for Variant type
+ */
+class VariantVTable
+{
+    friend Variant;
+
+    bool hasShortObjectOptimization; // prefer first place in memory
+
+  public:
+    const std::type_info *p_id;
+    std::size_t sizeof_v;
+
+    constexpr VariantVTable() = default;
+    constexpr VariantVTable(const VariantVTable &) = default;
+    constexpr VariantVTable(VariantVTable &&) = default;
+    constexpr ~VariantVTable() = default;
+
+    // comparisons (just compare type_info)
+    constexpr bool operator==(const VariantVTable &o) const { return *p_id == *o.p_id; }
+    constexpr bool operator!=(const VariantVTable &o) const { return *p_id != *o.p_id; }
+    inline bool operator<(const VariantVTable &o) const { return p_id->before(*o.p_id); }
+    inline bool operator>(const VariantVTable &o) const { return !operator<=(o); }
+    inline bool operator<=(const VariantVTable &o) const { return operator<(o) || operator==(o); }
+    inline bool operator>=(const VariantVTable &o) const { return !operator<(o); }
+
+  protected:
+    // memory management
+    void (*emptyConstructor)(Variant &self);
+    void (*copyConstructor)(Variant &self, const Variant &other);
+    void (*moveConstructor)(Variant &self, Variant &other);
+    void (*destructor)(Variant &self);
+
+    // type comparison functions
+    bool (*isEqual)(const Variant &lhs, const Variant &rhs);
+    bool (*isLessThan)(const Variant &lhs, const Variant &rhs);
+
+    // type conversions
+    bool (*toBool)(const Variant &p);
+    std::string (*toString)(const Variant &p);
+    std::size_t (*hash)(const Variant &p);
+};
+
+using TypeInfo = VariantVTable const;
 
 /**
  * @brief A class that allows you to store and retrieve properties of any type.
  * @note Functionally similar to std::any, except with dynamic comparison method support
  */
-class Property
+class Variant
 {
+  public:
+    // static functions
 
     /**
-     * A structure that contains function pointers to compare and convert properties.
-     * Used to implement type-specific functionality in a generic way.
-     * Similar to a vtable, except for any type
+     * @returns a compile-time reference to the PropertyFuncTable for the specified type.
      */
-    struct PropertyFuncTable
+    template <class T> static constexpr TypeInfo &getTypeInfo() { return V_TABLE<std::decay_t<T>>; }
+
+    // constructors
+
+    /// @brief default constructor
+    Variant() : m_val(), m_table(&V_TABLE<void>) {}
+
+    /// @brief constructor with a value
+    template <class T> Variant(T val) : m_table(&V_TABLE<std::decay_t<T>>)
     {
-        bool (*isEqual)(const Property &lhs, const Property &rhs);
-        bool (*isLessThan)(const Property &lhs, const Property &rhs);
-        bool (*toBool)(const Property &p);
-        std::string (*toString)(const Property &p);
-        std::size_t (*hash)(const Property &p);
-    };
+        allocateBuffer<T>();
+        new (&get<T>()) T(val);
+    }
+    /// @brief copy constructor
+    inline Variant(const Variant &other) : m_table(other.m_table)
+    {
+        allocateNBuffer(m_table->sizeof_v);
+        m_table->copyConstructor(*this, other);
+    }
+    /// @brief move constructor
+    inline Variant(Variant &&other) : m_val(std::move(other.m_val)), m_table(other.m_table)
+    {
+        other.m_table = &V_TABLE<void>;
+    }
+
+    // assignment operators
+
+    /// @brief assignment operator with a value
+    template <class T> Variant &operator=(T val)
+    {
+        m_table->destructor(*this);
+
+        reallocateBuffer<T>();
+
+        m_table = &V_TABLE<std::decay_t<T>>;
+        new (&get<T>()) T(val);
+
+        return *this;
+    }
+    /// @brief assignment operator
+    inline Variant &operator=(const Variant &other)
+    {
+        m_table->destructor(*this);
+
+        allocateNBuffer(other.m_table->sizeof_v);
+
+        m_table = other.m_table;
+        m_table->copyConstructor(*this, other);
+
+        return *this;
+    }
+    /// @brief move assignment
+    inline Variant &operator=(Variant &&other)
+    {
+        m_val = std::move(other.m_val);
+        m_table = other.m_table;
+        other.m_table = &V_TABLE<void>;
+
+        return *this;
+    }
+
+    // getter
+
+    /**
+     * @tparam T The type to retrieve the value as.
+     * @return The value stored  as type `T`.
+     * @throws std::bad_any_cast If the stored value isn't of exact type `T`.
+     */
+    template <class T> constexpr T &get()
+    {
+        return *reinterpret_cast<T *>(V_TABLE<std::decay_t<T>>.hasShortObjectOptimization
+                                          ? (void *)m_val.m_shortBufferVal
+                                          : m_val.mp_longVal);
+    }
+    template <class T> constexpr const T &get() const
+    {
+        return *reinterpret_cast<const T *>(V_TABLE<std::decay_t<T>>.hasShortObjectOptimization
+                                                ? (const void *)m_val.m_shortBufferVal
+                                                : m_val.mp_longVal);
+    }
+
+    // comparison operators
+
+    /**
+     * @param other The Variant object to compare with.
+     * @return Whether the two Variant objects are equal.
+     * @throws std::bad_any_cast If the two Variant objects have different types.
+     * @throws std::runtime_error If the stored type is not comparable.
+     */
+    constexpr bool operator==(const Variant &o) const { return m_table->isEqual(*this, o); }
+    /**
+     * @param other The Variant object to compare with.
+     * @return Whether the first Variant object is less than the second.
+     * @throws std::bad_any_cast If the two Variant objects have different types.
+     * @throws std::runtime_error If the stored type is not comparable.
+     */
+    constexpr bool operator<(const Variant &o) const { return m_table->isLessThan(*this, o); }
+    /**
+     * @return Whether the stored value is truthy.
+     * @throws std::runtime_error If the stored type is not convertible to bool.
+     */
+    constexpr operator bool() const { return m_table->toBool(*this); }
+    /**
+     * @returns A string representation of the stored value.
+     * @throws std::runtime_error If the stored type is not convertible to std::string.
+     */
+    constexpr std::string toString() const { return m_table->toString(*this); }
+    /**
+     * @returns A hash value for the stored value.
+     * @throws std::runtime_error If the stored type is not hashable.
+     */
+    constexpr std::size_t hash() const { return m_table->hash(*this) ^ (std::size_t)m_table; }
+
+  private:
+    // member variables
+
+    /**
+     * Underlying storage for any type
+     */
+    union {
+        void *mp_longVal;
+        char m_shortBufferVal[sizeof(void *)];
+    } m_val;
+    /**
+     * Pointer to the function table
+     */
+    const VariantVTable *m_table;
+
+    // vtable variable and function
+
+    /**
+     * @brief Contains a PropertyFuncTable with the function pointers for the specified type.
+     */
+    template <class T> static constexpr VariantVTable V_TABLE = makeVTable<T>();
 
     /**
      * @brief Creates a PropertyFuncTable with the function pointers for the specified type.
      */
-    template <class T> static constexpr PropertyFuncTable makeTable()
+    template <class T> static constexpr VariantVTable makeVTable()
     {
-        PropertyFuncTable table;
+        VariantVTable table;
+
+        // internal
+        if constexpr (requires {
+                          { sizeof T };
+                          { alignof T };
+                      })
+        {
+            table.hasShortObjectOptimization =
+                (sizeof(T) <= sizeof(decltype(Variant::m_val)::m_shortBufferVal) &&
+                 alignof(T) <= alignof(Variant::m_val));
+            table.sizeof_v = sizeof(T);
+        }
+        else
+        {
+            table.hasShortObjectOptimization = true;
+            table.sizeof_v = 0;
+        }
+
+        // public info
+        table.p_id = &typeid(T);
+
+        // memory management
+
+        // empty constructor
+        if constexpr (requires { new T(); })
+        {
+            table.emptyConstructor = [](Variant &self) { new (&self.get<T>())() };
+        }
+        else
+        {
+            table.emptyConstructor = [](Variant &self) {};
+        }
+
+        // copy constructor
+        if constexpr (requires { new T(const T &); })
+        {
+            table.copyConstructor = [](Variant &self, const Variant &other) {
+                new (&self.get<T>())(other.get<T>());
+            };
+        }
+        else
+        {
+            table.copyConstructor = [](Variant &self, const Variant &other) {};
+        }
+
+        // move constructor
+        if constexpr (requires { new T(T &&); })
+        {
+            table.moveConstructor = [](Variant &self, Variant &other) {
+                new (&self.get<T>())(std::move(other.get<T>()));
+            };
+        }
+        else
+        {
+            table.moveConstructor = [](Variant &self, Variant &other) {};
+        }
+
+        // destructor
+        if constexpr (requires(T v) { v.~T(); })
+        {
+            table.destructor = [](Variant &self) { self.get<T>().~T(); };
+        }
+        else
+        {
+            table.destructor = [](Variant &self) {};
+        }
 
         // operator==
         if constexpr (requires(T lhs, T rhs) {
                           { lhs == rhs } -> std::convertible_to<bool>;
                       })
         {
-            table.isEqual = [](const Property &lhs, const Property &rhs) -> bool {
+            table.isEqual = [](const Variant &lhs, const Variant &rhs) -> bool {
                 return (bool)(std::any_cast<T>(lhs.m_val) == std::any_cast<T>(rhs.m_val));
             };
         }
         else
         {
-            table.isEqual = [](const Property &lhs, const Property &rhs) -> bool {
+            table.isEqual = [](const Variant &lhs, const Variant &rhs) -> bool {
                 std::stringstream ss;
                 ss << "operator== is not implemented for type " << typeid(T).name();
                 throw std::runtime_error(ss.str());
@@ -61,13 +302,13 @@ class Property
                           { lhs < rhs } -> std::convertible_to<bool>;
                       })
         {
-            table.isLessThan = [](const Property &lhs, const Property &rhs) -> bool {
+            table.isLessThan = [](const Variant &lhs, const Variant &rhs) -> bool {
                 return (bool)(std::any_cast<T>(lhs.m_val) < std::any_cast<T>(rhs.m_val));
             };
         }
         else
         {
-            table.isLessThan = [](const Property &lhs, const Property &rhs) -> bool {
+            table.isLessThan = [](const Variant &lhs, const Variant &rhs) -> bool {
                 std::stringstream ss;
                 ss << "operator< is not implemented for type " << typeid(T).name();
                 throw std::runtime_error(ss.str());
@@ -79,13 +320,13 @@ class Property
                           { bool(v) } -> std::convertible_to<bool>;
                       })
         {
-            table.toBool = [](const Property &p) -> bool {
+            table.toBool = [](const Variant &p) -> bool {
                 return (bool)(std::any_cast<T>(p.m_val));
             };
         }
         else
         {
-            table.toBool = [](const Property &p) -> bool {
+            table.toBool = [](const Variant &p) -> bool {
                 std::stringstream ss;
                 ss << "operator bool is not implemented for type " << typeid(T).name();
                 throw std::runtime_error(ss.str());
@@ -97,7 +338,7 @@ class Property
                           { ss << v };
                       })
         {
-            table.toString = [](const Property &p) -> std::string {
+            table.toString = [](const Variant &p) -> std::string {
                 std::stringstream ss;
                 ss << std::any_cast<T>(p.m_val);
                 return ss.str();
@@ -105,7 +346,7 @@ class Property
         }
         else
         {
-            table.toString = [](const Property &p) -> std::string {
+            table.toString = [](const Variant &p) -> std::string {
                 std::stringstream ss;
                 ss << "operator std::string is not implemented for type " << typeid(T).name();
                 throw std::runtime_error(ss.str());
@@ -117,13 +358,13 @@ class Property
                           { std::hash<T>{}(v) } -> std::convertible_to<std::size_t>;
                       })
         {
-            table.hash = [](const Property &p) -> std::size_t {
+            table.hash = [](const Variant &p) -> std::size_t {
                 return std::hash<T>{}(std::any_cast<T>(p.m_val));
             };
         }
         else
         {
-            table.hash = [](const Property &p) -> std::size_t {
+            table.hash = [](const Variant &p) -> std::size_t {
                 std::stringstream ss;
                 ss << "std::hash is not implemented for type " << typeid(T).name();
                 throw std::runtime_error(ss.str());
@@ -133,112 +374,68 @@ class Property
         return table;
     }
 
-    /**
-     * @returns a compile-time reference to the PropertyFuncTable for the specified type.
-     */
-    template <class T> static const PropertyFuncTable &getTableConstant()
+    // buffer management
+
+    void freeBuffer()
     {
-        static constexpr PropertyFuncTable table = makeTable<T>();
-        return table;
+        if (!m_table->hasShortObjectOptimization)
+        {
+            std::free(m_val.mp_longVal);
+        }
     }
 
-    /**
-     * Underlying storage for any type
-     */
-    std::any m_val;
-    /**
-     * Pointer to the function table
-     */
-    const PropertyFuncTable *m_table;
-
-  public:
-    Property() : m_val(), m_table(&getTableConstant<void>())
+    constexpr void reallocateNBuffer(std::size_t size)
     {
+        if (!m_table->hasShortObjectOptimization)
+        {
+            if (size > sizeof(m_val.m_shortBufferVal))
+            {
+                std::realloc(m_val.mp_longVal, size);
+            }
+            else
+            {
+                std::free(m_val.mp_longVal);
+            }
+        }
+        else
+        {
+            if (size > sizeof(m_val.m_shortBufferVal))
+            {
+                m_val.mp_longVal = std::malloc(size);
+            }
+        }
     }
 
-    template <class T>
-    Property(T val) : m_val(std::decay(val)), m_table(&getTableConstant<std::decay_t<T>>())
+    constexpr void allocateNBuffer(std::size_t size)
     {
-    }
-    inline Property(const Property &other) : m_val(other.m_val), m_table(other.m_table)
-    {
-    }
-    inline Property(Property &&other) : m_val(std::move(other.m_val)), m_table(other.m_table)
-    {
+        if (size > sizeof(m_val.m_shortBufferVal))
+        {
+            m_val.mp_longVal = std::malloc(size);
+        }
     }
 
-    template <class T> Property &operator=(T val)
+    template <class T> void reallocateBuffer()
     {
-        m_val = val;
-        m_table = &getTableConstant<std::decay_t<T>>();
-        return *this;
-    }
-    inline Property &operator=(const Property &other)
-    {
-        m_val = other.m_val;
-        m_table = other.m_table;
-        return *this;
-    }
-    inline Property &operator=(Property &&other)
-    {
-        m_val = std::move(other.m_val);
-        m_table = other.m_table;
-        return *this;
+        if constexpr (requires { sizeof T; })
+        {
+            reallocateNBuffer(sizeof T);
+        }
+        else
+        {
+            reallocateNBuffer(0);
+        }
     }
 
-    /**
-     * @tparam T The type to retrieve the value as.
-     * @return The value stored in the `std::any` object as type `T`.
-     * @throws std::bad_any_cast If the stored value isn't of exact type `T`.
-     */
-    template <class T> T get() const
+    template <class T> void allocateBuffer()
     {
-        return std::any_cast<T>(m_val);
-    }
-
-    /**
-     * @param other The Property object to compare with.
-     * @return Whether the two Property objects are equal.
-     * @throws std::bad_any_cast If the two Property objects have different types.
-     * @throws std::runtime_error If the stored type is not comparable.
-     */
-    inline bool operator==(const Property &other) const
-    {
-        return m_table->isEqual(*this, other);
-    }
-    /**
-     * @param other The Property object to compare with.
-     * @return Whether the first Property object is less than the second.
-     * @throws std::bad_any_cast If the two Property objects have different types.
-     * @throws std::runtime_error If the stored type is not comparable.
-     */
-    inline bool operator<(const Property &other) const
-    {
-        return m_table->isLessThan(*this, other);
-    }
-    /**
-     * @return Whether the stored value is truthy.
-     * @throws std::runtime_error If the stored type is not convertible to bool.
-     */
-    inline operator bool() const
-    {
-        return m_table->toBool(*this);
-    }
-    /**
-     * @returns A string representation of the stored value.
-     * @throws std::runtime_error If the stored type is not convertible to std::string.
-     */
-    inline std::string toString() const
-    {
-        return m_table->toString(*this);
-    }
-    /**
-     * @returns A hash value for the stored value.
-     * @throws std::runtime_error If the stored type is not hashable.
-     */
-    inline std::size_t hash() const
-    {
-        return m_table->hash(*this) ^ (std::size_t)m_table;
+        if constexpr (requires { sizeof T; })
+        {
+            allocateNBuffer(sizeof T);
+        }
+        else
+        {
+            allocateNBuffer(0);
+        }
     }
 };
 
@@ -246,11 +443,8 @@ class Property
 
 namespace std
 {
-template <> struct hash<Vitrae::Property>
+template <> struct hash<Vitrae::Variant>
 {
-    size_t operator()(const Vitrae::Property &x) const
-    {
-        return x.hash();
-    }
+    size_t operator()(const Vitrae::Variant &x) const { return x.hash(); }
 };
 } // namespace std
