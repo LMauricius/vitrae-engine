@@ -9,22 +9,36 @@ namespace Vitrae
  */
 class StringId
 {
+    friend std::hash<StringId>;
+
     std::size_t m_hash;
 
   public:
-    StringId(const char *str);
-    StringId(const std::string &str);
-    StringId(const std::string_view str);
-    StringId(StringId &&) = default;
-    StringId(const StringId &) = default;
+    constexpr StringId(const char *str) : m_hash{std::hash<std::string_view>{}(str)} {}
+    constexpr StringId(const std::string &str) : m_hash{std::hash<std::string_view>{}(str)} {}
+    constexpr StringId(const std::string_view str) : m_hash{std::hash<std::string_view>{}(str)} {}
+    constexpr StringId(StringId &&)      = default;
+    constexpr StringId(const StringId &) = default;
 
-    bool operator=(StringId id);
+    constexpr StringId &operator=(StringId id)
+    {
+        m_hash = id.m_hash;
+        return *this;
+    }
 
-    bool operator==(StringId id) const;
-    bool operator!=(StringId id) const;
-    bool operator>=(StringId id) const;
-    bool operator<=(StringId id) const;
-    bool operator>(StringId id) const;
-    bool operator<(StringId id) const;
+    constexpr bool operator==(StringId id) const { return m_hash == id.m_hash; }
+    constexpr bool operator!=(StringId id) const { return m_hash != id.m_hash; }
+    constexpr bool operator>=(StringId id) const { return m_hash >= id.m_hash; }
+    constexpr bool operator<=(StringId id) const { return m_hash <= id.m_hash; }
+    constexpr bool operator>(StringId id) const { return m_hash > id.m_hash; }
+    constexpr bool operator<(StringId id) const { return m_hash < id.m_hash; }
 };
 } // namespace Vitrae
+
+namespace std
+{
+template <> struct hash<Vitrae::StringId>
+{
+    size_t operator()(const Vitrae::StringId &x) const { return x.m_hash; }
+};
+} // namespace std
