@@ -19,16 +19,16 @@ OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
     OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(params.root.getComponent<Renderer>());
 
     // prepare vertices
-    mTriangles.resize(params.extMesh.mNumFaces);
+    mTriangles.resize(params.p_extMesh->mNumFaces);
 
     // load triangles
-    if (params.extMesh.HasFaces())
+    if (params.p_extMesh->HasFaces())
     {
-        for (int i = 0; i < params.extMesh.mNumFaces; i++)
+        for (int i = 0; i < params.p_extMesh->mNumFaces; i++)
         {
-            for (int j = 0; j < params.extMesh.mFaces[i].mNumIndices; j++)
+            for (int j = 0; j < params.p_extMesh->mFaces[i].mNumIndices; j++)
             {
-                mTriangles[i].ind[j] = params.extMesh.mFaces[i].mIndices[j];
+                mTriangles[i].ind[j] = params.p_extMesh->mFaces[i].mIndices[j];
             }
         }
     }
@@ -42,16 +42,16 @@ OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
             {
                 // get buffers
                 std::size_t layoutInd = rend.getVertexBufferLayoutIndex(info.name);
-                const aiType *src = info.extractor(params.extMesh);
+                const aiType *src = info.extractor(*params.p_extMesh);
                 GLuint &vbo = VBOs[layoutInd];
 
                 // fill buffers
                 if (src != nullptr)
                 {
                     std::valarray<glmType> &buffer = namedBuffers[info.name];
-                    buffer.resize(params.extMesh.mNumVertices);
+                    buffer.resize(params.p_extMesh->mNumVertices);
 
-                    for (int i = 0; i < params.extMesh.mNumVertices; i++)
+                    for (int i = 0; i < params.p_extMesh->mNumVertices; i++)
                     {
                         buffer[i] = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
