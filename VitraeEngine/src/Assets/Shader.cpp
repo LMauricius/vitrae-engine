@@ -31,9 +31,9 @@ std::size_t Shader::memory_cost() const
 }
 
 dynasma::FirmPtr<CompiledShader> Shader::compile(const ScopedDict &properties,
-                                                 const ComponentRoot &root) const
+                                                 ComponentRoot &root) const
 {
-    std::map<StringId, Property> relevantProperties;
+    std::map<StringId, Variant> relevantProperties;
     for (auto &name : m_inputParamNames)
     {
         if (auto propPtr = properties.getPtr(name))
@@ -41,16 +41,40 @@ dynasma::FirmPtr<CompiledShader> Shader::compile(const ScopedDict &properties,
             relevantProperties.insert({name, *propPtr});
         }
     }
-    return root.getComponent<CompiledShaderCacher>().retrieve_asset(
-        {ShaderCompilationParams(m_vertexTask, m_fragmentTask, std::move(relevantProperties))});
+    return root.getComponent<CompiledShaderCacher>().retrieve_asset({ShaderCompilationParams(
+        m_vertexTask, m_fragmentTask, std::move(relevantProperties), root)});
 }
 
 ShaderCompilationParams::ShaderCompilationParams(dynasma::FirmPtr<ShaderTask> vertexTask,
                                                  dynasma::FirmPtr<ShaderTask> fragmentTask,
-                                                 std::map<StringId, Property> &&compileParameters)
+                                                 std::map<StringId, Variant> &&compileParameters,
+                                                 ComponentRoot &root)
     : m_vertexTask(vertexTask), m_fragmentTask(fragmentTask),
-      m_compileParameters(std::move(compileParameters))
+      m_compileParameters(std::move(compileParameters)), m_root(root)
 {
+    updateHash();
+}
+
+void ShaderCompilationParams::updateHash()
+{
+    m_hash = 0;
+
+    auto add_hash = [&]<typename T>(const T &val) {
+        std::hash<T> hasher;
+        m_hash ^= hasher(val) + 0x9e3779b9 + (m_hash << 6) + (m_hash >> 2);
+    };
+
+    add_hash(&*m_vertexTask);
+    add_hash(&*m_fragmentTask);
+
+    add_hash(m_compileParameters.size());
+    for (auto [name, val] : m_compileParameters)
+    {
+        add_hash(name);
+        add_hash(val);
+    }
+
+    add_hash(&m_root);
 }
 
 } // namespace Vitrae

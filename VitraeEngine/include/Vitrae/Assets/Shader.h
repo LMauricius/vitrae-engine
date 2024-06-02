@@ -16,6 +16,8 @@
 namespace Vitrae
 {
 
+class Renderer;
+
 /**
  * @brief The CompiledShader class is a base class for all compiled shaders.
  * An instance of this class is returned by calls to Shader::compile().
@@ -53,7 +55,7 @@ class Shader : public dynasma::PolymorphicBase
     std::size_t memory_cost() const;
 
     dynasma::FirmPtr<CompiledShader> compile(const ScopedDict &properties,
-                                             const ComponentRoot &root) const;
+                                             ComponentRoot &root) const;
 };
 
 struct ShaderManagerSeed
@@ -74,14 +76,17 @@ class ShaderCompilationParams
 {
     dynasma::FirmPtr<ShaderTask> m_vertexTask;
     dynasma::FirmPtr<ShaderTask> m_fragmentTask;
-    std::map<StringId, Property> m_compileParameters;
+    std::map<StringId, Variant> m_compileParameters;
+    ComponentRoot &m_root;
 
     std::size_t m_hash;
+
+    void updateHash();
 
   public:
     ShaderCompilationParams(dynasma::FirmPtr<ShaderTask> vertexTask,
                             dynasma::FirmPtr<ShaderTask> fragmentTask,
-                            std::map<StringId, Property> &&compileParameters);
+                            std::map<StringId, Variant> &&compileParameters, ComponentRoot &root);
 
     ShaderCompilationParams(const ShaderCompilationParams &) = default;
     ShaderCompilationParams(ShaderCompilationParams &&) = default;
@@ -92,6 +97,18 @@ class ShaderCompilationParams
     {
         return m_hash < other.m_hash;
     };
+
+    inline dynasma::FirmPtr<ShaderTask> getVertexTask() const { return m_vertexTask; }
+    inline dynasma::FirmPtr<ShaderTask> getFragmentTask() const { return m_fragmentTask; }
+
+    inline const std::map<StringId, Variant> &getCompileParameters() const
+    {
+        return m_compileParameters;
+    }
+
+    inline ComponentRoot &getRoot() const { return m_root; }
+
+    inline std::size_t getHash() const { return m_hash; }
 };
 
 struct CompiledShaderCacherSeed
