@@ -19,7 +19,7 @@ namespace Vitrae
 class ScopedDict
 {
     const ScopedDict *m_parent;
-    std::map<StringId, Property> m_dict;
+    std::map<StringId, Variant> m_dict;
 
   public:
     /**
@@ -46,7 +46,7 @@ class ScopedDict
      * @param key The key.
      * @param value The value.
      */
-    void set(StringId key, const Property &value);
+    void set(StringId key, const Variant &value);
 
     /**
      * @brief Set a key-value pair in the dictionary using move semantics.
@@ -56,7 +56,7 @@ class ScopedDict
      * @param key The key.
      * @param value The value, moved into the dictionary.
      */
-    void set(StringId key, Property &&value);
+    void set(StringId key, Variant &&value);
 
     /**
      * @brief Get the value associated with a key.
@@ -68,7 +68,7 @@ class ScopedDict
      * @return The value associated with the key.
      * @throws std::runtime_error If the key is not found in any dictionary.
      */
-    const Property &get(StringId key) const;
+    const Variant &get(StringId key) const;
 
     /**
      * @brief Get the value associated with a key.
@@ -80,7 +80,7 @@ class ScopedDict
      * @return The value associated with the key, or nullptr if the key is not found.
      * @throws nothing
      */
-    const Property *getPtr(StringId key) const;
+    const Variant *getPtr(StringId key) const;
 
     /**
      * @brief Check if a key exists in the dictionary.

@@ -27,10 +27,16 @@ class VariantVTable
     const std::type_info *p_id;
     std::size_t sizeof_v;
 
-    constexpr VariantVTable() = default;
-    constexpr VariantVTable(const VariantVTable &) = default;
-    constexpr VariantVTable(VariantVTable &&) = default;
-    constexpr ~VariantVTable() = default;
+    constexpr VariantVTable()
+        : p_id(nullptr), sizeof_v(0), hasShortObjectOptimization(false), emptyConstructor(nullptr),
+          copyConstructor(nullptr), moveConstructor(nullptr), destructor(nullptr), isEqual(nullptr),
+          isLessThan(nullptr), toBool(nullptr), toString(nullptr), hash(nullptr){};
+    constexpr VariantVTable(const VariantVTable &) = delete;
+    constexpr VariantVTable(VariantVTable &&) = delete;
+    ~VariantVTable() = default;
+
+    VariantVTable &operator=(const VariantVTable &) = delete;
+    VariantVTable &operator=(VariantVTable &&) = delete;
 
     // comparisons (just compare type_info)
     constexpr bool operator==(const VariantVTable &o) const { return *p_id == *o.p_id; }
@@ -57,7 +63,7 @@ class VariantVTable
     std::size_t (*hash)(const Variant &p);
 };
 
-using TypeInfo = VariantVTable const;
+using TypeInfo = VariantVTable;
 
 /**
  * @brief A class that allows you to store and retrieve properties of any type.
