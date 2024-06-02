@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vitrae/Assets/Shader.h"
 #include "Vitrae/Types/Typedefs.h"
 #include "Vitrae/Util/Property.h"
 
@@ -11,48 +12,25 @@
 
 namespace Vitrae
 {
-    class OpenGLRenderer;
-    class ShaderStep;
-    class AssetRoot;
+class OpenGLRenderer;
+class ShaderStep;
+class AssetRoot;
 
-    class GLSLShader
+class CompiledGLSLShader : public CompiledShader
+{
+  public:
+    struct VariableSpec
     {
-    public:
-        struct OutputData
-        {
-            dynasma::LazyPtr<ShaderStep> mainStep;
-            std::set<String> inputPropertyNames;
-            std::map<String, VariantPropertySpec> inputVariableNames;
-            std::map<String, VariantPropertySpec> outputVariableNames;
-        };
-
-        GLSLShader();
-        ~GLSLShader();
-
-        void setOutputStep(const String &outputName, dynasma::LazyPtr<ShaderStep> step);
-        const OutputData &getOutputData(const String& outputName) const;
-
-    protected:
-        std::map<String, OutputData> mNamedOutputData;
+        const TypeInfo &srcSpec;
+        GLint glNameId;
     };
 
-    struct CompiledGLSLProgram
-    {
-        struct UniformSpec
-        {
-            VariantPropertySpec srcSpec;
-            GLint uniformGLName;
-        };
-        GLuint programGLName;
-        std::map<String, UniformSpec> uniformSpecs;
+    CompiledGLSLShader(const ShaderCompilationParams &params);
+    ~CompiledGLSLShader();
 
-        CompiledGLSLProgram(
-            const GLSLShader::OutputData &geom, const GLSLShader::OutputData &vertex, const GLSLShader::OutputData &fragment,
-            const std::map<String, VariantProperty> &properties,
-            const OpenGLRenderer &rend, AssetRoot &resRoot);
-        ~CompiledGLSLProgram();
-
-
-    };
-    
-}
+    GLuint programGLName;
+    std::map<StringId, VariableSpec> uniformSpecs;
+    std::map<StringId, VariableSpec> uboSpecs;
+    std::map<StringId, VariableSpec> ssboSpecs;
+};
+} // namespace Vitrae

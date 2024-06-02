@@ -13,7 +13,7 @@ namespace Vitrae
 
 struct ShaderBuildContext
 {
-    std::ostringstream &output;
+    std::stringstream &output;
 };
 
 struct ShaderRunContext
@@ -30,12 +30,12 @@ class ShaderTask : public Task
 {
   protected:
   public:
-    virtual void outputDeclarationCode(ShaderBuildContext args) = 0;
-    virtual void outputDefinitionCode(ShaderBuildContext args) = 0;
+    virtual void outputDeclarationCode(ShaderBuildContext args) const = 0;
+    virtual void outputDefinitionCode(ShaderBuildContext args) const = 0;
     virtual void outputUsageCode(
-        ShaderBuildContext args, const std::map<StringId, StringId> &inputParamsToSharedVariables,
-        const std::map<StringId, StringId> &outputParamsToSharedVariables) = 0;
-    virtual void hookSetupFunctions(ShaderSetupContext args) = 0;
+        ShaderBuildContext args, const std::map<StringId, String> &inputParamsToSharedVariables,
+        const std::map<StringId, String> &outputParamsToSharedVariables) const = 0;
+    virtual void hookSetupFunctions(ShaderSetupContext args) const = 0;
 };
 
 } // namespace Vitrae

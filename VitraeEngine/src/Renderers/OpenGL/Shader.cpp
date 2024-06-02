@@ -1,359 +1,412 @@
 #include "Vitrae/Renderers/OpenGL/Shader.h"
-#include "Vitrae/Renderers/OpenGL.h"
-#include "Vitrae/Assets/ShaderSteps/Source.h"
-#include "Vitrae/Util/StringConvert.h"
 #include "Vitrae/ComponentRoot.h"
+#include "Vitrae/Renderers/OpenGL.h"
 
 #include <fstream>
 
 namespace Vitrae
 {
 
-    GLSLShader::GLSLShader()
+CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
+{
+    ComponentRoot &root = params.getRoot();
+    OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(root.getComponent<Renderer>());
+
+    // util lambdas
+    auto specToGlName = [&](const TypeInfo *p_type) -> std::string_view {
+        return rend.getGlTypeSpec(*p_type).glslName;
+    };
+
+    // uniforms are global variables given to all shader steps
+    String uniVarPrefix = "uniform_";
+    std::map<StringId, PropertySpec> uniformVarSpecs;
+
+    // mesh vertex element data is given to the vertex shader and passed through to other steps
+    String elemVarPrefix = "vertex_";
+    std::map<StringId, PropertySpec> elemVarSpecs;
+
+    struct CompilationHelp
     {
+        // the specified ShaderTask
+        dynasma::FirmPtr<ShaderTask> p_task;
+        std::vector<const ShaderTask *> subTaskPtrSet;
 
-    }
+        // prefix for output variables
+        String outVarPrefix;
 
-    GLSLShader::~GLSLShader()
+        // input variables are those required by the ShaderStep.
+        // Can be uniforms, layout vars or GLSL inputs from a previous step
+        const std::map<StringId, PropertySpec> &inVarSpecs;
+
+        // output variables are those returned by the ShaderStep. Always passed as GLSL outputs
+        const std::map<StringId, PropertySpec> &outVarSpecs;
+
+        // pipethrough variables are those that are just passed from inputs to outputs,
+        // bypassing the ShaderStep. Always passed as GLSL outputs
+        std::map<StringId, PropertySpec> pipethroughVarSpecs;
+
+        // gl shader type
+        GLenum shaderType;
+
+        // id of the compiled shader
+        GLuint shaderId;
+    };
+
+    CompilationHelp vertexHelper{.p_task = params.getVertexTask(),
+                                 .outVarPrefix = "fragment_",
+                                 .inVarSpecs = params.getVertexTask()->getInputSpecs(),
+                                 .outVarSpecs = params.getVertexTask()->getOutputSpecs(),
+                                 .shaderType = GL_VERTEX_SHADER};
+
+    CompilationHelp fragHelper{.p_task = params.getFragmentTask(),
+                               .outVarPrefix = "shaded_",
+                               .inVarSpecs = params.getFragmentTask()->getInputSpecs(),
+                               .outVarSpecs = params.getFragmentTask()->getOutputSpecs(),
+                               .shaderType = GL_FRAGMENT_SHADER};
+
+    CompilationHelp *(helperOrder[]) = {&vertexHelper, &fragHelper};
+    CompilationHelp *(invHelperOrder[]) = {&fragHelper, &vertexHelper};
+
+    // extract sub tasks so that each appears once
+    for (auto p_helper : helperOrder)
     {
+        std::set<dynasma::LazyPtr<Task>> abstractTaskSet;
+        p_helper->p_task->extractSubTasks(abstractTaskSet);
+        abstractTaskSet.insert(p_helper->p_task);
 
-    }
-    
-    void GLSLShader::setOutputStep(const String& outputName, casted_asset_ptr<ShaderStep> step)
-    {
-        auto insRes = mNamedOutputData.insert_or_assign(outputName, OutputData{
-            step,
-            {},
-            {},
-            {}
-        });
-
-        OutputData &od = insRes.first->second;
-        step->extractInputPropertyNames(od.inputPropertyNames);
-        step->extractInputVariableNames(od.inputVariableNames);
-        step->extractOutputVariableNames(od.outputVariableNames);
-    }
-
-    const GLSLShader::OutputData &GLSLShader::getOutputData(const String& outputName) const
-    {
-        return mNamedOutputData.at(outputName);
-    }
-
-    CompiledGLSLProgram::CompiledGLSLProgram(
-        const GLSLShader::OutputData &geom, const GLSLShader::OutputData &vertex, const GLSLShader::OutputData &fragment,
-        const std::map<String, VariantProperty> &properties,
-        const OpenGLRenderer &rend, ComponentRoot &resRoot
-    )
-    {
-        struct CompilationHelp
+        for (dynasma::LazyPtr<Task> p_task : abstractTaskSet)
         {
-            String filesuffix, inVarPrefix, outVarPrefix;
-            const GLSLShader::OutputData *oData;
-            
-            std::map<String, VariantPropertySpec> uniformVarSpecs;
-            std::map<String, VariantPropertySpec> inVarSpecs;
-            std::map<String, VariantPropertySpec> outVarSpecs;
-            std::map<String, VariantPropertySpec> pipethroughVarSpecs;
-            std::map<String, VariantPropertySpec> localVarSpecs;
-            std::vector<const SourceShaderStep*> steps;
-            GLuint shaderId;
-        } vertexHelper, geomHelper, fragHelper;
+            p_helper->subTaskPtrSet.push_back(
+                static_cast<const ShaderTask *>(&*p_task.getLoaded()));
+        }
+    }
 
-        vertexHelper.oData = &vertex;
-        vertexHelper.filesuffix = "vert";
-        vertexHelper.inVarPrefix = "vertex_";
-        vertexHelper.outVarPrefix = "geom_";
-        geomHelper.oData = &geom;
-        geomHelper.filesuffix = "geom";
-        geomHelper.inVarPrefix = "geom_";
-        geomHelper.outVarPrefix = "frag_";
-        fragHelper.oData = &fragment;
-        fragHelper.filesuffix = "frag";
-        fragHelper.inVarPrefix = "frag_";
-        fragHelper.outVarPrefix = "";
+    // which variables are required to either be output or passed through
+    {
+        std::map<StringId, PropertySpec> passedVarSpecs = {};
 
-        CompilationHelp *helpers[] = {&vertexHelper, &geomHelper, &fragHelper};
-
-        // utils
-        auto toGlslTypeString = [](const VariantProperty &prop) {
-            return std::visit(
-                [](const auto& arg) {
-                    using T = std::decay_t<decltype(arg)>;
-                    return GLTypeInfo<T>::GLSLTypeName;
-                }
-            , prop);
-        };
-        auto toGlslValueString = [](const VariantProperty &prop) {
-            return std::visit(
-                [](const auto& arg) {
-                    using T = std::decay_t<decltype(arg)>;
-                    return toStringOrErr<T>(arg);
-                }
-            , prop);
-        };
-
-
-        // set vertex data for the first stage
-        std::map<String, VariantPropertySpec> prevStepOuts;// outputs from the prev step
-        String vertexHeader;
-
-        auto exportVertexInputs = [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
-            std::vector<VertexBufferSpec<aiType>> vertexBufferSpecs)
+        for (auto p_helper : invHelperOrder)
         {
-            for (auto &spec : vertexBufferSpecs)
+            for (auto [reqNameId, reqSpec] : passedVarSpecs)
             {
-                vertexHeader += String("layout(location = ") + std::to_string(spec.layoutInd) + ") in " +
-                    String(GLTypeInfo<glmType>::GLSLTypeName) + " " + vertexHelper.inVarPrefix + spec.name + ";\n";
-
-                prevStepOuts[spec.name] = VariantPropertySpec{.exampleValue = VariantProperty(glmType())};
-            }
-        };
-        exportVertexInputs(rend.getVertexBufferSpecs<aiVector2D>());
-        exportVertexInputs(rend.getVertexBufferSpecs<aiVector3D>());
-        exportVertexInputs(rend.getVertexBufferSpecs<aiColor3D>());
-        exportVertexInputs(rend.getVertexBufferSpecs<aiColor4D>());
-        
-        // extract data from shaders
-        for (CompilationHelp *helper : helpers) {
-            // separate uniforms and in vars
-            for (const auto& reqInputNameSpec : helper->oData->inputVariableNames) {
-                if (prevStepOuts.find(reqInputNameSpec.first) == prevStepOuts.end()) {
-                    helper->uniformVarSpecs.insert(reqInputNameSpec);
-                }
-                else {
-                    helper->inVarSpecs.insert(reqInputNameSpec);
+                if (p_helper->outVarSpecs.find(reqNameId) == p_helper->outVarSpecs.end())
+                {
+                    p_helper->pipethroughVarSpecs.insert({reqNameId, reqSpec});
                 }
             }
 
-            // outputs
-            helper->outVarSpecs = helper->oData->outputVariableNames;
-            for (const auto& recvInputNameSpec : prevStepOuts) {
-                if (helper->oData->inputVariableNames.find(recvInputNameSpec.first) == helper->oData->inputVariableNames.end()) {
-                    helper->pipethroughVarSpecs.insert(recvInputNameSpec);
-                }
-            }
-            
-            prevStepOuts = helper->outVarSpecs;
-
-            // extract flat list
-            helper->oData->mainStep->extractPrimitiveSteps(helper->steps, properties);
-
-            // extract local variables
-            for (const SourceShaderStep *step: helper->steps) {
-                step->extractInputVariableNames(helper->localVarSpecs);
-                step->extractOutputVariableNames(helper->localVarSpecs);
-            }
+            passedVarSpecs = p_helper->inVarSpecs;
+            passedVarSpecs.merge(p_helper->pipethroughVarSpecs);
         }
 
-        // common header
-        String commonHeader = "#version 330 core"
-            "#define VITRAE_VARIABLES_DECLARED\n"
-            "#define VITRAE_MAIN_BODY_ONLY\n";
-        
-        // property definition header
-        String propertyHeader;
-        for (const auto& nameVal : properties) {
-            propertyHeader += String("#define ") + "VITRAE_"+nameVal.first + " " + toGlslValueString(nameVal.second) + "\n";
-        }
-
-        // shader building
-        auto getInsOutsHeader = [&](const CompilationHelp *helper, const String &inDeclSuffix) {
-            String str;
-            for (const auto& nameSpec: helper->inVarSpecs) {
-                str +=  String("in ") + String(toGlslTypeString(nameSpec.second.exampleValue)) + " " +
-                        helper->inVarPrefix + nameSpec.first + inDeclSuffix + ";\n";
-            }
-            for (const auto& nameSpec: helper->outVarSpecs) {
-                str +=  String("out ") + String(toGlslTypeString(nameSpec.second.exampleValue)) + " " +
-                        helper->outVarPrefix + nameSpec.first + ";\n";
-            }
-            for (const auto& nameSpec: helper->uniformVarSpecs) {
-                str +=  String("uniform ") + String(toGlslTypeString(nameSpec.second.exampleValue)) + " " +
-                        nameSpec.first + ";\n";
-            }
-            return str;
-        };
-        auto getMainSrcFromBody = [](const String &body) {
-            return String("void main()") +
-                "{"+ body + "}";
-        };
-        auto getPipethroughStatement = [](const CompilationHelp *helper, const String &inUsageSuffix, const String &outUsageSuffix) {
-            String str;
-            for (const auto& nameSpec : helper->pipethroughVarSpecs) {
-                str +=  helper->outVarPrefix + nameSpec.first + outUsageSuffix + " = " +
-                        helper->inVarPrefix + nameSpec.first + inUsageSuffix + "; ";
-            }
-            return str;
-        };
-        auto getInputToLocalStatement = [](const CompilationHelp *helper, const String &inUsageSuffix) {
-            String str;
-            for (const auto& nameSpec : helper->inVarSpecs) {
-                str +=  nameSpec.first + " = " +
-                        helper->inVarPrefix + nameSpec.first + inUsageSuffix + "; ";
-            }
-            return str;
-        };
-        auto getLocalToOutputStatement = [](const CompilationHelp *helper, const String &outUsageSuffix) {
-            String str;
-            for (const auto& nameSpec : helper->outVarSpecs) {
-                str +=  helper->outVarPrefix + nameSpec.first + outUsageSuffix + " = " +
-                        nameSpec.first + "; ";
-            }
-            return str;
-        };
-        auto getLocalDeclarationsStatement = [&](const CompilationHelp *helper) {
-            String str;
-            for (const auto& nameSpec : helper->localVarSpecs) {
-                str += String(toGlslTypeString(nameSpec.second.exampleValue)) + nameSpec.first + "; ";
-            }
-            return str;
-        };
-
-        // vertex
+        // now separate required variables in first step to uniforms and mesh layout variables
+        for (auto [reqNameId, reqSpec] : passedVarSpecs)
         {
-            CompilationHelp *helper = &vertexHelper;
-            String code;
-
-            std::stringstream mainBodySS;
-            mainBodySS <<   String("    ") + getPipethroughStatement(helper, "", "") + "\n" + 
-                            String("    ") + getLocalDeclarationsStatement(helper) + "\n" + 
-                            String("    ") + getInputToLocalStatement(helper, "") + "\n";
-            for (const SourceShaderStep *step: helper->steps) {
-                step->extractSource(mainBodySS);
+            if (rend.getAllVertexBufferSpecs().find(reqNameId) ==
+                rend.getAllVertexBufferSpecs().end())
+            {
+                uniformVarSpecs.insert({reqNameId, reqSpec});
             }
-            mainBodySS << String("    ") + getLocalToOutputStatement(helper, "") + "\n";
-
-            code += commonHeader + 
-                "\n" + 
-                propertyHeader +
-                "\n" + 
-                vertexHeader +
-                getInsOutsHeader(helper, "") +
-                "\n" +
-                getMainSrcFromBody(
-                    mainBodySS.str()
-                ) + 
-                "\n";
-
-            const char *c_code = code.c_str();
-            helper->shaderId = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(helper->shaderId, 1, &c_code, NULL);
-
-            // debugging
-            std::ofstream file;
-            file.open("shader_concat."+helper->filesuffix);
-            file << code;
-            file.close();
-        }
-
-        // geometry
-        {
-            CompilationHelp *helper = &geomHelper;
-            String code;
-
-            std::stringstream mainBodySS;
-            mainBodySS << String("    ") + getLocalDeclarationsStatement(helper) + "\n";
-            for (const SourceShaderStep *step: helper->steps) {
-                step->extractSource(mainBodySS);
+            else
+            {
+                elemVarSpecs.insert({reqNameId, reqSpec});
             }
-
-            code += commonHeader + 
-                "\n" + 
-                propertyHeader +
-                "layout(triangles) in;\n" + 
-                "layout(triangle_strip, max_vertices=3) out;\n" +
-                getInsOutsHeader(helper, "[]") +
-                "#define VITRAE_PIPETHROUGH_VERTEX_VALUES(i) " + getPipethroughStatement(helper, "[i]", "") +
-                "\n" +
-                getMainSrcFromBody(
-                    mainBodySS.str()
-                ) + 
-                "\n";
-
-            const char *c_code = code.c_str();
-            helper->shaderId = glCreateShader(GL_GEOMETRY_SHADER);
-            glShaderSource(helper->shaderId, 1, &c_code, NULL);
-
-            // debugging
-            std::ofstream file;
-            file.open("shader_concat."+helper->filesuffix);
-            file << code;
-            file.close();
-        }
-
-        // fragment
-        {
-            CompilationHelp *helper = &fragHelper;
-            String code;
-
-            std::stringstream mainBodySS;
-            mainBodySS <<   String("    ") + getPipethroughStatement(helper, "", "") + "\n" + 
-                            String("    ") + getLocalDeclarationsStatement(helper) + "\n" + 
-                            String("    ") + getInputToLocalStatement(helper, "") + "\n";
-            for (const SourceShaderStep *step: helper->steps) {
-                step->extractSource(mainBodySS);
-            }
-            mainBodySS << String("    ") + getLocalToOutputStatement(helper, "") + "\n";
-
-            code += commonHeader + 
-                "\n" + 
-                propertyHeader +
-                "\n" + 
-                getInsOutsHeader(helper, "") +
-                "\n" +
-                getMainSrcFromBody(
-                    mainBodySS.str()
-                ) + 
-                "\n";
-
-            const char *c_code = code.c_str();
-            helper->shaderId = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(helper->shaderId, 1, &c_code, NULL);
-
-            // debugging
-            std::ofstream file;
-            file.open("shader_concat."+helper->filesuffix);
-            file << code;
-            file.close();
-        }
-
-        // compile shaders
-	    programGLName = glCreateProgram();
-        for (CompilationHelp *helper : helpers) {
-            glCompileShader(helper->shaderId);
-
-            int success;
-            char cmplLog[1024];
-            glGetShaderInfoLog(helper->shaderId, sizeof(cmplLog), nullptr, cmplLog);
-            glGetShaderiv(helper->shaderId, GL_COMPILE_STATUS, &success);
-            if (!success) {
-                resRoot.getErrStream() << "Shader compilation error: " << cmplLog;
-            } else {
-                resRoot.getInfoStream() << "Shader compiled: " << cmplLog;
-            }
-
-	        glAttachShader(programGLName, helper->shaderId);
-        }
-	    glLinkProgram(programGLName);
-        {
-            int success;
-            char cmplLog[1024];
-            glGetProgramInfoLog(programGLName, sizeof(cmplLog), nullptr, cmplLog);
-            glGetProgramiv(programGLName, GL_LINK_STATUS, &success);
-            if (!success) {
-                resRoot.getErrStream() << "Shader linking error: " << cmplLog;
-            } else {
-                resRoot.getInfoStream() << "Shader linked: " << cmplLog;
-            }
-        }
-        for (CompilationHelp *helper : helpers) {
-            glDeleteShader(helper->shaderId);
         }
     }
 
-    CompiledGLSLProgram::~CompiledGLSLProgram()
+    // make a list of all types we need to define
+    std::vector<const GLTypeSpec *> typeDeclarationOrder;
+
     {
-	    glDeleteProgram(programGLName);
+        std::set<StringId> mentionedTypeNameIDs;
+
+        std::function<void(StringId nameId)> processTypeNameId = [&](StringId nameId) -> void {
+            if (mentionedTypeNameIDs.find(nameId) != mentionedTypeNameIDs.end())
+            {
+                mentionedTypeNameIDs.insert(nameId);
+
+                const GLTypeSpec &glTypeSpec = rend.getGlTypeSpec(nameId);
+
+                for (auto dependencyNameId : glTypeSpec.memberTypeDependencies)
+                {
+                    processTypeNameId(dependencyNameId);
+                }
+
+                typeDeclarationOrder.push_back(&glTypeSpec);
+            }
+        };
+
+        for (auto varSpecs : {uniformVarSpecs, elemVarSpecs})
+        {
+            for (auto [varNameId, varSpec] : varSpecs)
+            {
+                processTypeNameId(specToGlName(varSpec.p_type));
+            }
+        }
+
+        for (auto p_helper : helperOrder)
+        {
+            std::set<const TypeInfo *> usedTypeSet;
+            p_helper->p_task->extractUsedTypes(usedTypeSet);
+
+            for (auto p_type : usedTypeSet)
+            {
+                processTypeNameId(specToGlName(p_type));
+            }
+        }
     }
-    
+
+    // build the source code
+    {
+        std::map<StringId, PropertySpec> passedVarSpecs = {};
+        std::string_view passedVarPrefix;
+
+        for (auto p_helper : helperOrder)
+        {
+            // code output
+            std::stringstream ss;
+            ShaderBuildContext context{.output = ss};
+            std::map<StringId, String> inputParametersToGlobalVars;
+            std::map<StringId, String> outputParametersToGlobalVars;
+
+            // boilerplate stuff
+            ss << "#version 330 core\n";
+            ss << "\n";
+
+            // type definitions
+            for (auto p_glType : typeDeclarationOrder)
+            {
+                if (!p_glType->glslDefinitionSnippet.empty())
+                {
+                    // skip structs with FAMs because they would cause issues, and they are only
+                    // used in SSBO blocks
+                    if (!p_glType->flexibleMemberSpec.has_value())
+                    {
+                        ss << p_glType->glslDefinitionSnippet << "\n";
+                    }
+                }
+            }
+
+            ss << "\n";
+
+            // uniforms and SSBOs
+            for (auto [uniNameId, uniSpec] : uniformVarSpecs)
+            {
+                const GLTypeSpec &glTypeSpec = rend.getGlTypeSpec(*uniSpec.p_type);
+
+                std::string_view glslMemberList = "";
+                if (glTypeSpec.glslDefinitionSnippet.find_first_of("struct") != std::string::npos)
+                {
+                    glslMemberList =
+                        std::string_view(glTypeSpec.glslDefinitionSnippet)
+                            .substr(glTypeSpec.glslDefinitionSnippet.find_first_of('{') + 1,
+                                    glTypeSpec.glslDefinitionSnippet.find_last_of('}') -
+                                        glTypeSpec.glslDefinitionSnippet.find_first_of('{') - 1);
+                }
+
+                switch (rend.getGpuStorageMethod(glTypeSpec))
+                {
+                case OpenGLRenderer::GpuValueStorageMethod::Uniform:
+                    ss << "uniform " << specToGlName(uniSpec.p_type) << " " << uniVarPrefix
+                       << uniSpec.name << ";\n";
+
+                    inputParametersToGlobalVars.emplace(uniNameId,
+                                                        std::string(uniVarPrefix) + uniSpec.name);
+                    break;
+                case OpenGLRenderer::GpuValueStorageMethod::UBO:
+                    if (glslMemberList.empty())
+                    {
+                        ss << "uniform " << uniSpec.name << " {\n";
+                        ss << "\t" << specToGlName(uniSpec.p_type) << " value" << ";\n";
+                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+
+                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
+                                                                           uniSpec.name + ".value");
+                    }
+                    else
+                    {
+                        ss << "uniform " << uniSpec.name << " {\n";
+                        ss << glslMemberList << "\n";
+                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+
+                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
+                                                                           uniSpec.name);
+                    }
+                    break;
+                case OpenGLRenderer::GpuValueStorageMethod::SSBO:
+                    if (glslMemberList.empty())
+                    {
+                        ss << "buffer " << uniSpec.name << " {\n";
+                        ss << "\t" << specToGlName(uniSpec.p_type) << " value" << ";\n";
+                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+
+                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
+                                                                           uniSpec.name + ".value");
+                    }
+                    else
+                    {
+                        ss << "buffer " << uniSpec.name << " {\n";
+                        ss << glslMemberList << "\n";
+                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+
+                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
+                                                                           uniSpec.name);
+                    }
+                    break;
+                }
+            }
+
+            // mesh vertex element
+            if (p_helper == &vertexHelper)
+            {
+                ss << "\n";
+                for (auto [elemNameId, elemSpec] : elemVarSpecs)
+                {
+                    ss << "layout(location = " << rend.getVertexBufferLayoutIndex(elemNameId)
+                       << ") in " << specToGlName(elemSpec.p_type) << " " << elemVarPrefix
+                       << elemSpec.name << ";\n";
+
+                    inputParametersToGlobalVars.emplace(elemNameId,
+                                                        std::string(elemVarPrefix) + elemSpec.name);
+                }
+            }
+
+            // input variables
+            for (auto [passedNameId, passedSpec] : passedVarSpecs)
+            {
+                ss << "in " << specToGlName(passedSpec.p_type) << " " << passedVarPrefix
+                   << passedSpec.name << ";\n";
+
+                inputParametersToGlobalVars.emplace(passedNameId,
+                                                    std::string(passedVarPrefix) + passedSpec.name);
+            }
+
+            ss << "\n";
+
+            // output variables
+            passedVarSpecs.clear();
+            for (auto specs : {p_helper->outVarSpecs, p_helper->pipethroughVarSpecs})
+            {
+                for (auto [nameId, spec] : specs)
+                {
+                    ss << "out " << specToGlName(spec.p_type) << " " << p_helper->outVarPrefix
+                       << spec.name << ";\n";
+                    outputParametersToGlobalVars.emplace(
+                        nameId, std::string(p_helper->outVarPrefix) + spec.name);
+                }
+                passedVarSpecs.merge(specs);
+            }
+            passedVarPrefix = p_helper->outVarPrefix;
+
+            ss << "\n";
+
+            // p_task function declarations
+            for (auto p_task : p_helper->subTaskPtrSet)
+            {
+                p_task->outputDeclarationCode(context);
+                ss << "\n\n";
+            }
+
+            // p_task function definitions
+            for (auto p_task : p_helper->subTaskPtrSet)
+            {
+                p_task->outputDefinitionCode(context);
+                ss << "\n\n";
+            }
+
+            ss << "void main() {\n";
+            p_helper->p_task->outputUsageCode(context, inputParametersToGlobalVars,
+                                              outputParametersToGlobalVars);
+            ss << "}\n";
+
+            // create the shader with the source
+            std::string srcCode = ss.str();
+            const char *c_code = srcCode.c_str();
+            p_helper->shaderId = glCreateShader(p_helper->shaderType);
+            glShaderSource(p_helper->shaderId, 1, &c_code, NULL);
+
+            // debug
+            std::ofstream file;
+            file.open(std::string("concat.") + p_helper->outVarPrefix + "shader" +
+                      std::to_string(params.getHash()) + ".glsl");
+            file << srcCode;
+            file.close();
+        }
+    }
+
+    // compile shaders
+    {
+        int success;
+        char cmplLog[1024];
+
+        programGLName = glCreateProgram();
+        for (auto p_helper : helperOrder)
+        {
+            glCompileShader(p_helper->shaderId);
+
+            glGetShaderInfoLog(p_helper->shaderId, sizeof(cmplLog), nullptr, cmplLog);
+            glGetShaderiv(p_helper->shaderId, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                root.getErrStream() << "Shader compilation error: " << cmplLog;
+            }
+            else
+            {
+                root.getInfoStream() << "Shader compiled: " << cmplLog;
+            }
+
+            glAttachShader(programGLName, p_helper->shaderId);
+        }
+        glLinkProgram(programGLName);
+
+        glGetProgramInfoLog(programGLName, sizeof(cmplLog), nullptr, cmplLog);
+        glGetProgramiv(programGLName, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+            root.getErrStream() << "Shader linking error: " << cmplLog;
+        }
+        else
+        {
+            root.getInfoStream() << "Shader linked: " << cmplLog;
+        }
+
+        for (auto p_helper : helperOrder)
+        {
+            glDeleteShader(p_helper->shaderId);
+        }
+    }
+
+    // store uniform indices
+    for (auto [uniNameId, uniSpec] : uniformVarSpecs)
+    {
+        const GLTypeSpec &glTypeSpec = rend.getGlTypeSpec(*uniSpec.p_type);
+        std::string uniFullName = std::string(uniVarPrefix) + uniSpec.name;
+
+        switch (rend.getGpuStorageMethod(glTypeSpec))
+        {
+        case OpenGLRenderer::GpuValueStorageMethod::Uniform:
+            uniformSpecs.emplace(uniNameId, VariableSpec{.srcSpec = *uniSpec.p_type,
+                                                         .glNameId = glGetUniformLocation(
+                                                             programGLName, uniFullName.c_str())});
+            break;
+        case OpenGLRenderer::GpuValueStorageMethod::UBO:
+            uboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = *uniSpec.p_type,
+                                                     .glNameId = (GLint)glGetUniformBlockIndex(
+                                                         programGLName, uniFullName.c_str())});
+            break;
+        case OpenGLRenderer::GpuValueStorageMethod::SSBO:
+            ssboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = *uniSpec.p_type,
+                                                      .glNameId = (GLint)glGetProgramResourceIndex(
+                                                          programGLName, GL_SHADER_STORAGE_BLOCK,
+                                                          uniSpec.name.c_str())});
+            break;
+        }
+    }
 }
+
+CompiledGLSLShader::~CompiledGLSLShader()
+{
+    glDeleteProgram(programGLName);
+}
+
+} // namespace Vitrae

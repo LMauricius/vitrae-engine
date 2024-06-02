@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vitrae/Pipelines/Task.h"
 #include "Vitrae/Renderer.h"
 #include "Vitrae/TypeConversion/AssimpTypeConvert.h"
 #include "Vitrae/TypeConversion/GLTypeInfo.h"
@@ -10,6 +11,8 @@
 
 #include <functional>
 #include <map>
+#include <optional>
+#include <typeindex>
 #include <vector>
 
 namespace Vitrae
@@ -17,29 +20,31 @@ namespace Vitrae
 class Mesh;
 class Texture;
 
-template <class AssimpT> struct VertexBufferSpec
+struct GLTypeSpec
 {
-    using aiType = AssimpT;
-    using glmType = typename aiTypeCvt<AssimpT>::glmType;
-    static constexpr GLint NumComponents = VectorTypeInfo<glmType>::NumComponents;
-    static constexpr GLenum ComponentTypeId =
-        GLTypeInfo<typename VectorTypeInfo<glmType>::value_type>::GlTypeId;
+    TypeInfo *p_hostType;
+    String glslName;
 
-    // get and store
+    String glslDefinitionSnippet;
+    std::vector<StringId> memberTypeDependencies;
 
-    /**
-     * @returns a pointer to array of data from an aiMesh,
-     * or nullptr if data cannot be found
-     */
-    std::function<const aiType *(const aiMesh &extMesh)> getAIVertexData;
+    std::size_t hostSize;
+    std::size_t hostAlignment;
+    std::size_t std140Size;
+    std::size_t std140Alignment;
+    std::size_t layoutIndexSize;
 
-    /**
-     * The name of the buffer
-     */
-    String name;
+    void (*std140ToHost)(const void *src, void *dst);
+    void (*hostToStd140)(const void *src, void *dst);
 
-    // shader info
-    std::size_t layoutInd;
+    // used only if the type has a flexible array member
+    struct FlexibleMemberSpec
+    {
+        const GLTypeSpec &elementGlTypeSpec;
+        std::size_t maxNumElements;
+        std::size_t (*getNumElements)(const void *src);
+    };
+    std::optional<FlexibleMemberSpec> flexibleMemberSpec;
 };
 
 class OpenGLRenderer : public Renderer
@@ -52,64 +57,35 @@ class OpenGLRenderer : public Renderer
     void free() override;
     void render() override;
 
-    template <class T> const std::vector<VertexBufferSpec<T>> &getVertexBufferSpecs() const
+    void specifyGlType(const GLTypeSpec &newSpec);
+    const GLTypeSpec &getGlTypeSpec(StringId name) const;
+    const GLTypeSpec &getGlTypeSpec(const TypeInfo &type) const;
+    const std::map<StringId, GLTypeSpec> &getAllGlTypeSpecs() const;
+
+    void specifyVertexBuffer(const GLTypeSpec &newElSpec);
+    template <class T> void specifyVertexBufferAuto()
     {
-        throw std::runtime_error("Cannot get buffer specs of desired type T!");
-    }
-    template <class T> std::vector<VertexBufferSpec<T>> &getVertexBufferSpecs()
-    {
-        throw std::runtime_error("Cannot get buffer specs of desired type T!");
+        specifyVertexBuffer(getGlTypeSpec(Property::getTypeInfo<T>().p_id->name()));
     }
     std::size_t getNumVertexBuffers() const;
-    std::size_t getVertexBufferLayoutIndex(StringId name);
+    std::size_t getVertexBufferLayoutIndex(StringId name) const;
+    const std::map<StringId, GLTypeSpec> &getAllVertexBufferSpecs() const;
+
+    enum class GpuValueStorageMethod
+    {
+        Uniform,
+        UBO,
+        SSBO
+    };
+    GpuValueStorageMethod getGpuStorageMethod(const GLTypeSpec &spec) const;
 
   protected:
-    std::map<StringId, std::size_t> mVertexBufferIndices;
+    std::map<StringId, GLTypeSpec> m_glTypes;
+    std::map<std::type_index, GLTypeSpec *> m_glTypesByTypeIndex;
+
+    std::map<StringId, std::size_t> m_vertexBufferIndices;
+    std::size_t m_vertexBufferFreeIndex;
+    std::map<StringId, GLTypeSpec> m_vertexBufferSpecs;
 };
 
-template <>
-const std::vector<VertexBufferSpec<aiVector2D>> &OpenGLRenderer::getVertexBufferSpecs<aiVector2D>()
-    const
-{
-    return mVec2BufferSpecs;
-}
-template <>
-const std::vector<VertexBufferSpec<aiVector3D>> &OpenGLRenderer::getVertexBufferSpecs<aiVector3D>()
-    const
-{
-    return mVec3BufferSpecs;
-}
-template <>
-const std::vector<VertexBufferSpec<aiColor3D>> &OpenGLRenderer::getVertexBufferSpecs<aiColor3D>()
-    const
-{
-    return mCol3BufferSpecs;
-}
-template <>
-const std::vector<VertexBufferSpec<aiColor4D>> &OpenGLRenderer::getVertexBufferSpecs<aiColor4D>()
-    const
-{
-    return mCol4BufferSpecs;
-}
-
-template <>
-std::vector<VertexBufferSpec<aiVector2D>> &OpenGLRenderer::getVertexBufferSpecs<aiVector2D>()
-{
-    return mVec2BufferSpecs;
-}
-template <>
-std::vector<VertexBufferSpec<aiVector3D>> &OpenGLRenderer::getVertexBufferSpecs<aiVector3D>()
-{
-    return mVec3BufferSpecs;
-}
-template <>
-std::vector<VertexBufferSpec<aiColor3D>> &OpenGLRenderer::getVertexBufferSpecs<aiColor3D>()
-{
-    return mCol3BufferSpecs;
-}
-template <>
-std::vector<VertexBufferSpec<aiColor4D>> &OpenGLRenderer::getVertexBufferSpecs<aiColor4D>()
-{
-    return mCol4BufferSpecs;
-}
 } // namespace Vitrae
