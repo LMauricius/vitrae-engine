@@ -4,13 +4,21 @@
 #include "Vitrae/Util/Property.h"
 #include "Vitrae/Util/StringId.h"
 
+#include "dynasma/pointer.hpp"
 #include "dynasma/util/dynamic_typing.hpp"
 
 #include <map>
+#include <set>
 #include <span>
 
 namespace Vitrae
 {
+
+struct PropertySpec
+{
+    std::string name;
+    const TypeInfo *p_type;
+};
 
 class Task : public dynasma::PolymorphicBase
 {
@@ -23,14 +31,10 @@ class Task : public dynasma::PolymorphicBase
 
     virtual std::size_t memory_cost() const = 0;
 
-    inline std::map<StringId, PropertySpec> &getInputSpecs()
-    {
-        return m_inputSpecs;
-    }
-    inline std::map<StringId, PropertySpec> &getOutputSpecs()
-    {
-        return m_outputSpecs;
-    }
+    inline std::map<StringId, PropertySpec> &getInputSpecs() { return m_inputSpecs; }
+    inline std::map<StringId, PropertySpec> &getOutputSpecs() { return m_outputSpecs; }
+    virtual void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const = 0;
+    virtual void extractSubTasks(std::set<dynasma::LazyPtr<Task>> &taskSet) const = 0;
 };
 
 template <class T>

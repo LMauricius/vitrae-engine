@@ -4,6 +4,7 @@
 #include "dynasma/pointer.hpp"
 
 #include <vector>
+
 namespace Vitrae
 {
 
@@ -19,7 +20,7 @@ template <TaskChild BasicTask> class Group : public BasicTask
 
   protected:
     std::vector<GroupItemEntry> m_items;
-    std::map<StringId, PropertySpec> m_localSpecs;
+    std::map<StringId, TypeInfo> m_localSpecs;
 
   private:
     void updateInputOutputProperties()
@@ -55,20 +56,38 @@ template <TaskChild BasicTask> class Group : public BasicTask
 
   public:
     Group() = default;
-    Group(const std::map<StringId, PropertySpec> &outputSpecs,
-          const std::vector<GroupItemEntry> &items)
+    Group(std::span<PropertySpec> outputSpecs, const std::vector<GroupItemEntry> &items)
         : m_items(items)
     {
         this->m_outputSpecs = outputSpecs;
         updateInputOutputProperties();
     }
-    Group(std::map<StringId, PropertySpec> &&outputSpecs, std::vector<GroupItemEntry> &&items)
-        : m_items(std::move(items))
-    {
-        this->m_outputSpecs = std::move(outputSpecs);
-        updateInputOutputProperties();
-    }
 
     ~Group() = default;
+
+    void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const override
+    {
+        for (auto specs : {this->m_inputSpecs, this->m_outputSpecs})
+        {
+            for (auto [name, spec] : specs)
+            {
+                typeSet.insert(spec);
+            }
+        }
+
+        for (auto &item : m_items)
+        {
+            item.task->extractUsedTypes(typeSet);
+        }
+    }
+
+    void extractSubTasks(std::set<dynasma::LazyPtr<Task>> &taskSet) const override
+    {
+        for (auto &item : m_items)
+        {
+            taskSet.insert(item.task);
+            item.task->extractSubTasks(taskSet);
+        }
+    }
 };
 } // namespace Vitrae

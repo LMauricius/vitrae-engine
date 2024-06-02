@@ -9,8 +9,8 @@ namespace Vitrae
 struct RenderRunContext
 {
     const ScopedDict &properties;
-    const std::map<StringId, const Property *> &inputPropertyPtrs;
-    const std::map<StringId, Property *> &outputPropertyPtrs;
+    const std::map<StringId, const Variant *> &inputPropertyPtrs;
+    const std::map<StringId, Variant *> &outputPropertyPtrs;
 };
 
 class RenderTask : public Task

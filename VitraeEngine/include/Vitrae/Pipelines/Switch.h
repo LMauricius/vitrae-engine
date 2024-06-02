@@ -33,8 +33,8 @@ template <TaskChild BasicTask> class Switch : public BasicTask
 
   public:
     Switch(std::map<SwitchEnumType, dynasma::FirmPtr<BasicTask>> taskMap,
-           StringId selectionProperty, StringId selectionPropertySpec)
-        : m_taskMap(taskMap), m_selectionProperty(selectionProperty),
+           PropertySpec selectionPropertySpec)
+        : m_taskMap(taskMap), m_selectionProperty(selectionPropertySpec.name),
           m_selectionPropertySpec(selectionPropertySpec)
     {
         updateInputOutputProperties();
@@ -80,6 +80,22 @@ template <TaskChild BasicTask> class Switch : public BasicTask
     dynasma::FirmPtr<BasicTask> getTask(SwitchEnumType value)
     {
         return m_taskMap.at(value);
+    }
+
+    void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const override
+    {
+        for (auto [id, task] : m_taskMap)
+        {
+            task->extractUsedTypes(typeSet);
+        }
+    }
+
+    void extractSubTasks(std::set<dynasma::LazyPtr<Task>> &taskSet) const override
+    {
+        for (auto [id, task] : m_taskMap)
+        {
+            taskSet.insert(task.get());
+        }
     }
 };
 } // namespace Vitrae
