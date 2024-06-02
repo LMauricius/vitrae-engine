@@ -12,17 +12,17 @@ ScopedDict::ScopedDict(const ScopedDict *parent) : m_parent{parent}
 {
 }
 
-void ScopedDict::set(StringId key, const Property &value)
+void ScopedDict::set(StringId key, const Variant &value)
 {
     m_dict[key] = value;
 }
 
-void ScopedDict::set(StringId key, Property &&value)
+void ScopedDict::set(StringId key, Variant &&value)
 {
     m_dict[key] = std::move(value);
 }
 
-const Property &ScopedDict::get(StringId key) const
+const Variant &ScopedDict::get(StringId key) const
 {
     auto it = m_dict.find(key);
     if (it != m_dict.end())
@@ -34,7 +34,7 @@ const Property &ScopedDict::get(StringId key) const
     throw std::runtime_error{"Key not found"};
 }
 
-const Property *ScopedDict::getPtr(StringId key) const
+const Variant *ScopedDict::getPtr(StringId key) const
 {
     auto it = m_dict.find(key);
     if (it != m_dict.end())

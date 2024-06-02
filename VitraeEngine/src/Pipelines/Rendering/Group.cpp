@@ -17,9 +17,9 @@ void RenderGroup::run(RenderRunContext args)
     for (auto &item : m_items)
     {
         // prepare item inputs and outputs
-        std::map<StringId, const Property *> itemInputPropertyPtrs;
-        std::map<StringId, Property *> itemOutputPropertyPtrs;
-        std::vector<std::pair<StringId, Property>> itemOutputProperties;
+        std::map<StringId, const Variant *> itemInputPropertyPtrs;
+        std::map<StringId, Variant *> itemOutputPropertyPtrs;
+        std::vector<std::pair<StringId, Variant>> itemOutputProperties;
         itemOutputProperties.reserve(item.outputParamsToSharedVariables.size());
         for (auto [inputName, localName] : item.inputParamsToSharedVariables)
         {
@@ -27,7 +27,7 @@ void RenderGroup::run(RenderRunContext args)
         }
         for (auto [outputName, localName] : item.outputParamsToSharedVariables)
         {
-            itemOutputProperties.emplace_back(localName, Property());
+            itemOutputProperties.emplace_back(localName, Variant());
             itemOutputPropertyPtrs.insert({outputName, &itemOutputProperties.back().second});
         }
 
