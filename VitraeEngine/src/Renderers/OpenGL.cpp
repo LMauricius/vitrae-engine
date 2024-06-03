@@ -1,7 +1,8 @@
 #include "Vitrae/Renderers/OpenGL.h"
-#include "Vitrae/Renderers/OpenGL/Mesh.h"
-#include "Vitrae/Renderers/OpenGL/Texture.h"
 #include "Vitrae/ComponentRoot.h"
+#include "Vitrae/Renderers/OpenGL/Mesh.h"
+#include "Vitrae/Renderers/OpenGL/SharedBuffer.hpp"
+#include "Vitrae/Renderers/OpenGL/Texture.h"
 
 #include "dynasma/keepers/naive.hpp"
 #include "dynasma/managers/basic.hpp"
@@ -21,6 +22,9 @@ void OpenGLRenderer::setup(ComponentRoot& root)
         new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>()));
     root.setComponent<TextureManager>(Unique<TextureManager>(
         new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>()));
+    root.setComponent<RawSharedBufferKeeper>(Unique<RawSharedBufferKeeper>(
+        new dynasma::NaiveKeeper<RawSharedBufferKeeperSeed,
+                                 std::allocator<OpenGLRawSharedBuffer>>()));
 }
 
 void OpenGLRenderer::free()
@@ -56,7 +60,7 @@ const std::map<StringId, GLTypeSpec> &OpenGLRenderer::getAllGlTypeSpecs() const
 
 void OpenGLRenderer::specifyVertexBuffer(const PropertySpec &newElSpec)
 {
-    const GLTypeSpec &glTypeSpec = getTypeConversion(*newElSpec.p_type).glTypeSpec;
+    const GLTypeSpec &glTypeSpec = getTypeConversion(newElSpec.typeInfo).glTypeSpec;
 
     m_vertexBufferIndices.emplace(StringId(newElSpec.name), m_vertexBufferFreeIndex);
     m_vertexBufferFreeIndex += glTypeSpec.layoutIndexSize;
