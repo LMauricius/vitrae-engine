@@ -25,12 +25,14 @@ class VariantVTable
 
   public:
     const std::type_info *p_id;
-    std::size_t sizeof_v;
+    std::size_t size;
+    std::size_t alignment;
 
     constexpr VariantVTable()
-        : p_id(nullptr), sizeof_v(0), hasShortObjectOptimization(false), emptyConstructor(nullptr),
-          copyConstructor(nullptr), moveConstructor(nullptr), destructor(nullptr), isEqual(nullptr),
-          isLessThan(nullptr), toBool(nullptr), toString(nullptr), hash(nullptr){};
+        : p_id(nullptr), size(0), alignment(0), hasShortObjectOptimization(false),
+          emptyConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr),
+          destructor(nullptr), isEqual(nullptr), isLessThan(nullptr), toBool(nullptr),
+          toString(nullptr), hash(nullptr){};
     constexpr VariantVTable(const VariantVTable &) = delete;
     constexpr VariantVTable(VariantVTable &&) = delete;
     ~VariantVTable() = default;
@@ -93,7 +95,7 @@ class Variant
     /// @brief copy constructor
     inline Variant(const Variant &other) : m_table(other.m_table)
     {
-        allocateNBuffer(m_table->sizeof_v);
+        allocateNBuffer(m_table->size);
         m_table->copyConstructor(*this, other);
     }
     /// @brief move constructor
@@ -121,7 +123,7 @@ class Variant
     {
         m_table->destructor(*this);
 
-        allocateNBuffer(other.m_table->sizeof_v);
+        allocateNBuffer(other.m_table->size);
 
         m_table = other.m_table;
         m_table->copyConstructor(*this, other);
@@ -228,12 +230,14 @@ class Variant
             table.hasShortObjectOptimization =
                 (sizeof(T) <= sizeof(decltype(Variant::m_val)::m_shortBufferVal) &&
                  alignof(T) <= alignof(Variant::m_val));
-            table.sizeof_v = sizeof(T);
+            table.size = sizeof(T);
+            table.alignment = alignof(T);
         }
         else
         {
             table.hasShortObjectOptimization = true;
-            table.sizeof_v = 0;
+            table.size = 0;
+            table.alignment = 0;
         }
 
         // public info
