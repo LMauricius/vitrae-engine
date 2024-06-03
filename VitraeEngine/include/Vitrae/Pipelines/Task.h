@@ -17,7 +17,7 @@ namespace Vitrae
 struct PropertySpec
 {
     std::string name;
-    const TypeInfo *p_type;
+    const TypeInfo &typeInfo;
 };
 
 class Task : public dynasma::PolymorphicBase

@@ -13,8 +13,8 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
     OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(root.getComponent<Renderer>());
 
     // util lambdas
-    auto specToGlName = [&](const TypeInfo *p_type) -> std::string_view {
-        return rend.getGlTypeSpec(*p_type).glslName;
+    auto specToGlName = [&](const TypeInfo &typeInfo) -> std::string_view {
+        return rend.getTypeConversion(typeInfo).glTypeSpec.glTypeName;
     };
 
     // uniforms are global variables given to all shader steps
@@ -118,18 +118,17 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
     std::vector<const GLTypeSpec *> typeDeclarationOrder;
 
     {
-        std::set<StringId> mentionedTypeNameIDs;
+        std::set<const GLTypeSpec *> mentionedTypes;
 
-        std::function<void(StringId nameId)> processTypeNameId = [&](StringId nameId) -> void {
-            if (mentionedTypeNameIDs.find(nameId) != mentionedTypeNameIDs.end())
+        std::function<void(const GLTypeSpec &)> processTypeNameId =
+            [&](const GLTypeSpec &glTypeSpec) -> void {
+            if (mentionedTypes.find(&glTypeSpec) != mentionedTypes.end())
             {
-                mentionedTypeNameIDs.insert(nameId);
+                mentionedTypes.insert(&glTypeSpec);
 
-                const GLTypeSpec &glTypeSpec = rend.getGlTypeSpec(nameId);
-
-                for (auto dependencyNameId : glTypeSpec.memberTypeDependencies)
+                for (auto p_dependencyTypeSpec : glTypeSpec.memberTypeDependencies)
                 {
-                    processTypeNameId(dependencyNameId);
+                    processTypeNameId(*p_dependencyTypeSpec);
                 }
 
                 typeDeclarationOrder.push_back(&glTypeSpec);
@@ -140,7 +139,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
         {
             for (auto [varNameId, varSpec] : varSpecs)
             {
-                processTypeNameId(specToGlName(varSpec.p_type));
+                processTypeNameId(rend.getTypeConversion(varSpec.typeInfo).glTypeSpec);
             }
         }
 
@@ -151,7 +150,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
 
             for (auto p_type : usedTypeSet)
             {
-                processTypeNameId(specToGlName(p_type));
+                processTypeNameId(rend.getTypeConversion(*p_type).glTypeSpec);
             }
         }
     }
@@ -192,7 +191,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
             // uniforms and SSBOs
             for (auto [uniNameId, uniSpec] : uniformVarSpecs)
             {
-                const GLTypeSpec &glTypeSpec = rend.getGlTypeSpec(*uniSpec.p_type);
+                const GLTypeSpec &glTypeSpec = rend.getTypeConversion(uniSpec.typeInfo).glTypeSpec;
 
                 std::string_view glslMemberList = "";
                 if (glTypeSpec.glslDefinitionSnippet.find_first_of("struct") != std::string::npos)
@@ -207,7 +206,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
                 switch (rend.getGpuStorageMethod(glTypeSpec))
                 {
                 case OpenGLRenderer::GpuValueStorageMethod::Uniform:
-                    ss << "uniform " << specToGlName(uniSpec.p_type) << " " << uniVarPrefix
+                    ss << "uniform " << specToGlName(uniSpec.typeInfo) << " " << uniVarPrefix
                        << uniSpec.name << ";\n";
 
                     inputParametersToGlobalVars.emplace(uniNameId,
@@ -217,7 +216,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
                     if (glslMemberList.empty())
                     {
                         ss << "uniform " << uniSpec.name << " {\n";
-                        ss << "\t" << specToGlName(uniSpec.p_type) << " value" << ";\n";
+                        ss << "\t" << specToGlName(uniSpec.typeInfo) << " value" << ";\n";
                         ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
 
                         inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
@@ -237,7 +236,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
                     if (glslMemberList.empty())
                     {
                         ss << "buffer " << uniSpec.name << " {\n";
-                        ss << "\t" << specToGlName(uniSpec.p_type) << " value" << ";\n";
+                        ss << "\t" << specToGlName(uniSpec.typeInfo) << " value" << ";\n";
                         ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
 
                         inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
@@ -263,7 +262,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
                 for (auto [elemNameId, elemSpec] : elemVarSpecs)
                 {
                     ss << "layout(location = " << rend.getVertexBufferLayoutIndex(elemNameId)
-                       << ") in " << specToGlName(elemSpec.p_type) << " " << elemVarPrefix
+                       << ") in " << specToGlName(elemSpec.typeInfo) << " " << elemVarPrefix
                        << elemSpec.name << ";\n";
 
                     inputParametersToGlobalVars.emplace(elemNameId,
@@ -274,7 +273,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
             // input variables
             for (auto [passedNameId, passedSpec] : passedVarSpecs)
             {
-                ss << "in " << specToGlName(passedSpec.p_type) << " " << passedVarPrefix
+                ss << "in " << specToGlName(passedSpec.typeInfo) << " " << passedVarPrefix
                    << passedSpec.name << ";\n";
 
                 inputParametersToGlobalVars.emplace(passedNameId,
@@ -289,7 +288,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
             {
                 for (auto [nameId, spec] : specs)
                 {
-                    ss << "out " << specToGlName(spec.p_type) << " " << p_helper->outVarPrefix
+                    ss << "out " << specToGlName(spec.typeInfo) << " " << p_helper->outVarPrefix
                        << spec.name << ";\n";
                     outputParametersToGlobalVars.emplace(
                         nameId, std::string(p_helper->outVarPrefix) + spec.name);
@@ -379,23 +378,22 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
     // store uniform indices
     for (auto [uniNameId, uniSpec] : uniformVarSpecs)
     {
-        const GLTypeSpec &glTypeSpec = rend.getGlTypeSpec(*uniSpec.p_type);
         std::string uniFullName = std::string(uniVarPrefix) + uniSpec.name;
 
-        switch (rend.getGpuStorageMethod(glTypeSpec))
+        switch (rend.getGpuStorageMethod(rend.getTypeConversion(uniSpec.typeInfo).glTypeSpec))
         {
         case OpenGLRenderer::GpuValueStorageMethod::Uniform:
-            uniformSpecs.emplace(uniNameId, VariableSpec{.srcSpec = *uniSpec.p_type,
+            uniformSpecs.emplace(uniNameId, VariableSpec{.srcSpec = uniSpec.typeInfo,
                                                          .glNameId = glGetUniformLocation(
                                                              programGLName, uniFullName.c_str())});
             break;
         case OpenGLRenderer::GpuValueStorageMethod::UBO:
-            uboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = *uniSpec.p_type,
+            uboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = uniSpec.typeInfo,
                                                      .glNameId = (GLint)glGetUniformBlockIndex(
                                                          programGLName, uniFullName.c_str())});
             break;
         case OpenGLRenderer::GpuValueStorageMethod::SSBO:
-            ssboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = *uniSpec.p_type,
+            ssboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = uniSpec.typeInfo,
                                                       .glNameId = (GLint)glGetProgramResourceIndex(
                                                           programGLName, GL_SHADER_STORAGE_BLOCK,
                                                           uniSpec.name.c_str())});

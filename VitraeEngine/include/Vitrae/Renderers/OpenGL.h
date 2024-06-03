@@ -22,29 +22,45 @@ class Texture;
 
 struct GLTypeSpec
 {
-    TypeInfo *p_hostType;
-    String glslName;
+    String glTypeName;
 
     String glslDefinitionSnippet;
-    std::vector<StringId> memberTypeDependencies;
+    std::vector<const GLTypeSpec *> memberTypeDependencies;
 
-    std::size_t hostSize;
-    std::size_t hostAlignment;
     std::size_t std140Size;
     std::size_t std140Alignment;
     std::size_t layoutIndexSize;
 
-    void (*std140ToHost)(const void *src, void *dst);
-    void (*hostToStd140)(const void *src, void *dst);
-
-    // used only if the type has a flexible array member
+    // used only if the type is a struct and has a flexible array member
     struct FlexibleMemberSpec
     {
         const GLTypeSpec &elementGlTypeSpec;
         std::size_t maxNumElements;
-        std::size_t (*getNumElements)(const void *src);
     };
     std::optional<FlexibleMemberSpec> flexibleMemberSpec;
+};
+
+struct GLConversionSpec
+{
+    const TypeInfo &hostType;
+    const GLTypeSpec &glTypeSpec;
+
+    void (*std140ToHost)(const GLConversionSpec *spec, const void *src, void *dst);
+    void (*hostToStd140)(const GLConversionSpec *spec, const void *src, void *dst);
+    dynasma::FirmPtr<SharedBuffer> (*getSharedBuffer)(const GLConversionSpec *spec,
+                                                      const void *src);
+
+    static void std140ToHostIdentity(const GLConversionSpec *spec, const void *src, void *dst);
+    static void hostToStd140Identity(const GLConversionSpec *spec, const void *src, void *dst);
+    static dynasma::FirmPtr<SharedBuffer> getSharedBufferRaw(const GLConversionSpec *spec,
+                                                             const void *src);
+
+    // used only if the type has a flexible array member
+    struct FlexibleMemberConversion
+    {
+        std::size_t (*getNumElements)(const void *src);
+    };
+    std::optional<FlexibleMemberConversion> flexibleMemberSpec;
 };
 
 class OpenGLRenderer : public Renderer
@@ -53,23 +69,24 @@ class OpenGLRenderer : public Renderer
     OpenGLRenderer();
     ~OpenGLRenderer();
 
-    void setup(ComponentRoot& root) override;
+    void setup(ComponentRoot &root) override;
     void free() override;
     void render() override;
 
-    void specifyGlType(const GLTypeSpec &newSpec);
-    const GLTypeSpec &getGlTypeSpec(StringId name) const;
-    const GLTypeSpec &getGlTypeSpec(const TypeInfo &type) const;
+    const GLTypeSpec &specifyGlType(const GLTypeSpec &newSpec);
+    const GLTypeSpec &getGlTypeSpec(StringId glslName) const;
+    const GLConversionSpec &specifyTypeConversion(const GLConversionSpec &newSpec);
+    const GLConversionSpec &getTypeConversion(const TypeInfo &hostType) const;
     const std::map<StringId, GLTypeSpec> &getAllGlTypeSpecs() const;
 
-    void specifyVertexBuffer(const GLTypeSpec &newElSpec);
+    void specifyVertexBuffer(const PropertySpec &newElSpec);
     template <class T> void specifyVertexBufferAuto()
     {
-        specifyVertexBuffer(getGlTypeSpec(Property::getTypeInfo<T>().p_id->name()));
+        specifyVertexBuffer(getTypeConversion(Property::getTypeInfo<T>().p_id->name()));
     }
     std::size_t getNumVertexBuffers() const;
     std::size_t getVertexBufferLayoutIndex(StringId name) const;
-    const std::map<StringId, GLTypeSpec> &getAllVertexBufferSpecs() const;
+    const std::map<StringId, GLConversionSpec> &getAllVertexBufferSpecs() const;
 
     enum class GpuValueStorageMethod
     {
@@ -81,11 +98,11 @@ class OpenGLRenderer : public Renderer
 
   protected:
     std::map<StringId, GLTypeSpec> m_glTypes;
-    std::map<std::type_index, GLTypeSpec *> m_glTypesByTypeIndex;
+    std::map<std::type_index, GLConversionSpec> m_glConversions;
 
     std::map<StringId, std::size_t> m_vertexBufferIndices;
     std::size_t m_vertexBufferFreeIndex;
-    std::map<StringId, GLTypeSpec> m_vertexBufferSpecs;
+    std::map<StringId, GLConversionSpec> m_vertexBufferSpecs;
 };
 
 } // namespace Vitrae

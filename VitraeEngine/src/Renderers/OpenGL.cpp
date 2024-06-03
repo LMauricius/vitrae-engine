@@ -3,7 +3,6 @@
 #include "Vitrae/Renderers/OpenGL/Texture.h"
 #include "Vitrae/ComponentRoot.h"
 
-#include "OpenGL.h"
 #include "dynasma/keepers/naive.hpp"
 #include "dynasma/managers/basic.hpp"
 namespace Vitrae
@@ -28,14 +27,16 @@ void OpenGLRenderer::free()
 {
 }
 
-void OpenGLRenderer::render()
+void OpenGLRenderer::render() {}
+
+const GLTypeSpec &OpenGLRenderer::specifyGlType(const GLTypeSpec &newSpec)
 {
+    return m_glTypes.emplace(StringId(newSpec.glTypeName), newSpec).first->second;
 }
 
-void OpenGLRenderer::specifyGlType(const GLTypeSpec &newSpec)
+const GLConversionSpec &OpenGLRenderer::specifyTypeConversion(const GLConversionSpec &newSpec)
 {
-    m_glTypes[newSpec.name] = newSpec;
-    m_glTypesByTypeIndex[std::type_index(*newSpec.p_type->p_id)] = &m_glTypes[newSpec.name];
+    return m_glConversions.emplace(std::type_index(*newSpec.hostType.p_id), newSpec).first->second;
 }
 
 const GLTypeSpec &OpenGLRenderer::getGlTypeSpec(StringId name) const
@@ -43,9 +44,9 @@ const GLTypeSpec &OpenGLRenderer::getGlTypeSpec(StringId name) const
     return m_glTypes.at(name);
 }
 
-const GLTypeSpec &OpenGLRenderer::getGlTypeSpec(const TypeInfo &type) const
+const GLConversionSpec &OpenGLRenderer::getTypeConversion(const TypeInfo &type) const
 {
-    return m_glTypesByTypeIndex.at(std::type_index(*newSpec.p_type->p_id));
+    return m_glConversions.at(std::type_index(*type.p_id));
 }
 
 const std::map<StringId, GLTypeSpec> &OpenGLRenderer::getAllGlTypeSpecs() const
@@ -53,10 +54,12 @@ const std::map<StringId, GLTypeSpec> &OpenGLRenderer::getAllGlTypeSpecs() const
     return m_glTypes;
 }
 
-void OpenGLRenderer::specifyVertexBuffer(const GLTypeSpec &newElSpec)
+void OpenGLRenderer::specifyVertexBuffer(const PropertySpec &newElSpec)
 {
+    const GLTypeSpec &glTypeSpec = getTypeConversion(*newElSpec.p_type).glTypeSpec;
+
     m_vertexBufferIndices.emplace(StringId(newElSpec.name), m_vertexBufferFreeIndex);
-    m_vertexBufferFreeIndex += newElSpec.layoutIndexSize;
+    m_vertexBufferFreeIndex += glTypeSpec.layoutIndexSize;
     m_vertexBufferSpecs.emplace(StringId(newElSpec.name), newElSpec);
 }
 
@@ -70,12 +73,13 @@ std::size_t OpenGLRenderer::getVertexBufferLayoutIndex(StringId name) const
     return m_vertexBufferIndices.at(name);
 }
 
-const std::map<StringId, GLTypeSpec> &OpenGLRenderer::getAllVertexBufferSpecs() const
+const std::map<StringId, GLConversionSpec> &OpenGLRenderer::getAllVertexBufferSpecs() const
 {
     return m_vertexBufferSpecs;
 }
 
-GpuValueStorageMethod OpenGLRenderer::getGpuStorageMethod(const GLTypeSpec &spec) const
+OpenGLRenderer::GpuValueStorageMethod OpenGLRenderer::getGpuStorageMethod(
+    const GLTypeSpec &spec) const
 {
     if (spec.glslDefinitionSnippet.empty())
     {
