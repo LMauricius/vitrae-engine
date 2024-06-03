@@ -16,6 +16,8 @@ namespace Vitrae
     template<class _T>
     using Pointer = _T*;
 
+    using Byte = unsigned char;
+
     using String = std::string;
     using StringView = std::string_view;
 
