@@ -19,6 +19,7 @@ namespace Vitrae
 {
 class Mesh;
 class Texture;
+class RawSharedBuffer;
 
 struct GLTypeSpec
 {
@@ -45,15 +46,10 @@ struct GLConversionSpec
     const TypeInfo &hostType;
     const GLTypeSpec &glTypeSpec;
 
-    void (*std140ToHost)(const GLConversionSpec *spec, const void *src, void *dst);
-    void (*hostToStd140)(const GLConversionSpec *spec, const void *src, void *dst);
-    dynasma::FirmPtr<SharedBuffer> (*getSharedBuffer)(const GLConversionSpec *spec,
-                                                      const void *src);
-
     static void std140ToHostIdentity(const GLConversionSpec *spec, const void *src, void *dst);
     static void hostToStd140Identity(const GLConversionSpec *spec, const void *src, void *dst);
-    static dynasma::FirmPtr<SharedBuffer> getSharedBufferRaw(const GLConversionSpec *spec,
-                                                             const void *src);
+    static dynasma::FirmPtr<RawSharedBuffer> getSharedBufferRaw(const GLConversionSpec *spec,
+                                                                const void *src);
 
     // used only if the type has a flexible array member
     struct FlexibleMemberConversion
@@ -82,11 +78,11 @@ class OpenGLRenderer : public Renderer
     void specifyVertexBuffer(const PropertySpec &newElSpec);
     template <class T> void specifyVertexBufferAuto()
     {
-        specifyVertexBuffer(getTypeConversion(Property::getTypeInfo<T>().p_id->name()));
+        specifyVertexBuffer(getTypeConversion(Variant::getTypeInfo<T>().p_id->name()));
     }
     std::size_t getNumVertexBuffers() const;
     std::size_t getVertexBufferLayoutIndex(StringId name) const;
-    const std::map<StringId, GLConversionSpec> &getAllVertexBufferSpecs() const;
+    const std::map<StringId, const GLTypeSpec &> &getAllVertexBufferSpecs() const;
 
     enum class GpuValueStorageMethod
     {
@@ -102,7 +98,7 @@ class OpenGLRenderer : public Renderer
 
     std::map<StringId, std::size_t> m_vertexBufferIndices;
     std::size_t m_vertexBufferFreeIndex;
-    std::map<StringId, GLConversionSpec> m_vertexBufferSpecs;
+    std::map<StringId, const GLTypeSpec &> m_vertexBufferSpecs;
 };
 
 } // namespace Vitrae

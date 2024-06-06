@@ -94,7 +94,7 @@ template <TaskChild BasicTask> class Switch : public BasicTask
     {
         for (auto [id, task] : m_taskMap)
         {
-            taskSet.insert(task.get());
+            taskSet.insert(task);
         }
     }
 };

@@ -2,6 +2,7 @@
 
 #include "Vitrae/Assets/Mesh.h"
 #include "Vitrae/Types/Typedefs.h"
+#include "Vitrae/Util/StringId.h"
 
 #include "glad/glad.h"
 

@@ -74,8 +74,7 @@ CompiledGLSLShader::CompiledGLSLShader(const ShaderCompilationParams &params)
         p_helper->p_task->extractSubTasks(abstractTaskSet);
         abstractTaskSet.insert(p_helper->p_task);
 
-        for (dynasma::LazyPtr<Task> p_task : abstractTaskSet)
-        {
+        for (dynasma::LazyPtr<dynasma::PolymorphicBase> p_task : abstractTaskSet) {
             p_helper->subTaskPtrSet.push_back(
                 static_cast<const ShaderTask *>(&*p_task.getLoaded()));
         }

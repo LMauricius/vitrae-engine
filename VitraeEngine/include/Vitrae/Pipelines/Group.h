@@ -71,7 +71,7 @@ template <TaskChild BasicTask> class Group : public BasicTask
         {
             for (auto [name, spec] : specs)
             {
-                typeSet.insert(spec);
+                typeSet.insert(&spec.typeInfo);
             }
         }
 

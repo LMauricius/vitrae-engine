@@ -22,11 +22,15 @@ namespace Vitrae
         void loadToGPU(OpenGLRenderer &rend);
         void unloadFromGPU(OpenGLRenderer &rend);
 
+        std::size_t memory_cost() const override;
+
         GLuint mGLTexture;
 
     protected:
 	    int mWidth, mHeight, mGLChannelFormat;
         unsigned char *mData;
+
+        bool m_sentToGPU;
     };
     
 }

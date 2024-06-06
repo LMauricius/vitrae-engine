@@ -18,8 +18,8 @@ OpenGLRenderer::OpenGLRenderer()
 
 void OpenGLRenderer::setup(ComponentRoot& root)
 {
-    root.setComponent<MeshKeeper>(Unique<MeshKeeper>(
-        new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>()));
+    root.setComponent<MeshKeeper>(
+        Unique<MeshKeeper>(new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>()));
     root.setComponent<TextureManager>(Unique<TextureManager>(
         new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>()));
     root.setComponent<RawSharedBufferKeeper>(Unique<RawSharedBufferKeeper>(
@@ -64,7 +64,11 @@ void OpenGLRenderer::specifyVertexBuffer(const PropertySpec &newElSpec)
 
     m_vertexBufferIndices.emplace(StringId(newElSpec.name), m_vertexBufferFreeIndex);
     m_vertexBufferFreeIndex += glTypeSpec.layoutIndexSize;
-    m_vertexBufferSpecs.emplace(StringId(newElSpec.name), newElSpec);
+    m_vertexBufferSpecs.emplace(StringId(newElSpec.name), glTypeSpec);
+
+    const dynasma::LazyPtr<Task> a, b;
+
+    bool r = a < b;
 }
 
 std::size_t OpenGLRenderer::getNumVertexBuffers() const
@@ -77,7 +81,7 @@ std::size_t OpenGLRenderer::getVertexBufferLayoutIndex(StringId name) const
     return m_vertexBufferIndices.at(name);
 }
 
-const std::map<StringId, GLConversionSpec> &OpenGLRenderer::getAllVertexBufferSpecs() const
+const std::map<StringId, const GLTypeSpec &> &OpenGLRenderer::getAllVertexBufferSpecs() const
 {
     return m_vertexBufferSpecs;
 }
