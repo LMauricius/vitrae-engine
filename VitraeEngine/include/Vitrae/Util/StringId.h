@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 namespace Vitrae
 {
@@ -14,9 +15,16 @@ class StringId
     std::size_t m_hash;
 
   public:
-    constexpr StringId(const char *str) : m_hash{std::hash<std::string_view>{}(str)} {}
-    constexpr StringId(const std::string &str) : m_hash{std::hash<std::string_view>{}(str)} {}
-    constexpr StringId(const std::string_view str) : m_hash{std::hash<std::string_view>{}(str)} {}
+    constexpr StringId(const char *str) : StringId(std::string_view{str}) {}
+    constexpr StringId(const std::string &str) : StringId(std::string_view{str}) {}
+    constexpr StringId(const std::string_view str)
+    {
+        // fnv_hash_1a_64
+        m_hash = 0xcbf29ce484222325ULL;
+
+        for (char c : str)
+            m_hash = (m_hash ^ c) * 0x100000001b3ULL;
+    }
     constexpr StringId(StringId &&)      = default;
     constexpr StringId(const StringId &) = default;
 
