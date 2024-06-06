@@ -33,22 +33,22 @@ class VariantVTable
           emptyConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr),
           destructor(nullptr), isEqual(nullptr), isLessThan(nullptr), toBool(nullptr),
           toString(nullptr), hash(nullptr){};
-    constexpr VariantVTable(const VariantVTable &) = delete;
-    constexpr VariantVTable(VariantVTable &&) = delete;
     ~VariantVTable() = default;
 
-    VariantVTable &operator=(const VariantVTable &) = delete;
-    VariantVTable &operator=(VariantVTable &&) = delete;
-
     // comparisons (just compare type_info)
-    constexpr bool operator==(const VariantVTable &o) const { return *p_id == *o.p_id; }
-    constexpr bool operator!=(const VariantVTable &o) const { return *p_id != *o.p_id; }
+    inline bool operator==(const VariantVTable &o) const { return *p_id == *o.p_id; }
+    inline bool operator!=(const VariantVTable &o) const { return *p_id != *o.p_id; }
     inline bool operator<(const VariantVTable &o) const { return p_id->before(*o.p_id); }
     inline bool operator>(const VariantVTable &o) const { return !operator<=(o); }
     inline bool operator<=(const VariantVTable &o) const { return operator<(o) || operator==(o); }
     inline bool operator>=(const VariantVTable &o) const { return !operator<(o); }
 
   protected:
+    constexpr VariantVTable(const VariantVTable &) = default;
+    constexpr VariantVTable(VariantVTable &&) = default;
+    VariantVTable &operator=(const VariantVTable &) = default;
+    VariantVTable &operator=(VariantVTable &&) = default;
+
     // memory management
     void (*emptyConstructor)(Variant &self);
     void (*copyConstructor)(Variant &self, const Variant &other);
@@ -73,6 +73,154 @@ using TypeInfo = VariantVTable;
  */
 class Variant
 {
+  private:
+    // vtable variable and function
+
+    /**
+     * @brief Creates a PropertyFuncTable with the function pointers for the specified type.
+     */
+    template <class T> static constexpr VariantVTable makeVTable()
+    {
+        VariantVTable table;
+
+        // internal
+        if constexpr (requires {
+                          { sizeof(T) };
+                          { alignof(T) };
+                      }) {
+            table.hasShortObjectOptimization =
+                (sizeof(T) <= sizeof(decltype(Variant::m_val)::m_shortBufferVal) &&
+                 alignof(T) <= alignof(Variant::m_val));
+            table.size = sizeof(T);
+            table.alignment = alignof(T);
+        } else {
+            table.hasShortObjectOptimization = true;
+            table.size = 0;
+            table.alignment = 0;
+        }
+
+        // public info
+        table.p_id = &typeid(T);
+
+        // memory management
+
+        // empty constructor
+        if constexpr (requires { new T(); }) {
+            table.emptyConstructor = [](Variant &self) { return new (&self.get<T>()) T(); };
+        } else {
+            table.emptyConstructor = [](Variant &self) {};
+        }
+
+        // copy constructor
+        if constexpr (requires(const T &t) { new T(t); }) {
+            table.copyConstructor = [](Variant &self, const Variant &other) {
+                return new (&self.get<T>()) T(other.get<T>());
+            };
+        } else {
+            table.copyConstructor = [](Variant &self, const Variant &other) {};
+        }
+
+        // move constructor
+        if constexpr (requires(T &&t) { new T(t); }) {
+            table.moveConstructor = [](Variant &self, Variant &other) {
+                return new (&self.get<T>()) T(std::move(other.get<T>()));
+            };
+        } else {
+            table.moveConstructor = [](Variant &self, Variant &other) {};
+        }
+
+        // destructor
+        if constexpr (requires(T v) { v.~T(); }) {
+            table.destructor = [](Variant &self) { self.get<T>().~T(); };
+        } else {
+            table.destructor = [](Variant &self) {};
+        }
+
+        // operator==
+        if constexpr (requires(T lhs, T rhs) {
+                          { lhs == rhs } -> std::convertible_to<bool>;
+                      }) {
+            table.isEqual = [](const Variant &lhs, const Variant &rhs) -> bool {
+                return (bool)(std::any_cast<T>(lhs.m_val) == std::any_cast<T>(rhs.m_val));
+            };
+        } else {
+            table.isEqual = [](const Variant &lhs, const Variant &rhs) -> bool {
+                std::stringstream ss;
+                ss << "operator== is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        // operator<
+        if constexpr (requires(T lhs, T rhs) {
+                          { lhs < rhs } -> std::convertible_to<bool>;
+                      }) {
+            table.isLessThan = [](const Variant &lhs, const Variant &rhs) -> bool {
+                return (bool)(std::any_cast<T>(lhs.m_val) < std::any_cast<T>(rhs.m_val));
+            };
+        } else {
+            table.isLessThan = [](const Variant &lhs, const Variant &rhs) -> bool {
+                std::stringstream ss;
+                ss << "operator< is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        // operator (bool)
+        if constexpr (requires(T v) {
+                          { bool(v) } -> std::convertible_to<bool>;
+                      }) {
+            table.toBool = [](const Variant &p) -> bool {
+                return (bool)(std::any_cast<T>(p.m_val));
+            };
+        } else {
+            table.toBool = [](const Variant &p) -> bool {
+                std::stringstream ss;
+                ss << "operator bool is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        // operator (std::string)
+        if constexpr (requires(T v, std::stringstream ss) {
+                          { ss << v };
+                      }) {
+            table.toString = [](const Variant &p) -> std::string {
+                std::stringstream ss;
+                ss << std::any_cast<T>(p.m_val);
+                return ss.str();
+            };
+        } else {
+            table.toString = [](const Variant &p) -> std::string {
+                std::stringstream ss;
+                ss << "operator std::string is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        // hash function
+        if constexpr (requires(T v) {
+                          { std::hash<T>{}(v) } -> std::convertible_to<std::size_t>;
+                      }) {
+            table.hash = [](const Variant &p) -> std::size_t {
+                return std::hash<T>{}(std::any_cast<T>(p.m_val));
+            };
+        } else {
+            table.hash = [](const Variant &p) -> std::size_t {
+                std::stringstream ss;
+                ss << "std::hash is not implemented for type " << typeid(T).name();
+                throw std::runtime_error(ss.str());
+            };
+        }
+
+        return table;
+    }
+
+    /**
+     * @brief Contains a PropertyFuncTable with the function pointers for the specified type.
+     */
+    template <class T> static constexpr VariantVTable V_TABLE = makeVTable<T>();
+
   public:
     // static functions
 
@@ -207,183 +355,6 @@ class Variant
      */
     const VariantVTable *m_table;
 
-    // vtable variable and function
-
-    /**
-     * @brief Contains a PropertyFuncTable with the function pointers for the specified type.
-     */
-    template <class T> static constexpr VariantVTable V_TABLE = makeVTable<T>();
-
-    /**
-     * @brief Creates a PropertyFuncTable with the function pointers for the specified type.
-     */
-    template <class T> static constexpr VariantVTable makeVTable()
-    {
-        VariantVTable table;
-
-        // internal
-        if constexpr (requires {
-                          { sizeof T };
-                          { alignof T };
-                      })
-        {
-            table.hasShortObjectOptimization =
-                (sizeof(T) <= sizeof(decltype(Variant::m_val)::m_shortBufferVal) &&
-                 alignof(T) <= alignof(Variant::m_val));
-            table.size = sizeof(T);
-            table.alignment = alignof(T);
-        }
-        else
-        {
-            table.hasShortObjectOptimization = true;
-            table.size = 0;
-            table.alignment = 0;
-        }
-
-        // public info
-        table.p_id = &typeid(T);
-
-        // memory management
-
-        // empty constructor
-        if constexpr (requires { new T(); })
-        {
-            table.emptyConstructor = [](Variant &self) { new (&self.get<T>())() };
-        }
-        else
-        {
-            table.emptyConstructor = [](Variant &self) {};
-        }
-
-        // copy constructor
-        if constexpr (requires { new T(const T &); })
-        {
-            table.copyConstructor = [](Variant &self, const Variant &other) {
-                new (&self.get<T>())(other.get<T>());
-            };
-        }
-        else
-        {
-            table.copyConstructor = [](Variant &self, const Variant &other) {};
-        }
-
-        // move constructor
-        if constexpr (requires { new T(T &&); })
-        {
-            table.moveConstructor = [](Variant &self, Variant &other) {
-                new (&self.get<T>())(std::move(other.get<T>()));
-            };
-        }
-        else
-        {
-            table.moveConstructor = [](Variant &self, Variant &other) {};
-        }
-
-        // destructor
-        if constexpr (requires(T v) { v.~T(); })
-        {
-            table.destructor = [](Variant &self) { self.get<T>().~T(); };
-        }
-        else
-        {
-            table.destructor = [](Variant &self) {};
-        }
-
-        // operator==
-        if constexpr (requires(T lhs, T rhs) {
-                          { lhs == rhs } -> std::convertible_to<bool>;
-                      })
-        {
-            table.isEqual = [](const Variant &lhs, const Variant &rhs) -> bool {
-                return (bool)(std::any_cast<T>(lhs.m_val) == std::any_cast<T>(rhs.m_val));
-            };
-        }
-        else
-        {
-            table.isEqual = [](const Variant &lhs, const Variant &rhs) -> bool {
-                std::stringstream ss;
-                ss << "operator== is not implemented for type " << typeid(T).name();
-                throw std::runtime_error(ss.str());
-            };
-        }
-
-        // operator<
-        if constexpr (requires(T lhs, T rhs) {
-                          { lhs < rhs } -> std::convertible_to<bool>;
-                      })
-        {
-            table.isLessThan = [](const Variant &lhs, const Variant &rhs) -> bool {
-                return (bool)(std::any_cast<T>(lhs.m_val) < std::any_cast<T>(rhs.m_val));
-            };
-        }
-        else
-        {
-            table.isLessThan = [](const Variant &lhs, const Variant &rhs) -> bool {
-                std::stringstream ss;
-                ss << "operator< is not implemented for type " << typeid(T).name();
-                throw std::runtime_error(ss.str());
-            };
-        }
-
-        // operator (bool)
-        if constexpr (requires(T v) {
-                          { bool(v) } -> std::convertible_to<bool>;
-                      })
-        {
-            table.toBool = [](const Variant &p) -> bool {
-                return (bool)(std::any_cast<T>(p.m_val));
-            };
-        }
-        else
-        {
-            table.toBool = [](const Variant &p) -> bool {
-                std::stringstream ss;
-                ss << "operator bool is not implemented for type " << typeid(T).name();
-                throw std::runtime_error(ss.str());
-            };
-        }
-
-        // operator (std::string)
-        if constexpr (requires(T v, std::stringstream ss) {
-                          { ss << v };
-                      })
-        {
-            table.toString = [](const Variant &p) -> std::string {
-                std::stringstream ss;
-                ss << std::any_cast<T>(p.m_val);
-                return ss.str();
-            };
-        }
-        else
-        {
-            table.toString = [](const Variant &p) -> std::string {
-                std::stringstream ss;
-                ss << "operator std::string is not implemented for type " << typeid(T).name();
-                throw std::runtime_error(ss.str());
-            };
-        }
-
-        // hash function
-        if constexpr (requires(T v) {
-                          { std::hash<T>{}(v) } -> std::convertible_to<std::size_t>;
-                      })
-        {
-            table.hash = [](const Variant &p) -> std::size_t {
-                return std::hash<T>{}(std::any_cast<T>(p.m_val));
-            };
-        }
-        else
-        {
-            table.hash = [](const Variant &p) -> std::size_t {
-                std::stringstream ss;
-                ss << "std::hash is not implemented for type " << typeid(T).name();
-                throw std::runtime_error(ss.str());
-            };
-        }
-
-        return table;
-    }
-
     // buffer management
 
     void freeBuffer()
@@ -426,24 +397,18 @@ class Variant
 
     template <class T> void reallocateBuffer()
     {
-        if constexpr (requires { sizeof T; })
-        {
-            reallocateNBuffer(sizeof T);
-        }
-        else
-        {
+        if constexpr (requires { sizeof(T); }) {
+            reallocateNBuffer(sizeof(T));
+        } else {
             reallocateNBuffer(0);
         }
     }
 
     template <class T> void allocateBuffer()
     {
-        if constexpr (requires { sizeof T; })
-        {
-            allocateNBuffer(sizeof T);
-        }
-        else
-        {
+        if constexpr (requires { sizeof(T); }) {
+            allocateNBuffer(sizeof(T));
+        } else {
             allocateNBuffer(0);
         }
     }
