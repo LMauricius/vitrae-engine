@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vitrae/Assets/Mesh.h"
-#include "Vitrae/Types/Typedefs.h"
-#include "Vitrae/Util/StringId.h"
+#include "Vitrae/Assets/Mesh.hpp"
+#include "Vitrae/Types/Typedefs.hpp"
+#include "Vitrae/Util/StringId.hpp"
 
 #include "glad/glad.h"
 

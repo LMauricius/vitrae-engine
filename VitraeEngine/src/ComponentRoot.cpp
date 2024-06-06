@@ -1,5 +1,5 @@
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Assets/Mesh.h"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Assets/Mesh.hpp"
 
 #include <iostream>
 

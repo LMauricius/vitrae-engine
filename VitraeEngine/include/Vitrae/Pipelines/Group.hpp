@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Pipelines/Task.h"
+#include "Vitrae/Pipelines/Task.hpp"
 #include "dynasma/pointer.hpp"
 
 #include <vector>

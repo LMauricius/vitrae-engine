@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Types/Typedefs.h"
+#include "Vitrae/Types/Typedefs.hpp"
 
 #include "assimp/types.h"
 #include "glm/glm.hpp"

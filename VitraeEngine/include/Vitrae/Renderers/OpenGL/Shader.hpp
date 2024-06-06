@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vitrae/Assets/Shader.h"
-#include "Vitrae/Types/Typedefs.h"
-#include "Vitrae/Util/Property.h"
+#include "Vitrae/Assets/Shader.hpp"
+#include "Vitrae/Types/Typedefs.hpp"
+#include "Vitrae/Util/Property.hpp"
 
 #include "dynasma/pointer.hpp"
 #include "glad/glad.h"

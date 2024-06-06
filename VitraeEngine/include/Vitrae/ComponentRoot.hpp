@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Vitrae/Types/Typedefs.h"
-#include "Vitrae/Types/UniqueAnyPtr.h"
-#include "Vitrae/Util/StringId.h"
-#include "Vitrae/Util/UniqueId.h"
+#include "Vitrae/Types/Typedefs.hpp"
+#include "Vitrae/Types/UniqueAnyPtr.hpp"
+#include "Vitrae/Util/StringId.hpp"
+#include "Vitrae/Util/UniqueId.hpp"
 
 #include "dynasma/cachers/abstract.hpp"
 #include "dynasma/managers/abstract.hpp"

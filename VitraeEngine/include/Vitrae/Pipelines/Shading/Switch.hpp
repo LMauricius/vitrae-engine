@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Shading/Task.hpp"
-#include "Vitrae/Pipelines/Switch.h"
+#include "Vitrae/Pipelines/Switch.hpp"
 
 namespace Vitrae
 {

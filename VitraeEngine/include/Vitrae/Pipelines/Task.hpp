@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vitrae/Types/Typedefs.h"
-#include "Vitrae/Util/Property.h"
-#include "Vitrae/Util/StringId.h"
+#include "Vitrae/Types/Typedefs.hpp"
+#include "Vitrae/Util/Property.hpp"
+#include "Vitrae/Util/StringId.hpp"
 
 #include "dynasma/pointer.hpp"
 #include "dynasma/util/dynamic_typing.hpp"

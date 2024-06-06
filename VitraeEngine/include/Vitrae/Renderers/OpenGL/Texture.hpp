@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Assets/Texture.h"
+#include "Vitrae/Assets/Texture.hpp"
 #include "glad/glad.h"
 
 #include <filesystem>

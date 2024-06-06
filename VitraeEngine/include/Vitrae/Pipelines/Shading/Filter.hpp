@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Pipelines/Filter.h"
+#include "Vitrae/Pipelines/Filter.hpp"
 #include "Vitrae/Pipelines/Shading/Task.hpp"
 
 namespace Vitrae

@@ -1,6 +1,6 @@
-#include "Vitrae/Renderers/OpenGL/Texture.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Renderers/OpenGL.h"
+#include "Vitrae/Renderers/OpenGL/Texture.hpp"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Renderers/OpenGL.hpp"
 
 #include "stb/stb_image.h"
 

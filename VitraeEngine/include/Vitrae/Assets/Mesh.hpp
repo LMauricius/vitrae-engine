@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vitrae/Assets/Material.h"
-#include "Vitrae/Types/GraphicPrimitives.h"
-#include "Vitrae/Util/NonCopyable.h"
+#include "Vitrae/Assets/Material.hpp"
+#include "Vitrae/Types/GraphicPrimitives.hpp"
+#include "Vitrae/Util/NonCopyable.hpp"
 
 #include "assimp/mesh.h"
 #include "assimp/scene.h"

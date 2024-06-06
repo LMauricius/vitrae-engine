@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Util/NonCopyable.h"
+#include "Vitrae/Util/NonCopyable.hpp"
 
 #include "assimp/material.h"
 #include "dynasma/keepers/abstract.hpp"

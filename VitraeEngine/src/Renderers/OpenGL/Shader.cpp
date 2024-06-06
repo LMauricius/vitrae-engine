@@ -1,6 +1,6 @@
-#include "Vitrae/Renderers/OpenGL/Shader.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Renderers/OpenGL.h"
+#include "Vitrae/Renderers/OpenGL/Shader.hpp"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Renderers/OpenGL.hpp"
 
 #include <fstream>
 

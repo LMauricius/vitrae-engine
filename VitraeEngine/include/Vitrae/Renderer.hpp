@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Vitrae/Assets/Mesh.h"
-#include "Vitrae/Assets/Texture.h"
-#include "Vitrae/Types/Typedefs.h"
+#include "Vitrae/Assets/Mesh.hpp"
+#include "Vitrae/Assets/Texture.hpp"
+#include "Vitrae/Types/Typedefs.hpp"
 
 #include "dynasma/managers/abstract.hpp"
 

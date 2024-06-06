@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Vitrae/Pipelines/Task.h"
-#include "Vitrae/Renderer.h"
-#include "Vitrae/TypeConversion/AssimpTypeConvert.h"
-#include "Vitrae/TypeConversion/GLTypeInfo.h"
-#include "Vitrae/TypeConversion/VectorTypeInfo.h"
-#include "Vitrae/Types/GraphicPrimitives.h"
-#include "Vitrae/Util/StringId.h"
+#include "Vitrae/Pipelines/Task.hpp"
+#include "Vitrae/Renderer.hpp"
+#include "Vitrae/TypeConversion/AssimpTypeConvert.hpp"
+#include "Vitrae/TypeConversion/GLTypeInfo.hpp"
+#include "Vitrae/TypeConversion/VectorTypeInfo.hpp"
+#include "Vitrae/Types/GraphicPrimitives.hpp"
+#include "Vitrae/Util/StringId.hpp"
 #include "assimp/mesh.h"
 
 #include <functional>

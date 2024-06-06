@@ -1,8 +1,8 @@
-#include "Vitrae/Assets/Model.h"
-#include "Vitrae/Assets/Material.h"
-#include "Vitrae/Assets/Mesh.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/TypeConversion/StringConvert.h"
+#include "Vitrae/Assets/Model.hpp"
+#include "Vitrae/Assets/Material.hpp"
+#include "Vitrae/Assets/Mesh.hpp"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/TypeConversion/StringConvert.hpp"
 
 #include "dynasma/keepers/abstract.hpp"
 

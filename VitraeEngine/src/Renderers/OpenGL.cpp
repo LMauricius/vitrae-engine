@@ -1,8 +1,8 @@
-#include "Vitrae/Renderers/OpenGL.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Renderers/OpenGL/Mesh.h"
+#include "Vitrae/Renderers/OpenGL.hpp"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Renderers/OpenGL/Mesh.hpp"
 #include "Vitrae/Renderers/OpenGL/SharedBuffer.hpp"
-#include "Vitrae/Renderers/OpenGL/Texture.h"
+#include "Vitrae/Renderers/OpenGL/Texture.hpp"
 
 #include "dynasma/keepers/naive.hpp"
 #include "dynasma/managers/basic.hpp"

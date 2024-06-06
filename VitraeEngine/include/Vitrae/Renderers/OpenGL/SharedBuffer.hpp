@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vitrae/Assets/SharedBuffer.hpp"
-#include "Vitrae/Renderers/OpenGL.h"
+#include "Vitrae/Renderers/OpenGL.hpp"
 
 namespace Vitrae
 {

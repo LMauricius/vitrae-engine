@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Pipelines/Task.h"
+#include "Vitrae/Pipelines/Task.hpp"
 #include "Vitrae/Util/ScopedDict.hpp"
 
 namespace Vitrae

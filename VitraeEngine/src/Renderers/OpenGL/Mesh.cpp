@@ -1,9 +1,9 @@
-#include "Vitrae/Renderers/OpenGL/Mesh.h"
-#include "Vitrae/Assets/Material.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Renderers/OpenGL.h"
-#include "Vitrae/TypeConversion/AssimpTypeConvert.h"
-#include "Vitrae/Types/Typedefs.h"
+#include "Vitrae/Renderers/OpenGL/Mesh.hpp"
+#include "Vitrae/Assets/Material.hpp"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Renderers/OpenGL.hpp"
+#include "Vitrae/TypeConversion/AssimpTypeConvert.hpp"
+#include "Vitrae/Types/Typedefs.hpp"
 
 #include <map>
 #include <vector>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Util/NonCopyable.h"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Util/NonCopyable.hpp"
 
 #include "dynasma/keepers/abstract.hpp"
 #include "dynasma/managers/abstract.hpp"

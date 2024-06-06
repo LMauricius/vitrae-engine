@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/ComponentRoot.h"
+#include "Vitrae/ComponentRoot.hpp"
 #include "Vitrae/Pipelines/Shading/Task.hpp"
 #include "Vitrae/Util/ScopedDict.hpp"
 

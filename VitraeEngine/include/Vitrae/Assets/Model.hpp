@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vitrae/Assets/Mesh.h"
+#include "Vitrae/Assets/Mesh.hpp"
 
 #include "assimp/mesh.h"
 #include "assimp/scene.h"

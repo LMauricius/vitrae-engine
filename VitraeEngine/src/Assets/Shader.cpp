@@ -1,4 +1,4 @@
-#include "Vitrae/Assets/Shader.h"
+#include "Vitrae/Assets/Shader.hpp"
 #include <set>
 
 namespace Vitrae
