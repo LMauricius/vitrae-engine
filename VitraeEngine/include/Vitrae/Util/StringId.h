@@ -25,7 +25,7 @@ class StringId
         for (char c : str)
             m_hash = (m_hash ^ c) * 0x100000001b3ULL;
     }
-    constexpr StringId(StringId &&)      = default;
+    constexpr StringId(StringId &&) = default;
     constexpr StringId(const StringId &) = default;
 
     constexpr StringId &operator=(StringId id)

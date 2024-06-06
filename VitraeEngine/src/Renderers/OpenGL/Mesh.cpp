@@ -10,9 +10,7 @@
 
 namespace Vitrae
 {
-OpenGLMesh::OpenGLMesh() : m_sentToGPU(false)
-{
-}
+OpenGLMesh::OpenGLMesh() : m_sentToGPU(false) {}
 
 OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
 {
@@ -22,12 +20,9 @@ OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
     mTriangles.resize(params.p_extMesh->mNumFaces);
 
     // load triangles
-    if (params.p_extMesh->HasFaces())
-    {
-        for (int i = 0; i < params.p_extMesh->mNumFaces; i++)
-        {
-            for (int j = 0; j < params.p_extMesh->mFaces[i].mNumIndices; j++)
-            {
+    if (params.p_extMesh->HasFaces()) {
+        for (int i = 0; i < params.p_extMesh->mNumFaces; i++) {
+            for (int j = 0; j < params.p_extMesh->mFaces[i].mNumIndices; j++) {
                 mTriangles[i].ind[j] = params.p_extMesh->mFaces[i].mIndices[j];
             }
         }
@@ -38,21 +33,18 @@ OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
         [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
             std::span<const ComponentRoot::AiMeshBufferInfo<aiType>> auBufferInfos,
             std::map<StringId, std::valarray<glmType>> &namedBuffers) {
-            for (auto &info : auBufferInfos)
-            {
+            for (auto &info : auBufferInfos) {
                 // get buffers
                 std::size_t layoutInd = rend.getVertexBufferLayoutIndex(info.name);
                 const aiType *src = info.extractor(*params.p_extMesh);
                 GLuint &vbo = VBOs[layoutInd];
 
                 // fill buffers
-                if (src != nullptr)
-                {
+                if (src != nullptr) {
                     std::valarray<glmType> &buffer = namedBuffers[info.name];
                     buffer.resize(params.p_extMesh->mNumVertices);
 
-                    for (int i = 0; i < params.p_extMesh->mNumVertices; i++)
-                    {
+                    for (int i = 0; i < params.p_extMesh->mNumVertices; i++) {
                         buffer[i] = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
                 }
@@ -65,14 +57,11 @@ OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
     extractVertexData(params.root.getAiMeshBufferInfos<aiColor4D>(), namedVec4Buffers);
 }
 
-OpenGLMesh::~OpenGLMesh()
-{
-}
+OpenGLMesh::~OpenGLMesh() {}
 
 void OpenGLMesh::loadToGPU(OpenGLRenderer &rend)
 {
-    if (!m_sentToGPU)
-    {
+    if (!m_sentToGPU) {
         m_sentToGPU = true;
 
         // prepare OpenGL buffers
@@ -86,8 +75,7 @@ void OpenGLMesh::loadToGPU(OpenGLRenderer &rend)
 
         auto sendVertexData =
             [&]<class glmType>(const std::map<StringId, std::valarray<glmType>> &namedBuffers) {
-                for (auto [name, buffer] : namedBuffers)
-                {
+                for (auto [name, buffer] : namedBuffers) {
                     std::size_t layoutInd = rend.getVertexBufferLayoutIndex(name);
                     GLuint &vbo = VBOs[layoutInd];
 
@@ -121,8 +109,7 @@ void OpenGLMesh::loadToGPU(OpenGLRenderer &rend)
 
 void OpenGLMesh::unloadFromGPU()
 {
-    if (m_sentToGPU)
-    {
+    if (m_sentToGPU) {
         m_sentToGPU = false;
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(VBOs.size(), VBOs.data());

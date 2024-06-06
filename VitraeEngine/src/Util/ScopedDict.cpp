@@ -5,12 +5,8 @@
 namespace Vitrae
 {
 
-ScopedDict::ScopedDict() : m_parent{nullptr}
-{
-}
-ScopedDict::ScopedDict(const ScopedDict *parent) : m_parent{parent}
-{
-}
+ScopedDict::ScopedDict() : m_parent{nullptr} {}
+ScopedDict::ScopedDict(const ScopedDict *parent) : m_parent{parent} {}
 
 void ScopedDict::set(StringId key, const Variant &value)
 {

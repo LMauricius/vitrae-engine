@@ -2,10 +2,10 @@
 
 namespace Vitrae
 {
-    
-    class Scene
-    {
-    public:
-    };
 
-}
+class Scene
+{
+  public:
+};
+
+} // namespace Vitrae

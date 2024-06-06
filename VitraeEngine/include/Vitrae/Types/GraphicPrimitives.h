@@ -5,8 +5,8 @@
 namespace Vitrae
 {
 
-    struct Triangle
-    {
-        unsigned int ind[3];
-    };
-}
+struct Triangle
+{
+    unsigned int ind[3];
+};
+} // namespace Vitrae

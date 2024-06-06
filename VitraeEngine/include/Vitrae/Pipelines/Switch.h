@@ -20,8 +20,7 @@ template <TaskChild BasicTask> class Switch : public BasicTask
         this->m_inputSpecs.clear();
         this->m_outputSpecs.clear();
 
-        for (auto &pair : m_taskMap)
-        {
+        for (auto &pair : m_taskMap) {
             this->m_inputSpecs.insert(pair.second->m_inputSpecs.begin(),
                                       pair.second->m_inputSpecs.end());
             this->m_outputSpecs.insert(pair.second->m_outputSpecs.begin(),
@@ -77,23 +76,18 @@ template <TaskChild BasicTask> class Switch : public BasicTask
      *
      * @throws std::out_of_range if the property is not found in the task map
      */
-    dynasma::FirmPtr<BasicTask> getTask(SwitchEnumType value)
-    {
-        return m_taskMap.at(value);
-    }
+    dynasma::FirmPtr<BasicTask> getTask(SwitchEnumType value) { return m_taskMap.at(value); }
 
     void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const override
     {
-        for (auto [id, task] : m_taskMap)
-        {
+        for (auto [id, task] : m_taskMap) {
             task->extractUsedTypes(typeSet);
         }
     }
 
     void extractSubTasks(std::set<dynasma::LazyPtr<Task>> &taskSet) const override
     {
-        for (auto [id, task] : m_taskMap)
-        {
+        for (auto [id, task] : m_taskMap) {
             taskSet.insert(task);
         }
     }

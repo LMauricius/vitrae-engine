@@ -9,24 +9,20 @@ void RenderGroup::run(RenderRunContext args)
     // setup local variables
     ScopedDict locals(&args.properties);
 
-    for (auto [inputName, p_input] : args.inputPropertyPtrs)
-    {
+    for (auto [inputName, p_input] : args.inputPropertyPtrs) {
         locals.set(inputName, *p_input);
     }
 
-    for (auto &item : m_items)
-    {
+    for (auto &item : m_items) {
         // prepare item inputs and outputs
         std::map<StringId, const Variant *> itemInputPropertyPtrs;
         std::map<StringId, Variant *> itemOutputPropertyPtrs;
         std::vector<std::pair<StringId, Variant>> itemOutputProperties;
         itemOutputProperties.reserve(item.outputParamsToSharedVariables.size());
-        for (auto [inputName, localName] : item.inputParamsToSharedVariables)
-        {
+        for (auto [inputName, localName] : item.inputParamsToSharedVariables) {
             itemInputPropertyPtrs.insert({inputName, &locals.get(localName)});
         }
-        for (auto [outputName, localName] : item.outputParamsToSharedVariables)
-        {
+        for (auto [outputName, localName] : item.outputParamsToSharedVariables) {
             itemOutputProperties.emplace_back(localName, Variant());
             itemOutputPropertyPtrs.insert({outputName, &itemOutputProperties.back().second});
         }
@@ -35,15 +31,13 @@ void RenderGroup::run(RenderRunContext args)
         item.task->run(RenderRunContext{locals, itemInputPropertyPtrs, itemOutputPropertyPtrs});
 
         // save item outputs
-        for (auto [localName, prop] : itemOutputProperties)
-        {
+        for (auto [localName, prop] : itemOutputProperties) {
             locals.set(localName, prop);
         }
     }
 
     // save group outputs
-    for (auto [outputName, p_output] : args.outputPropertyPtrs)
-    {
+    for (auto [outputName, p_output] : args.outputPropertyPtrs) {
         *p_output = locals.get(outputName);
     }
 }

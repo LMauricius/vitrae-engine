@@ -7,30 +7,30 @@
 
 namespace Vitrae
 {
-    class ComponentRoot;
-    class OpenGLRenderer;
+class ComponentRoot;
+class OpenGLRenderer;
 
-    /**
-     * A Texture is a single image-like resource
-    */
-    class OpenGLTexture: public Texture
-    {
-    public:
-        OpenGLTexture(const FileLoadParams &params);
-        ~OpenGLTexture();
+/**
+ * A Texture is a single image-like resource
+ */
+class OpenGLTexture : public Texture
+{
+  public:
+    OpenGLTexture(const FileLoadParams &params);
+    ~OpenGLTexture();
 
-        void loadToGPU(OpenGLRenderer &rend);
-        void unloadFromGPU(OpenGLRenderer &rend);
+    void loadToGPU(OpenGLRenderer &rend);
+    void unloadFromGPU(OpenGLRenderer &rend);
 
-        std::size_t memory_cost() const override;
+    std::size_t memory_cost() const override;
 
-        GLuint mGLTexture;
+    GLuint mGLTexture;
 
-    protected:
-	    int mWidth, mHeight, mGLChannelFormat;
-        unsigned char *mData;
+  protected:
+    int mWidth, mHeight, mGLChannelFormat;
+    unsigned char *mData;
 
-        bool m_sentToGPU;
-    };
-    
-}
+    bool m_sentToGPU;
+};
+
+} // namespace Vitrae

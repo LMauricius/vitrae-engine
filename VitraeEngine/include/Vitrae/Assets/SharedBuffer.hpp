@@ -110,13 +110,15 @@ template <class HeaderT, class ElementT> class SharedBufferPtr
     {
         if constexpr (HAS_HEADER)
             return getFirstElementOffset() + sizeof(ElementT) * numElements;
-        else return sizeof(ElementT) * numElements;
+        else
+            return sizeof(ElementT) * numElements;
     }
     static constexpr std::size_t calcMinimumBufferSize()
     {
         if constexpr (HAS_HEADER)
             return sizeof(HeaderT);
-        else return 0;
+        else
+            return 0;
     }
 
     /**
@@ -129,8 +131,7 @@ template <class HeaderT, class ElementT> class SharedBufferPtr
                                                      .root = root,
                                                      .usage = usage,
                                                      .size = calcMinimumBufferSize()}}))
-    {
-    }
+    {}
 
     /**
      * Constructs a SharedBufferPtr with a new RawSharedBuffer allocated from the Keeper in the root
@@ -143,8 +144,7 @@ template <class HeaderT, class ElementT> class SharedBufferPtr
                                                      .root = root,
                                                      .usage = usage,
                                                      .size = calcMinimumBufferSize(numElements)}}))
-    {
-    }
+    {}
 
     /**
      * Constructs a SharedBufferPtr from a RawSharedBuffer FirmPtr

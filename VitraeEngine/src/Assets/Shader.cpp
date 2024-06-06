@@ -11,10 +11,8 @@ Shader::Shader(const ShaderParams &params)
 
     std::set<StringId> inputParams;
 
-    for (auto &task : {m_vertexTask, m_fragmentTask})
-    {
-        for (auto &[inputName, inputSpec] : task->getInputSpecs())
-        {
+    for (auto &task : {m_vertexTask, m_fragmentTask}) {
+        for (auto &[inputName, inputSpec] : task->getInputSpecs()) {
             inputParams.insert(inputName);
         }
     }
@@ -34,10 +32,8 @@ dynasma::FirmPtr<CompiledShader> Shader::compile(const ScopedDict &properties,
                                                  ComponentRoot &root) const
 {
     std::map<StringId, Variant> relevantProperties;
-    for (auto &name : m_inputParamNames)
-    {
-        if (auto propPtr = properties.getPtr(name))
-        {
+    for (auto &name : m_inputParamNames) {
+        if (auto propPtr = properties.getPtr(name)) {
             relevantProperties.insert({name, *propPtr});
         }
     }
@@ -68,8 +64,7 @@ void ShaderCompilationParams::updateHash()
     add_hash(&*m_fragmentTask);
 
     add_hash(m_compileParameters.size());
-    for (auto [name, val] : m_compileParameters)
-    {
+    for (auto [name, val] : m_compileParameters) {
         add_hash(name);
         add_hash(val);
     }

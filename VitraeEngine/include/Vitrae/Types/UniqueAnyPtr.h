@@ -15,9 +15,7 @@ class UniqueAnyPtr
 
   public:
     // constructors
-    UniqueAnyPtr() : mPtr(nullptr), mDeleter(nullptr)
-    {
-    }
+    UniqueAnyPtr() : mPtr(nullptr), mDeleter(nullptr) {}
     template <class T> UniqueAnyPtr(T *ptr)
     {
         mPtr = ptr;
@@ -69,9 +67,6 @@ class UniqueAnyPtr
         return *this;
     }
 
-    template <class T> T *get() const
-    {
-        return static_cast<T *>(mPtr);
-    }
+    template <class T> T *get() const { return static_cast<T *>(mPtr); }
 };
 } // namespace Vitrae

@@ -4,13 +4,11 @@
 
 namespace Vitrae
 {
-    
-    class Plugin
-    {
-    public:
-        virtual ~Plugin() = 0;
 
+class Plugin
+{
+  public:
+    virtual ~Plugin() = 0;
+};
 
-    };
-
-}
+} // namespace Vitrae

@@ -84,8 +84,7 @@ class OpenGLRenderer : public Renderer
     std::size_t getVertexBufferLayoutIndex(StringId name) const;
     const std::map<StringId, const GLTypeSpec &> &getAllVertexBufferSpecs() const;
 
-    enum class GpuValueStorageMethod
-    {
+    enum class GpuValueStorageMethod {
         Uniform,
         UBO,
         SSBO

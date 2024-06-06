@@ -16,7 +16,7 @@ OpenGLRenderer::OpenGLRenderer()
     getVertexBufferLayoutIndex(StandardVertexBufferNames::COLOR);
 }
 
-void OpenGLRenderer::setup(ComponentRoot& root)
+void OpenGLRenderer::setup(ComponentRoot &root)
 {
     root.setComponent<MeshKeeper>(
         Unique<MeshKeeper>(new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>()));
@@ -27,9 +27,7 @@ void OpenGLRenderer::setup(ComponentRoot& root)
                                  std::allocator<OpenGLRawSharedBuffer>>()));
 }
 
-void OpenGLRenderer::free()
-{
-}
+void OpenGLRenderer::free() {}
 
 void OpenGLRenderer::render() {}
 
@@ -89,16 +87,11 @@ const std::map<StringId, const GLTypeSpec &> &OpenGLRenderer::getAllVertexBuffer
 OpenGLRenderer::GpuValueStorageMethod OpenGLRenderer::getGpuStorageMethod(
     const GLTypeSpec &spec) const
 {
-    if (spec.glslDefinitionSnippet.empty())
-    {
+    if (spec.glslDefinitionSnippet.empty()) {
         return GpuValueStorageMethod::Uniform;
-    }
-    else if (spec.flexibleMemberSpec.has_value())
-    {
+    } else if (spec.flexibleMemberSpec.has_value()) {
         return GpuValueStorageMethod::SSBO;
-    }
-    else
-    {
+    } else {
         return GpuValueStorageMethod::UBO;
     }
 }

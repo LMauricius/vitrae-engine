@@ -21,8 +21,7 @@ template <TaskChild BasicTask> class Filter : public BasicTask
         this->m_inputSpecs = m_task->m_inputSpecs;
         this->m_outputSpecs = m_task->m_outputSpecs;
 
-        if (this->m_inputSpecs != this->m_outputSpecs)
-        {
+        if (this->m_inputSpecs != this->m_outputSpecs) {
             throw std::runtime_error("Input and output specs must be equal");
         }
 

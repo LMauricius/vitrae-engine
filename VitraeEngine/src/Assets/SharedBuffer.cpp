@@ -6,10 +6,8 @@ RawSharedBuffer::RawSharedBuffer() : m_size(0), m_bufferPtr(nullptr), m_dirtySpa
 
 void RawSharedBuffer::resize(std::size_t size)
 {
-    if (size > m_size)
-    {
-        if (m_dirtySpan.first == m_dirtySpan.second)
-        {
+    if (size > m_size) {
+        if (m_dirtySpan.first == m_dirtySpan.second) {
             m_dirtySpan.first = m_size;
         }
         m_dirtySpan.second = size;

@@ -28,26 +28,21 @@ template <TaskChild BasicTask> class Group : public BasicTask
         this->m_inputSpecs.clear();
         this->m_outputSpecs.clear();
 
-        for (auto &item : m_items)
-        {
-            for (auto [inputName, spec] : item.task->m_inputSpecs)
-            {
+        for (auto &item : m_items) {
+            for (auto [inputName, spec] : item.task->m_inputSpecs) {
                 StringId localName = item.m_inputParamsToSharedVariables.at(inputName);
                 auto i_localSpec = m_localSpecs.find(localName);
 
-                if (i_localSpec == m_localSpecs.end())
-                {
+                if (i_localSpec == m_localSpecs.end()) {
                     this->m_inputSpecs.insert({localName, spec});
                 }
             }
 
-            for (auto [outputName, spec] : item.task->m_outputSpecs)
-            {
+            for (auto [outputName, spec] : item.task->m_outputSpecs) {
                 StringId localName = item.m_outputParamsToSharedVariables.at(outputName);
                 auto i_localSpec = m_localSpecs.find(localName);
 
-                if (i_localSpec == m_localSpecs.end())
-                {
+                if (i_localSpec == m_localSpecs.end()) {
                     m_localSpecs.insert({localName, spec});
                 }
             }
@@ -67,24 +62,20 @@ template <TaskChild BasicTask> class Group : public BasicTask
 
     void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const override
     {
-        for (auto specs : {this->m_inputSpecs, this->m_outputSpecs})
-        {
-            for (auto [name, spec] : specs)
-            {
+        for (auto specs : {this->m_inputSpecs, this->m_outputSpecs}) {
+            for (auto [name, spec] : specs) {
                 typeSet.insert(&spec.typeInfo);
             }
         }
 
-        for (auto &item : m_items)
-        {
+        for (auto &item : m_items) {
             item.task->extractUsedTypes(typeSet);
         }
     }
 
     void extractSubTasks(std::set<dynasma::LazyPtr<Task>> &taskSet) const override
     {
-        for (auto &item : m_items)
-        {
+        for (auto &item : m_items) {
             taskSet.insert(item.task);
             item.task->extractSubTasks(taskSet);
         }

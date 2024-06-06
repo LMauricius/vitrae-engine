@@ -8,34 +8,34 @@
 
 namespace Vitrae
 {
-    class ComponentRoot;
+class ComponentRoot;
 
-    /**
-     * A Texture is a single image-like resource
-     */
-    class Texture : public dynasma::PolymorphicBase
+/**
+ * A Texture is a single image-like resource
+ */
+class Texture : public dynasma::PolymorphicBase
+{
+  public:
+    struct FileLoadParams
     {
-    public:
-        struct FileLoadParams
-        {
-            std::filesystem::path filepath;
-            ComponentRoot &root;
-        };
-
-        virtual std::size_t memory_cost() const = 0;
-
-        virtual ~Texture() = 0;
+        std::filesystem::path filepath;
+        ComponentRoot &root;
     };
 
-    struct TextureSeed
-    {
-        using Asset = Texture;
+    virtual std::size_t memory_cost() const = 0;
 
-        inline std::size_t load_cost() const { return 1; }
+    virtual ~Texture() = 0;
+};
 
-        std::variant<Texture::FileLoadParams> kernel;
-    };
+struct TextureSeed
+{
+    using Asset = Texture;
 
-    using TextureManager = dynasma::AbstractManager<TextureSeed>;
-    // using TextureKeeper = dynasma::AbstractKeeper<ImmediateTextureSeed>;
-}
+    inline std::size_t load_cost() const { return 1; }
+
+    std::variant<Texture::FileLoadParams> kernel;
+};
+
+using TextureManager = dynasma::AbstractManager<TextureSeed>;
+// using TextureKeeper = dynasma::AbstractKeeper<ImmediateTextureSeed>;
+} // namespace Vitrae

@@ -359,29 +359,21 @@ class Variant
 
     void freeBuffer()
     {
-        if (!m_table->hasShortObjectOptimization)
-        {
+        if (!m_table->hasShortObjectOptimization) {
             std::free(m_val.mp_longVal);
         }
     }
 
     constexpr void reallocateNBuffer(std::size_t size)
     {
-        if (!m_table->hasShortObjectOptimization)
-        {
-            if (size > sizeof(m_val.m_shortBufferVal))
-            {
+        if (!m_table->hasShortObjectOptimization) {
+            if (size > sizeof(m_val.m_shortBufferVal)) {
                 std::realloc(m_val.mp_longVal, size);
-            }
-            else
-            {
+            } else {
                 std::free(m_val.mp_longVal);
             }
-        }
-        else
-        {
-            if (size > sizeof(m_val.m_shortBufferVal))
-            {
+        } else {
+            if (size > sizeof(m_val.m_shortBufferVal)) {
                 m_val.mp_longVal = std::malloc(size);
             }
         }
@@ -389,8 +381,7 @@ class Variant
 
     constexpr void allocateNBuffer(std::size_t size)
     {
-        if (size > sizeof(m_val.m_shortBufferVal))
-        {
+        if (size > sizeof(m_val.m_shortBufferVal)) {
             m_val.mp_longVal = std::malloc(size);
         }
     }

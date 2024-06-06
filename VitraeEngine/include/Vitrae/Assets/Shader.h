@@ -62,10 +62,7 @@ struct ShaderManagerSeed
 {
     using Asset = Shader;
 
-    inline std::size_t load_cost() const
-    {
-        return 1;
-    }
+    inline std::size_t load_cost() const { return 1; }
 
     std::variant<Shader::ShaderParams> kernel;
 };
@@ -115,10 +112,7 @@ struct CompiledShaderCacherSeed
 {
     using Asset = CompiledShader;
 
-    inline std::size_t load_cost() const
-    {
-        return 1;
-    }
+    inline std::size_t load_cost() const { return 1; }
     inline bool operator<(const CompiledShaderCacherSeed &other) const
     {
         return kernel < other.kernel;
