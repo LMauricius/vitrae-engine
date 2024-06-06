@@ -89,19 +89,33 @@ using RawSharedBufferKeeper = dynasma::AbstractKeeper<RawSharedBufferKeeperSeed>
  * @tparam HeaderT the type stored at the start of the buffer. Use void if there is no header.
  * @tparam ElementT the type stored in the array after the header. Use void if there is no FAM
  */
-template <class HeaderT, class ElementT> class ShaderBufferPtr
+template <class HeaderT, class ElementT> class SharedBufferPtr
 {
+    static constexpr bool HAS_HEADER = !std::is_same_v<HeaderT, void>;
+    static constexpr bool HAS_FAM_ELEMENTS = !std::is_same_v<ElementT, void>;
+
+    // Location of the FAM adjusted for alignment
+    static constexpr std::ptrdiff_t getFirstElementOffset()
+        requires HAS_FAM_ELEMENTS
+    {
+        if constexpr (HAS_HEADER)
+            return ((sizeof(HeaderT) - 1) / alignof(ElementT) + 1) * alignof(ElementT);
+        else
+            return 0;
+    }
+
   public:
     static constexpr std::size_t calcMinimumBufferSize(std::size_t numElements)
         requires HAS_FAM_ELEMENTS
     {
-        constexpr if (HAS_HEADER) return getFirstElementOffset() + sizeof(ElementT) * numElements;
+        if constexpr (HAS_HEADER)
+            return getFirstElementOffset() + sizeof(ElementT) * numElements;
         else return sizeof(ElementT) * numElements;
     }
     static constexpr std::size_t calcMinimumBufferSize()
-        requires HAS_FAM_ELEMENTS
     {
-        constexpr if (HAS_HEADER) return sizeof(HeaderT);
+        if constexpr (HAS_HEADER)
+            return sizeof(HeaderT);
         else return 0;
     }
 
@@ -110,12 +124,11 @@ template <class HeaderT, class ElementT> class ShaderBufferPtr
      * with enough size for the HeaderT
      */
     SharedBufferPtr(ComponentRoot &root, BufferUsageHint usage)
-        requires HAS_FAM_ELEMENTS
-        : m_buffer(root.getComponent<RawSharedBufferKeeper>().new_asset(
-              {.kernel = RawSharedBuffer::SetupParams{.renderer = root.getComponent<Renderer>(),
-                                                      .root = root,
-                                                      .usage = usage,
-                                                      .size = calcMinimumBufferSize()}}))
+        : m_buffer(root.getComponent<RawSharedBufferKeeper>().new_asset(RawSharedBufferKeeperSeed{
+              .kernel = RawSharedBuffer::SetupParams{.renderer = root.getComponent<Renderer>(),
+                                                     .root = root,
+                                                     .usage = usage,
+                                                     .size = calcMinimumBufferSize()}}))
     {
     }
 
@@ -125,18 +138,18 @@ template <class HeaderT, class ElementT> class ShaderBufferPtr
      */
     SharedBufferPtr(ComponentRoot &root, BufferUsageHint usage, std::size_t numElements)
         requires HAS_FAM_ELEMENTS
-        : m_buffer(root.getComponent<RawSharedBufferKeeper>().new_asset(
-              {.kernel = RawSharedBuffer::SetupParams{.renderer = root.getComponent<Renderer>(),
-                                                      .root = root,
-                                                      .usage = usage,
-                                                      .size = calcMinimumBufferSize(numElements)}}))
+        : m_buffer(root.getComponent<RawSharedBufferKeeper>().new_asset(RawSharedBufferKeeperSeed{
+              .kernel = RawSharedBuffer::SetupParams{.renderer = root.getComponent<Renderer>(),
+                                                     .root = root,
+                                                     .usage = usage,
+                                                     .size = calcMinimumBufferSize(numElements)}}))
     {
     }
 
     /**
      * Constructs a SharedBufferPtr from a RawSharedBuffer FirmPtr
      */
-    ShaderBufferPtr(dynasma::FirmPtr<RawSharedBuffer> buffer) : m_buffer(buffer) {}
+    SharedBufferPtr(dynasma::FirmPtr<RawSharedBuffer> buffer) : m_buffer(buffer) {}
 
     /**
      * Resizes the underlying RawSharedBuffer to contain the given number of FAM elements
@@ -199,16 +212,6 @@ template <class HeaderT, class ElementT> class ShaderBufferPtr
     dynasma::FirmPtr<const RawSharedBuffer> getRawBuffer() const { return m_buffer; }
 
   protected:
-    static constexpr bool HAS_HEADER = !std::is_same_v<HeaderT, void>;
-    static constexpr bool HAS_FAM_ELEMENTS = !std::is_same_v<ElementT, void>;
-
-    // Location of the FAM adjusted for alignment
-    static constexpr std::ptrdiff_t getFirstElementOffset() const
-        requires HAS_FAM_ELEMENTS
-    {
-        return ((HEADER_SIZE - 1) / alignof(ElementT) + 1) * alignof(ElementT);
-    }
-
     dynasma::FirmPtr<RawSharedBuffer> m_buffer;
 };
 
