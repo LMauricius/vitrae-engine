@@ -47,12 +47,17 @@ class ComponentRoot
     /**
     Sets the component of a particular type and
     takes its ownership.
-    @param man The component pointer to set
+    @param comp The component pointer to set
     */
     template <class T> void setComponent(Unique<T> comp)
     {
         UniqueAnyPtr &myvar = getGenericStorageVariable<T>();
         myvar = std::move(comp);
+    }
+    template <class T> void setComponent(T *p_comp)
+    {
+        UniqueAnyPtr &myvar = getGenericStorageVariable<T>();
+        myvar = std::move(Unique<T>(p_comp));
     }
 
     /**
