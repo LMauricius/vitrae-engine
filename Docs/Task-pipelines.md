@@ -38,7 +38,7 @@ Both are based on `AbstractTask` pipelines, and support properties of similar ty
 - Shading:
     - Basic task: ShaderTask
     - Primitive tasks:
-        - ShaderCode
+        - ShaderFunction
         - ShaderLoop
     - Value getters:
         - ShaderConstant
