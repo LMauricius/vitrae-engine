@@ -43,7 +43,7 @@ Both are based on `AbstractTask` pipelines, and support properties of similar ty
     - Value getters:
         - ShaderConstant
     - End results:
-        - `fragment_color` - The color of a pixel in ImageShader
+        - `fragment_shade` - The color of a pixel in SurfaceShader
         - `computed_data` - Output data of a ComputeShader
 - Rendering:
     - Basic task: HostTask

@@ -133,7 +133,7 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     std::vector<dynasma::FirmPtr<Method>> m_fallbackMethods;
 
     mutable std::size_t m_preferenceOrderHash;
-    std::function<void(dynasma::FirmPtr<Method> changed)> m_preferenceChangeListeners;
+    std::function<void(const Method &changed)> m_preferenceChangeListeners;
 
     void updatePreferenceOrderHash() const
     {
@@ -146,7 +146,7 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
         if (m_preferenceOrderHash != newHash) {
             m_preferenceOrderHash = newHash;
             for (auto listener : m_preferenceChangeListeners) {
-                listener(dynasma::FirmPtr<Method>(this));
+                listener(*this);
             }
         }
     }
