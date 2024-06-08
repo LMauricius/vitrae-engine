@@ -7,7 +7,8 @@ namespace Vitrae
 {
 
 OpenGLShaderFunction::OpenGLShaderFunction(const SetupParams &params)
-    : ShaderFunction(params), m_functionName(params.functionName)
+    : ShaderFunction(params), ShaderTask(params.inputSpecs, params.outputSpecs),
+      OpenGLShaderTask(params.inputSpecs, params.outputSpecs), m_functionName(params.functionName)
 {
     for (const auto &spec : params.inputSpecs) {
         m_inputOrder.emplace_back(spec.name);
@@ -26,6 +27,20 @@ std::size_t OpenGLShaderFunction::memory_cost() const
 {
     /// TODO: Calculate the cost of the function
     return 1;
+}
+
+void OpenGLShaderFunction::extractUsedTypes(std::set<const TypeInfo *> &typeSet) const
+{
+    for (auto &specs : {m_inputSpecs, m_outputSpecs}) {
+        for (auto [nameId, spec] : specs) {
+            typeSet.insert(&spec.typeInfo);
+        }
+    }
+}
+
+void OpenGLShaderFunction::extractSubTasks(std::set<const Task *> &taskSet) const
+{
+    taskSet.insert(this);
 }
 
 void OpenGLShaderFunction::outputDeclarationCode(BuildContext args) const
@@ -86,7 +101,5 @@ void OpenGLShaderFunction::outputUsageCode(
     }
     args.output << ");\n";
 }
-
-void OpenGLShaderFunction::hookSetupFunctions(SetupContext args) const {}
 
 } // namespace Vitrae

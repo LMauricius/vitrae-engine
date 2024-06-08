@@ -23,13 +23,14 @@ class OpenGLShaderFunction : public ShaderFunction, public OpenGLShaderTask
     ~OpenGLShaderFunction() = default;
 
     std::size_t memory_cost() const override;
+    void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const override;
+    void extractSubTasks(std::set<const Task *> &taskSet) const override;
 
     void outputDeclarationCode(BuildContext args) const override;
     void outputDefinitionCode(BuildContext args) const override;
     void outputUsageCode(
         BuildContext args, const std::map<StringId, String> &inputParamsToSharedVariables,
         const std::map<StringId, String> &outputParamsToSharedVariables) const override;
-    void hookSetupFunctions(SetupContext args) const override;
 };
 
 } // namespace Vitrae

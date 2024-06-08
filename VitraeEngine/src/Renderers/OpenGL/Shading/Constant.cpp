@@ -3,7 +3,12 @@
 
 namespace Vitrae
 {
-OpenGLShaderConstant::OpenGLShaderConstant(const SetupParams &params) : ShaderConstant(params) {}
+OpenGLShaderConstant::OpenGLShaderConstant(const SetupParams &params)
+    : ShaderConstant(params), ShaderTask({}, {{params.outputSpec.name, params.outputSpec}}),
+      OpenGLShaderTask(
+          std::map<StringId, PropertySpec>{},
+          std::map<StringId, PropertySpec>{{params.outputSpec.name, params.outputSpec}})
+{}
 
 std::size_t OpenGLShaderConstant::memory_cost() const
 {
@@ -11,6 +16,14 @@ std::size_t OpenGLShaderConstant::memory_cost() const
     return 1;
 }
 
+void OpenGLShaderConstant::extractUsedTypes(std::set<const TypeInfo *> &typeSet) const
+{
+    typeSet.insert(&m_outputSpec.typeInfo);
+}
+void OpenGLShaderConstant::extractSubTasks(std::set<const Task *> &taskSet) const
+{
+    taskSet.insert(this);
+}
 void OpenGLShaderConstant::outputDeclarationCode(BuildContext args) const
 {
     OpenGLRenderer &renderer = static_cast<OpenGLRenderer &>(args.renderer);
@@ -29,7 +42,5 @@ void OpenGLShaderConstant::outputUsageCode(
     args.output << outputParamsToSharedVariables.at(m_outputNameId) << " = C_" << m_outputSpec.name
                 << ";\n";
 }
-
-void OpenGLShaderConstant::hookSetupConstants(SetupContext args) const {}
 
 } // namespace Vitrae

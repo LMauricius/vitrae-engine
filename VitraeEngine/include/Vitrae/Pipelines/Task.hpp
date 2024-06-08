@@ -61,7 +61,7 @@ class Task : public dynasma::PolymorphicBase
     inline std::map<StringId, PropertySpec> &getInputSpecs() { return m_inputSpecs; }
     inline std::map<StringId, PropertySpec> &getOutputSpecs() { return m_outputSpecs; }
     virtual void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const = 0;
-    virtual void extractSubTasks(std::set<dynasma::LazyPtr<Task>> &taskSet) const = 0;
+    virtual void extractSubTasks(std::set<const Task *> &taskSet) const = 0;
 };
 
 template <class T>

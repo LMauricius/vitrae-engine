@@ -14,8 +14,6 @@ class OpenGLRenderer;
 class OpenGLShaderTask : public virtual ShaderTask
 {
   public:
-    using ShaderTask::ShaderTask;
-
     struct BuildContext
     {
         std::stringstream &output;
@@ -34,12 +32,13 @@ class OpenGLShaderTask : public virtual ShaderTask
         OpenGLRenderer &renderer;
     };
 
+    using ShaderTask::ShaderTask;
+
     virtual void outputDeclarationCode(BuildContext args) const = 0;
     virtual void outputDefinitionCode(BuildContext args) const = 0;
     virtual void outputUsageCode(
         BuildContext args, const std::map<StringId, String> &inputParamsToSharedVariables,
         const std::map<StringId, String> &outputParamsToSharedVariables) const = 0;
-    virtual void hookSetupFunctions(SetupContext args) const = 0;
 };
 
 } // namespace Vitrae
