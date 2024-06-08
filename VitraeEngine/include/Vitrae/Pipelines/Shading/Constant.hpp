@@ -9,12 +9,8 @@
 namespace Vitrae
 {
 
-class ShaderConstant : public ShaderTask
+class ShaderConstant : public virtual ShaderTask
 {
-    StringId outputNameId;
-    PropertySpec outputSpec;
-    Variant value;
-
   public:
     struct SetupParams
     {
@@ -24,8 +20,14 @@ class ShaderConstant : public ShaderTask
 
     inline ShaderConstant(const SetupParams &params)
         : ShaderTask({}, {{params.outputSpec.name, params.outputSpec}}),
-          outputNameId(params.outputSpec.name), outputSpec(params.outputSpec), value(params.value)
+          m_outputNameId(params.outputSpec.name), m_outputSpec(params.outputSpec),
+          m_value(params.value)
     {}
+
+  protected:
+    StringId m_outputNameId;
+    PropertySpec m_outputSpec;
+    Variant m_value;
 };
 
 struct ShaderConstantKeeperSeed
