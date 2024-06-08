@@ -27,7 +27,34 @@ class Task : public dynasma::PolymorphicBase
     std::map<StringId, PropertySpec> m_outputSpecs;
 
   public:
+    Task() = delete;
+    Task(Task const &) = default;
+    Task(Task &&) = default;
+
+    template <class ContainerT>
+    inline Task(ContainerT inputSpecs, ContainerT outputSpecs)
+        requires(std::ranges::range<ContainerT> &&
+                 std::convertible_to<std::ranges::range_value_t<ContainerT>, const PropertySpec &>)
+    {
+        for (const auto &spec : inputSpecs) {
+            m_inputSpecs.emplace(spec.name, spec);
+        }
+        for (const auto &spec : outputSpecs) {
+            m_outputSpecs.emplace(spec.name, spec);
+        }
+    }
+    inline Task(const std::map<StringId, PropertySpec> &inputSpecs,
+                const std::map<StringId, PropertySpec> &outputSpecs)
+        : m_inputSpecs(inputSpecs), m_outputSpecs(outputSpecs)
+    {}
+    inline Task(std::map<StringId, PropertySpec> &&inputSpecs,
+                std::map<StringId, PropertySpec> &&outputSpecs)
+        : m_inputSpecs(std::move(inputSpecs)), m_outputSpecs(std::move(outputSpecs))
+    {}
     virtual ~Task() = default;
+
+    Task &operator=(Task const &) = default;
+    Task &operator=(Task &&) = default;
 
     virtual std::size_t memory_cost() const = 0;
 
