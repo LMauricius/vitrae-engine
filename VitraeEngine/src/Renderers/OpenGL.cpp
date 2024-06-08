@@ -1,6 +1,8 @@
 #include "Vitrae/Renderers/OpenGL.hpp"
 #include "Vitrae/ComponentRoot.hpp"
 #include "Vitrae/Renderers/OpenGL/Mesh.hpp"
+#include "Vitrae/Renderers/OpenGL/Shading/Constant.hpp"
+#include "Vitrae/Renderers/OpenGL/Shading/Function.hpp"
 #include "Vitrae/Renderers/OpenGL/SharedBuffer.hpp"
 #include "Vitrae/Renderers/OpenGL/Texture.hpp"
 
@@ -19,12 +21,16 @@ OpenGLRenderer::OpenGLRenderer()
 void OpenGLRenderer::setup(ComponentRoot &root)
 {
     root.setComponent<MeshKeeper>(
-        Unique<MeshKeeper>(new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>()));
-    root.setComponent<TextureManager>(Unique<TextureManager>(
-        new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>()));
-    root.setComponent<RawSharedBufferKeeper>(Unique<RawSharedBufferKeeper>(
+        new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>());
+    root.setComponent<TextureManager>(
+        new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>());
+    root.setComponent<RawSharedBufferKeeper>(
         new dynasma::NaiveKeeper<RawSharedBufferKeeperSeed,
-                                 std::allocator<OpenGLRawSharedBuffer>>()));
+                                 std::allocator<OpenGLRawSharedBuffer>>());
+    root.setComponent<ShaderConstantKeeper>(
+        new dynasma::NaiveKeeper<ShaderConstantKeeperSeed, std::allocator<OpenGLShaderConstant>>());
+    root.setComponent<ShaderFunctionKeeper>(
+        new dynasma::NaiveKeeper<ShaderFunctionKeeperSeed, std::allocator<OpenGLShaderFunction>>());
 }
 
 void OpenGLRenderer::free() {}
