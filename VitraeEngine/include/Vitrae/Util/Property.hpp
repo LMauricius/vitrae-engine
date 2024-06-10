@@ -106,7 +106,7 @@ class Variant
 
         // empty constructor
         if constexpr (requires { new T(); }) {
-            table.emptyConstructor = [](Variant &self) { return new (&self.get<T>()) T(); };
+            table.emptyConstructor = [](Variant &self) { new (&self.get<T>()) T(); };
         } else {
             table.emptyConstructor = [](Variant &self) {};
         }
@@ -114,7 +114,7 @@ class Variant
         // copy constructor
         if constexpr (requires(const T &t) { new T(t); }) {
             table.copyConstructor = [](Variant &self, const Variant &other) {
-                return new (&self.get<T>()) T(other.get<T>());
+                new (&self.get<T>()) T(other.get<T>());
             };
         } else {
             table.copyConstructor = [](Variant &self, const Variant &other) {};
@@ -123,7 +123,7 @@ class Variant
         // move constructor
         if constexpr (requires(T &&t) { new T(t); }) {
             table.moveConstructor = [](Variant &self, Variant &other) {
-                return new (&self.get<T>()) T(std::move(other.get<T>()));
+                new (&self.get<T>()) T(std::move(other.get<T>()));
             };
         } else {
             table.moveConstructor = [](Variant &self, Variant &other) {};
@@ -227,7 +227,10 @@ class Variant
     /**
      * @returns a compile-time reference to the PropertyFuncTable for the specified type.
      */
-    template <class T> static constexpr TypeInfo &getTypeInfo() { return V_TABLE<std::decay_t<T>>; }
+    template <class T> static constexpr const TypeInfo &getTypeInfo()
+    {
+        return V_TABLE<std::decay_t<T>>;
+    }
 
     // constructors
 
