@@ -22,19 +22,20 @@ template <TaskChild BasicTask> class Pipeline
      * @param method The preffered method
      * @param desiredOutputNameIds The desired outputs
      */
-    Pipeline(dynasma::FirmPtr<Method<BasicTask>> method, std::span<PropertySpec> desiredOutputSpecs)
+    Pipeline(dynasma::FirmPtr<Method<BasicTask>> method,
+             std::span<const PropertySpec> desiredOutputSpecs)
     {
         // store outputs
         for (auto &outputSpec : desiredOutputSpecs) {
-            outputSpecs[outputSpec.name] = outputSpec;
+            outputSpecs.emplace(outputSpec.name, outputSpec);
         }
 
         // solve dependencies
         std::set<dynasma::FirmPtr<BasicTask>> visitedTasks;
-        std::map<StringId, bool> visitedOutputs;
+        std::set<StringId> visitedOutputs;
 
         for (auto &outputSpec : desiredOutputSpecs) {
-            tryAddDependency(outputSpec);
+            tryAddDependency(*method, visitedOutputs, outputSpec);
         }
     }
 
@@ -42,36 +43,37 @@ template <TaskChild BasicTask> class Pipeline
     std::vector<PipeItem> items;
 
   protected:
-    bool tryAddDependency(std::set<StringId> &visitedOutputs, const PropertySpec &desiredOutputSpec,
-                          bool isPipelineOutput)
+    bool tryAddDependency(const Method<BasicTask> &method, std::set<StringId> &visitedOutputs,
+                          const PropertySpec &desiredOutputSpec)
     {
         if (visitedOutputs.find(desiredOutputSpec.name) == visitedOutputs.end()) {
-            std::optional<dynasma::FirmPtr<BasicTask>> task = method->getTask(outputNameId);
+            std::optional<dynasma::FirmPtr<BasicTask>> task =
+                method.getTask(desiredOutputSpec.name);
 
             if (task.has_value()) {
 
                 // task inputs (also handle deps)
                 std::map<StringId, StringId> inputToLocalVariables;
-                for (auto &inputSpec : task.value()->getInputSpecs()) {
-                    tryAddDependency(desiredOutputSpec);
+                for (auto [inputNameId, inputSpec] : task.value()->getInputSpecs()) {
+                    tryAddDependency(method, visitedOutputs, desiredOutputSpec);
                     inputToLocalVariables.emplace(inputSpec.name, inputSpec.name);
                 }
 
                 // task outputs (store the outputs as visited)
                 std::map<StringId, StringId> outputToLocalVariables;
-                for (auto &taskOutputSpec : task.value()->getOutputSpecs()) {
+                for (auto [taskOutputNameId, taskOutputSpec] : task.value()->getOutputSpecs()) {
                     if (outputSpecs.find(taskOutputSpec.name) == outputSpecs.end() &&
                         localSpecs.find(taskOutputSpec.name) == localSpecs.end()) {
-                        localSpecs[taskOutputSpec.name] = taskOutputSpec;
+                        localSpecs.emplace(taskOutputSpec.name, taskOutputSpec);
 
                         visitedOutputs.insert(taskOutputSpec.name);
                     }
                     outputToLocalVariables.emplace(taskOutputSpec.name, taskOutputSpec.name);
                 }
 
-                items.emplace_back({task.value(), inputToLocalVariables, outputToLocalVariables});
+                items.push_back({task.value(), inputToLocalVariables, outputToLocalVariables});
             } else {
-                inputSpecs[desiredOutputSpec.name] = desiredOutputSpec;
+                inputSpecs.emplace(desiredOutputSpec.name, desiredOutputSpec.name);
 
                 visitedOutputs.insert(desiredOutputSpec.name);
             }
