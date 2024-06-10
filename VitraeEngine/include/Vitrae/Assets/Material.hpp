@@ -52,4 +52,15 @@ struct ImmediateMaterialSeed
 
 // using MaterialManager = dynasma::AbstractManager<MaterialSeed>;
 using MaterialKeeper = dynasma::AbstractKeeper<ImmediateMaterialSeed>;
+
+/**
+ * Namespace containing all standard material texture names
+ */
+namespace StandardMaterialTextureNames
+{
+constexpr const char DIFFUSE[] = "tex_diffuse";
+constexpr const char SPECULAR[] = "tex_specular";
+constexpr const char EMISSIVE[] = "tex_emissive";
+} // namespace StandardMaterialTextureNames
+
 } // namespace Vitrae

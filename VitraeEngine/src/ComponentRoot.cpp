@@ -47,9 +47,9 @@ ComponentRoot::ComponentRoot()
     /*
     Texture types
     */
-    addAiMaterialTextureInfo({"diffuse", aiTextureType_DIFFUSE});
-    addAiMaterialTextureInfo({"specular", aiTextureType_SPECULAR});
-    addAiMaterialTextureInfo({"emissive", aiTextureType_EMISSIVE});
+    addAiMaterialTextureInfo({StandardMaterialTextureNames::DIFFUSE, aiTextureType_DIFFUSE});
+    addAiMaterialTextureInfo({StandardMaterialTextureNames::SPECULAR, aiTextureType_SPECULAR});
+    addAiMaterialTextureInfo({StandardMaterialTextureNames::EMISSIVE, aiTextureType_EMISSIVE});
 }
 
 ComponentRoot::~ComponentRoot() {}
