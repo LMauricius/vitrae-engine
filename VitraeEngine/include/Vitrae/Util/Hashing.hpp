@@ -5,7 +5,7 @@
 namespace Vitrae
 {
 
-template <std::size_t N> inline void combinedHashes(std::size_t (*hashes)[N])
+template <std::size_t N> inline std::size_t combinedHashes(std::size_t (*hashes)[N])
 {
     std::size_t seed = 0;
 
