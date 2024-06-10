@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Vitrae/Assets/Texture.hpp"
+#include "Vitrae/Pipelines/Method.hpp"
+#include "Vitrae/Pipelines/Shading/Task.hpp"
 #include "Vitrae/Util/NonCopyable.hpp"
 
 #include "assimp/material.h"
@@ -27,6 +30,15 @@ class Material : public dynasma::PolymorphicBase
     virtual ~Material();
 
     std::size_t memory_cost() const;
+
+    dynasma::FirmPtr<Method<ShaderTask>> getVertexMethod() const;
+    dynasma::FirmPtr<Method<ShaderTask>> getFragmentMethod() const;
+    const std::map<StringId, dynasma::LazyPtr<Texture>> &getTextures() const;
+
+  protected:
+    dynasma::FirmPtr<Method<ShaderTask>> m_vertexMethod;
+    dynasma::FirmPtr<Method<ShaderTask>> m_fragmentMethod;
+    std::map<StringId, dynasma::LazyPtr<Texture>> m_textures;
 };
 
 struct ImmediateMaterialSeed
