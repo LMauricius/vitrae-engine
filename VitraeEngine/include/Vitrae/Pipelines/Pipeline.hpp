@@ -12,7 +12,7 @@ template <TaskChild BasicTask> class Pipeline
   public:
     struct PipeItem
     {
-        dynasma::FirmPtr<BasicTask> task;
+        dynasma::FirmPtr<BasicTask> p_task;
         std::map<StringId, StringId> inputToLocalVariables;
         std::map<StringId, StringId> outputToLocalVariables;
     };
@@ -22,7 +22,7 @@ template <TaskChild BasicTask> class Pipeline
      * @param method The preffered method
      * @param desiredOutputNameIds The desired outputs
      */
-    Pipeline(dynasma::FirmPtr<Method<BasicTask>> method,
+    Pipeline(dynasma::FirmPtr<Method<BasicTask>> p_method,
              std::span<const PropertySpec> desiredOutputSpecs)
     {
         // store outputs
@@ -35,16 +35,18 @@ template <TaskChild BasicTask> class Pipeline
         std::set<StringId> visitedOutputs;
 
         for (auto &outputSpec : desiredOutputSpecs) {
-            tryAddDependency(*method, visitedOutputs, outputSpec);
+            tryAddDependency(*p_method, visitedOutputs, outputSpec, true);
         }
     }
 
+    // pipethrough variables are those that are just passed from inputs to outputs, unprocessed
     std::map<StringId, PropertySpec> localSpecs, inputSpecs, outputSpecs;
+    std::set<StringId> pipethroughInputNames;
     std::vector<PipeItem> items;
 
   protected:
-    bool tryAddDependency(const Method<BasicTask> &method, std::set<StringId> &visitedOutputs,
-                          const PropertySpec &desiredOutputSpec)
+    void tryAddDependency(const Method<BasicTask> &method, std::set<StringId> &visitedOutputs,
+                          const PropertySpec &desiredOutputSpec, bool isFinalOutput)
     {
         if (visitedOutputs.find(desiredOutputSpec.name) == visitedOutputs.end()) {
             std::optional<dynasma::FirmPtr<BasicTask>> task =
@@ -55,7 +57,7 @@ template <TaskChild BasicTask> class Pipeline
                 // task inputs (also handle deps)
                 std::map<StringId, StringId> inputToLocalVariables;
                 for (auto [inputNameId, inputSpec] : task.value()->getInputSpecs()) {
-                    tryAddDependency(method, visitedOutputs, desiredOutputSpec);
+                    tryAddDependency(method, visitedOutputs, desiredOutputSpec, false);
                     inputToLocalVariables.emplace(inputSpec.name, inputSpec.name);
                 }
 
@@ -73,7 +75,11 @@ template <TaskChild BasicTask> class Pipeline
 
                 items.push_back({task.value(), inputToLocalVariables, outputToLocalVariables});
             } else {
-                inputSpecs.emplace(desiredOutputSpec.name, desiredOutputSpec.name);
+                inputSpecs.emplace(desiredOutputSpec.name, desiredOutputSpec);
+
+                if (isFinalOutput) {
+                    pipethroughInputNames.insert(desiredOutputSpec.name);
+                }
 
                 visitedOutputs.insert(desiredOutputSpec.name);
             }
