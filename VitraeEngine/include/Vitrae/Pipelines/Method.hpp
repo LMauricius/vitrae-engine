@@ -8,6 +8,7 @@
 #include "dynasma/util/dynamic_typing.hpp"
 
 #include <map>
+#include <optional>
 #include <vector>
 
 namespace Vitrae
@@ -41,17 +42,13 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     Method(const MethodParams &params)
     {
         for (auto task : params.tasks) {
-            for (StringId[outputId, outputSpec] : task->getOutputSpecs()) {
-                m_tasks[outputId] = task;
+            for (auto [outputId, outputSpec] : task->getOutputSpecs()) {
+                m_tasksPerOutput[outputId] = task;
             }
         }
         for (auto method : params.fallbackMethods) {
             m_fallbackMethods.push_back(method);
-            method->m_preferenceChangeListeners.push_back(
-                [this](dynasma::FirmPtr<Method> changed) { updatePreferenceOrderHash(); })
         }
-
-        updatePreferenceOrderHash();
     }
 
     // Destructor
@@ -77,7 +74,6 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
         for (auto [outputId, outputSpec] : task->getOutputSpecs()) {
             m_tasksPerOutput[outputId] = task;
         }
-        updatePreferenceOrderHash();
     }
 
     /**
@@ -104,8 +100,6 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     void registerFallbackMethod(dynasma::FirmPtr<Method> method)
     {
         m_fallbackMethods.push_back(method);
-        method->m_preferenceChangeListeners.push_back(
-            [this](dynasma::FirmPtr<Method> changed) { updatePreferenceOrderHash(); });
     }
 
     /**
@@ -117,39 +111,12 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
         if (it != m_fallbackMethods.end()) {
             m_fallbackMethods.erase(it);
             m_fallbackMethods.push_front(method);
-            updatePreferenceOrderHash();
         }
     }
-
-    /**
-     * @returns A hash depicting the current preference order.
-     * If the fallback order changes, or does for any of the fallback methods, the hash gets
-     * updated
-     */
-    inline std::size_t getPreferenceOrderHash() const { return m_preferenceOrderHash; }
 
   protected:
     std::map<StringId, dynasma::FirmPtr<BasicTask>> m_tasksPerOutput;
     std::vector<dynasma::FirmPtr<Method>> m_fallbackMethods;
-
-    mutable std::size_t m_preferenceOrderHash;
-    std::function<void(const Method &changed)> m_preferenceChangeListeners;
-
-    void updatePreferenceOrderHash() const
-    {
-        std::size_t newHash = 0;
-
-        for (auto method : m_fallbackMethods) {
-            newHash = combinedHashes(newHash, method->getPreferenceOrderHash());
-        }
-
-        if (m_preferenceOrderHash != newHash) {
-            m_preferenceOrderHash = newHash;
-            for (auto listener : m_preferenceChangeListeners) {
-                listener(*this);
-            }
-        }
-    }
 };
 
 } // namespace Vitrae
