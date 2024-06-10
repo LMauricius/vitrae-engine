@@ -6,14 +6,15 @@
 namespace Vitrae
 {
 
+class Renderer;
+
 struct RenderRunContext
 {
-    const ScopedDict &properties;
-    const std::map<StringId, const Variant *> &inputPropertyPtrs;
-    const std::map<StringId, Variant *> &outputPropertyPtrs;
+    ScopedDict &properties;
+    Renderer &renderer;
 };
 
-class RenderTask : public Task
+class ComposeTask : public Task
 {
   protected:
   public:

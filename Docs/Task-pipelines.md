@@ -46,12 +46,12 @@ Both are based on `AbstractTask` pipelines, and support properties of similar ty
         - `fragment_shade` - The color of a pixel in SurfaceShader
         - `computed_data` - Output data of a ComputeShader
 - Rendering:
-    - Basic task: HostTask
+    - Basic task: ComposeTask
     - Primitive tasks:
-        - RenderView
-        - ExecuteFunction
-        - ExecuteComputeShader
+        - ComposeSceneRender
+        - ComposeFunction
+        - ComposeComputeShader
     - Value getters:
-        - HostConstant
+        - ComposeConstant
     - End results:
         - `display` - A token result representing a finished image.
