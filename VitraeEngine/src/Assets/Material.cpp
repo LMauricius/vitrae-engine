@@ -23,9 +23,9 @@ Material::Material(const AssimpLoadParams &params)
 
     // Get all textures
     for (auto &textureInfo : params.root.getAiMaterialTextureInfos()) {
-        for (int i = 0; i < params.p_extMaterial->GetTextureCount(textureInfo.aiTextureType); i++) {
+        for (int i = 0; i < params.p_extMaterial->GetTextureCount(textureInfo.aiTextureId); i++) {
             aiString path;
-            params.p_extMaterial->GetTexture(textureInfo.aiTextureType, i, &path);
+            params.p_extMaterial->GetTexture(textureInfo.aiTextureId, i, &path);
             m_textures[textureInfo.textureNameId] = textureManager.register_asset(
                 {Texture::FileLoadParams{.filepath = path.C_Str(), .root = params.root}});
         }

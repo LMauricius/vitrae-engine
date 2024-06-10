@@ -126,7 +126,7 @@ class ComponentRoot
     struct AiMaterialTextureInfo
     {
         StringId textureNameId;
-        aiTextureType aiTextureType;
+        aiTextureType aiTextureId;
     };
 
     void addAiMaterialTextureInfo(AiMaterialTextureInfo newInfo);
