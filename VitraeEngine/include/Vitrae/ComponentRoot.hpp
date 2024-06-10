@@ -1,10 +1,13 @@
 #pragma once
 
+#include "Vitrae/Pipelines/Method.hpp"
+#include "Vitrae/Pipelines/Shading/Task.hpp"
 #include "Vitrae/Types/Typedefs.hpp"
 #include "Vitrae/Types/UniqueAnyPtr.hpp"
 #include "Vitrae/Util/StringId.hpp"
 #include "Vitrae/Util/UniqueId.hpp"
 
+#include "assimp/material.h"
 #include "dynasma/cachers/abstract.hpp"
 #include "dynasma/managers/abstract.hpp"
 #include "dynasma/pointer.hpp"
@@ -19,16 +22,11 @@ class aiMesh;
 
 namespace Vitrae
 {
-class SourceShaderStep;
-class GroupShaderStep;
-class SwitchShaderStep;
-class Shader;
 class Texture;
 class Material;
 class Mesh;
 class Model;
-class RenderStep;
-class RenderPlan;
+class ShaderTask;
 
 /*
 A HUB of multiple asset managers and other components.
@@ -116,6 +114,24 @@ class ComponentRoot
         this->getMeshBufferInfoList<aiType>().push_back(newInfo);
     }
 
+    struct AiMaterialShadingInfo
+    {
+        dynasma::LazyPtr<Method<ShaderTask>> vertexMethod;
+        dynasma::LazyPtr<Method<ShaderTask>> fragmentMethod;
+    };
+
+    void addAiMaterialShadingInfo(aiShadingMode aiMode, AiMaterialShadingInfo newInfo);
+    const AiMaterialShadingInfo &getAiMaterialShadingInfo(aiShadingMode aiMode) const;
+
+    struct AiMaterialTextureInfo
+    {
+        StringId textureNameId;
+        aiTextureType aiTextureType;
+    };
+
+    void addAiMaterialTextureInfo(AiMaterialTextureInfo newInfo);
+    std::span<const AiMaterialTextureInfo> getAiMaterialTextureInfos() const;
+
     /*
     === Streams ===
     */
@@ -156,6 +172,8 @@ class ComponentRoot
 
     std::map<size_t, UniqueAnyPtr> mCustomComponents;
     std::map<size_t, UniqueAnyPtr> m_aiMeshInfoLists;
+    std::map<aiShadingMode, AiMaterialShadingInfo> mAiMaterialShadingInfo;
+    std::vector<AiMaterialTextureInfo> mAiMaterialTextureInfos;
 
     std::ostream *mErrStream, *mInfoStream, *mWarningStream;
 };

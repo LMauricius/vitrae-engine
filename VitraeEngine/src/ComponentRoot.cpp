@@ -43,7 +43,37 @@ ComponentRoot::ComponentRoot()
                  return nullptr;
              }
          }});
+
+    /*
+    Texture types
+    */
+    addAiMaterialTextureInfo({"diffuse", aiTextureType_DIFFUSE});
+    addAiMaterialTextureInfo({"specular", aiTextureType_SPECULAR});
+    addAiMaterialTextureInfo({"emissive", aiTextureType_EMISSIVE});
 }
 
 ComponentRoot::~ComponentRoot() {}
+
+void ComponentRoot::addAiMaterialShadingInfo(aiShadingMode aiMode, AiMaterialShadingInfo newInfo)
+{
+    mAiMaterialShadingInfo[aiMode] = newInfo;
+}
+
+const ComponentRoot::AiMaterialShadingInfo &ComponentRoot::getAiMaterialShadingInfo(
+    aiShadingMode aiMode) const
+{
+    return mAiMaterialShadingInfo.at(aiMode);
+}
+
+void ComponentRoot::addAiMaterialTextureInfo(AiMaterialTextureInfo newInfo)
+{
+    mAiMaterialTextureInfos.push_back(newInfo);
+}
+
+std::span<const ComponentRoot::AiMaterialTextureInfo> ComponentRoot::getAiMaterialTextureInfos()
+    const
+{
+    return mAiMaterialTextureInfos;
+}
+
 } // namespace Vitrae
