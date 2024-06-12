@@ -22,6 +22,10 @@ class ComposeConstant : public virtual ComposeTask
     ~ComposeConstant() = default;
 
     void run(RenderRunContext args) const override;
+    void prepareRequiredFrameStores(
+        std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const override;
+    void prepareRequiredTextures(
+        std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const override;
 
   protected:
     StringId m_outputNameId;
