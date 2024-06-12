@@ -33,12 +33,12 @@ class Material : public dynasma::PolymorphicBase
 
     dynasma::FirmPtr<Method<ShaderTask>> getVertexMethod() const;
     dynasma::FirmPtr<Method<ShaderTask>> getFragmentMethod() const;
-    const std::map<StringId, dynasma::LazyPtr<Texture>> &getTextures() const;
+    const std::map<StringId, dynasma::FirmPtr<Texture>> &getTextures() const;
 
   protected:
     dynasma::FirmPtr<Method<ShaderTask>> m_vertexMethod;
     dynasma::FirmPtr<Method<ShaderTask>> m_fragmentMethod;
-    std::map<StringId, dynasma::LazyPtr<Texture>> m_textures;
+    std::map<StringId, dynasma::FirmPtr<Texture>> m_textures;
 };
 
 struct ImmediateMaterialSeed

@@ -51,7 +51,7 @@ dynasma::FirmPtr<Method<ShaderTask>> Material::getFragmentMethod() const
     return m_fragmentMethod;
 }
 
-const std::map<StringId, dynasma::LazyPtr<Texture>> &Material::getTextures() const
+const std::map<StringId, dynasma::FirmPtr<Texture>> &Material::getTextures() const
 {
     return m_textures;
 }
