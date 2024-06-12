@@ -15,6 +15,7 @@ class ComposeSceneRender : public virtual ComposeTask
     struct SetupParams
     {
         ComponentRoot &root;
+        String viewInputPropertyName;
         String perspectiveInputPropertyName;
         String displayOutputPropertyName;
     };
