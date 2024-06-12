@@ -12,25 +12,31 @@ OpenGLFrameStore::OpenGLFrameStore(const FrameStore::TextureBindParams &params)
     glGenFramebuffers(1, &glFramebufferId);
     glBindFramebuffer(GL_FRAMEBUFFER, glFramebufferId);
 
-    if (params.p_colorTexture.has_value()) {
-        auto p_texture =
-            dynasma::dynamic_pointer_cast<OpenGLTexture>(params.p_colorTexture.value());
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                               p_texture->glTextureId, 0);
-    }
+    int width, height;
 
     if (params.p_depthTexture.has_value()) {
         auto p_texture =
             dynasma::dynamic_pointer_cast<OpenGLTexture>(params.p_depthTexture.value());
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,
                                p_texture->glTextureId, 0);
+        width = p_texture->getSize().x;
+        height = p_texture->getSize().y;
+    }
+
+    if (params.p_colorTexture.has_value()) {
+        auto p_texture =
+            dynasma::dynamic_pointer_cast<OpenGLTexture>(params.p_colorTexture.value());
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               p_texture->glTextureId, 0);
+        width = p_texture->getSize().x;
+        height = p_texture->getSize().y;
     }
 
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    m_contextSwitcher = FramebufferContextSwitcher{glFramebufferId};
+    m_contextSwitcher = FramebufferContextSwitcher{width, height, glFramebufferId};
 }
 
 OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
@@ -81,9 +87,10 @@ OpenGLFrameStore::~OpenGLFrameStore()
     std::visit([](auto &&contextSwitcher) { contextSwitcher.destroyContext(); }, m_contextSwitcher);
 }
 
-void OpenGLFrameStore::startRender()
+void OpenGLFrameStore::startRender(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
-    std::visit([](auto &&contextSwitcher) { contextSwitcher.enterContext(); }, m_contextSwitcher);
+    std::visit([&](auto &&contextSwitcher) { contextSwitcher.enterContext(topLeft, bottomRight); },
+               m_contextSwitcher);
 }
 
 void OpenGLFrameStore::finishRender()
@@ -99,13 +106,12 @@ void OpenGLFrameStore::FramebufferContextSwitcher::destroyContext()
 {
     glDeleteFramebuffers(1, &glFramebufferId);
 }
-void OpenGLFrameStore::FramebufferContextSwitcher::enterContext()
+void OpenGLFrameStore::FramebufferContextSwitcher::enterContext(glm::vec2 topLeft,
+                                                                glm::vec2 bottomRight)
 {
-    // we need to call this somewhere, so before rendering is ok since it gets called periodically
-    // calling this multiple times when we have multiple windows shouldn't be a problem
-    glfwPollEvents();
-
     glBindFramebuffer(GL_FRAMEBUFFER, glFramebufferId);
+    glViewport(topLeft.x * width, topLeft.y * height, (bottomRight.x - topLeft.x) * width,
+               (bottomRight.y - topLeft.y) * height);
 }
 void OpenGLFrameStore::FramebufferContextSwitcher::exitContext()
 {
@@ -120,9 +126,18 @@ void OpenGLFrameStore::WindowContextSwitcher::destroyContext()
 {
     glfwDestroyWindow(window);
 }
-void OpenGLFrameStore::WindowContextSwitcher::enterContext()
+void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
+    // we need to call this somewhere, so before rendering is ok since it gets called periodically
+    // calling this multiple times when we have multiple windows shouldn't be a problem
+    glfwPollEvents();
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+
     glfwMakeContextCurrent(window);
+    glViewport(topLeft.x * width, topLeft.y * height, (bottomRight.x - topLeft.x) * width,
+               (bottomRight.y - topLeft.y) * height);
 }
 void OpenGLFrameStore::WindowContextSwitcher::exitContext()
 {

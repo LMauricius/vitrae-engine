@@ -21,21 +21,22 @@ class OpenGLFrameStore : public FrameStore
     std::size_t memory_cost() const override;
     void resize(glm::vec2 size) override;
 
-    void startRender();
+    void startRender(glm::vec2 topLeft, glm::vec2 bottomRight);
     void finishRender();
 
   protected:
     struct FramebufferContextSwitcher
     {
-        void enterContext();
+        void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
         void destroyContext();
 
+        int width, height;
         GLuint glFramebufferId;
     };
     struct WindowContextSwitcher
     {
-        void enterContext();
+        void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
         void destroyContext();
 
