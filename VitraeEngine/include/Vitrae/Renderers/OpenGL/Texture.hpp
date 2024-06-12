@@ -29,11 +29,12 @@ class OpenGLTexture : public Texture
 
   protected:
     OpenGLTexture(WrappingType horWrap, WrappingType verWrap, FilterType minFilter,
-                  FilterType magFilter, bool useMipMaps);
+                  FilterType magFilter, bool useMipMaps, glm::vec4 borderColor);
 
     int mWidth, mHeight, mGLChannelFormat;
     GLint mGLMagFilter, mGLMinFilter, mGLWrapS, mGLWrapT;
     bool mUseMipMaps;
+    glm::vec4 mBorderColor;
     union {
         struct
         {

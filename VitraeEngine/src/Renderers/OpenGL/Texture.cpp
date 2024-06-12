@@ -10,7 +10,7 @@
 namespace Vitrae
 {
 OpenGLTexture::OpenGLTexture(WrappingType horWrap, WrappingType verWrap, FilterType minFilter,
-                             FilterType magFilter, bool useMipMaps)
+                             FilterType magFilter, bool useMipMaps, glm::vec4 borderColor)
     : m_sentToGPU(false)
 {
     switch (horWrap) {
@@ -69,11 +69,12 @@ OpenGLTexture::OpenGLTexture(WrappingType horWrap, WrappingType verWrap, FilterT
         }
     }
     mUseMipMaps = useMipMaps;
+    mBorderColor = borderColor;
 }
 
 OpenGLTexture::OpenGLTexture(const FileLoadParams &params)
     : OpenGLTexture(params.horWrap, params.verWrap, params.minFilter, params.magFilter,
-                    params.useMipMaps)
+                    params.useMipMaps, {0.0f, 0.0f, 0.0f, 0.0f})
 {
     int stbChannelFormat;
     unsigned char *data =
@@ -114,7 +115,7 @@ OpenGLTexture::OpenGLTexture(const FileLoadParams &params)
 
 OpenGLTexture::OpenGLTexture(const EmptyParams &params)
     : OpenGLTexture(params.horWrap, params.verWrap, params.minFilter, params.magFilter,
-                    params.useMipMaps)
+                    params.useMipMaps, params.borderColor)
 {
     mUseSwizzle = false;
     switch (params.channelType) {
@@ -168,6 +169,7 @@ void OpenGLTexture::loadToGPU(const unsigned char *data)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mGLMinFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mGLWrapS);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mGLWrapT);
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &mBorderColor[0]);
 
         glGenerateMipmap(GL_TEXTURE_2D);
     }

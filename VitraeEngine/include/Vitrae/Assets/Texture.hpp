@@ -56,6 +56,7 @@ class Texture : public dynasma::PolymorphicBase
         FilterType minFilter = FilterType::LINEAR;
         FilterType magFilter = FilterType::LINEAR;
         bool useMipMaps = true;
+        glm::vec4 borderColor = {0.0f, 0.0f, 0.0f, 0.0f};
     };
 
     virtual std::size_t memory_cost() const = 0;
