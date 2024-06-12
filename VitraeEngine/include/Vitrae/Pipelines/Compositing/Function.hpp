@@ -5,6 +5,7 @@
 #include "dynasma/keepers/abstract.hpp"
 
 #include <functional>
+#include <vector>
 
 namespace Vitrae
 {
@@ -25,6 +26,10 @@ class ComposeFunction : public virtual ComposeTask
     ~ComposeFunction() = default;
 
     void run(RenderRunContext args) const override;
+    void prepareRequiredFrameStores(
+        std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const override;
+    void prepareRequiredTextures(
+        std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const override;
 };
 
 struct ComposeFunctionKeeperSeed

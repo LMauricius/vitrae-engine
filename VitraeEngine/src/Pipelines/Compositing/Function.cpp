@@ -12,4 +12,12 @@ void ComposeFunction::run(RenderRunContext args) const
     mp_function(args);
 }
 
+void ComposeFunction::prepareRequiredFrameStores(
+    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const
+{}
+
+void ComposeFunction::prepareRequiredTextures(
+    std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const
+{}
+
 } // namespace Vitrae

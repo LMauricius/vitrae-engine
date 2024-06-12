@@ -13,7 +13,10 @@ class ComposeSceneRender : public virtual ComposeTask
 {
   public:
     struct SetupParams
-    {};
+    {
+        String sceneInputPropertyName;
+        String displayOutputPropertyName;
+    };
 
     using ComposeTask::ComposeTask;
 };
