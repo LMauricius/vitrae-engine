@@ -197,44 +197,39 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                 switch (rend.getGpuStorageMethod(glTypeSpec)) {
                 case OpenGLRenderer::GpuValueStorageMethod::Uniform:
-                    ss << "uniform " << specToGlName(uniSpec.typeInfo) << " " << uniVarPrefix
-                       << uniSpec.name << ";\n";
+                    ss << "uniform " << specToGlName(uniSpec.typeInfo) << " " << uniSpec.name
+                       << ";\n";
 
-                    inputParametersToGlobalVars.emplace(uniNameId,
-                                                        std::string(uniVarPrefix) + uniSpec.name);
+                    inputParametersToGlobalVars.emplace(uniNameId, uniSpec.name);
                     break;
                 case OpenGLRenderer::GpuValueStorageMethod::UBO:
                     if (glslMemberList.empty()) {
                         ss << "uniform " << uniSpec.name << " {\n";
                         ss << "\t" << specToGlName(uniSpec.typeInfo) << " value" << ";\n";
-                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+                        ss << "} " << uniSpec.name << ";\n";
 
-                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
-                                                                           uniSpec.name + ".value");
+                        inputParametersToGlobalVars.emplace(uniNameId, uniSpec.name + ".value");
                     } else {
                         ss << "uniform " << uniSpec.name << " {\n";
                         ss << glslMemberList << "\n";
-                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+                        ss << "} " << uniSpec.name << ";\n";
 
-                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
-                                                                           uniSpec.name);
+                        inputParametersToGlobalVars.emplace(uniNameId, uniSpec.name);
                     }
                     break;
                 case OpenGLRenderer::GpuValueStorageMethod::SSBO:
                     if (glslMemberList.empty()) {
                         ss << "buffer " << uniSpec.name << " {\n";
                         ss << "\t" << specToGlName(uniSpec.typeInfo) << " value" << ";\n";
-                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+                        ss << "} " << uniSpec.name << ";\n";
 
-                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
-                                                                           uniSpec.name + ".value");
+                        inputParametersToGlobalVars.emplace(uniNameId, uniSpec.name + ".value");
                     } else {
                         ss << "buffer " << uniSpec.name << " {\n";
                         ss << glslMemberList << "\n";
-                        ss << "} " << uniVarPrefix << uniSpec.name << ";\n";
+                        ss << "} " << uniSpec.name << ";\n";
 
-                        inputParametersToGlobalVars.emplace(uniNameId, std::string(uniVarPrefix) +
-                                                                           uniSpec.name);
+                        inputParametersToGlobalVars.emplace(uniNameId, uniSpec.name);
                     }
                     break;
                 }
@@ -245,21 +240,18 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
                 ss << "\n";
                 for (auto [elemNameId, elemSpec] : elemVarSpecs) {
                     ss << "layout(location = " << rend.getVertexBufferLayoutIndex(elemNameId)
-                       << ") in " << specToGlName(elemSpec.typeInfo) << " " << elemVarPrefix
-                       << elemSpec.name << ";\n";
+                       << ") in " << specToGlName(elemSpec.typeInfo) << " " << elemSpec.name
+                       << ";\n";
 
-                    inputParametersToGlobalVars.emplace(elemNameId,
-                                                        std::string(elemVarPrefix) + elemSpec.name);
+                    inputParametersToGlobalVars.emplace(elemNameId, elemSpec.name);
                 }
             }
 
             // input variables
             for (auto [passedNameId, passedSpec] : passedVarSpecs) {
-                ss << "in " << specToGlName(passedSpec.typeInfo) << " " << passedVarPrefix
-                   << passedSpec.name << ";\n";
+                ss << "in " << specToGlName(passedSpec.typeInfo) << " " << passedSpec.name << ";\n";
 
-                inputParametersToGlobalVars.emplace(passedNameId,
-                                                    std::string(passedVarPrefix) + passedSpec.name);
+                inputParametersToGlobalVars.emplace(passedNameId, passedSpec.name);
             }
 
             ss << "\n";
@@ -267,10 +259,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
             // output variables
             passedVarSpecs.clear();
             for (auto [nameId, spec] : p_helper->outputSpecs) {
-                ss << "out " << specToGlName(spec.typeInfo) << " " << p_helper->outVarPrefix
-                   << spec.name << ";\n";
-                outputParametersToGlobalVars.emplace(nameId, std::string(p_helper->outVarPrefix) +
-                                                                 spec.name);
+                ss << "out " << specToGlName(spec.typeInfo) << " " << spec.name << ";\n";
+                outputParametersToGlobalVars.emplace(nameId, spec.name);
             }
             passedVarPrefix = p_helper->outVarPrefix;
 
@@ -347,7 +337,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
     // store uniform indices
     for (auto [uniNameId, uniSpec] : uniformVarSpecs) {
-        std::string uniFullName = std::string(uniVarPrefix) + uniSpec.name;
+        std::string uniFullName = uniSpec.name;
 
         switch (rend.getGpuStorageMethod(rend.getTypeConversion(uniSpec.typeInfo).glTypeSpec)) {
         case OpenGLRenderer::GpuValueStorageMethod::Uniform:
