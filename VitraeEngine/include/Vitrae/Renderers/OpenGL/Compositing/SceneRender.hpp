@@ -24,6 +24,7 @@ class OpenGLComposeSceneRender : public ComposeSceneRender
         std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const override;
 
   protected:
+    ComponentRoot &m_root;
     StringId m_sceneInputNameId, m_displayOutputNameId;
 };
 

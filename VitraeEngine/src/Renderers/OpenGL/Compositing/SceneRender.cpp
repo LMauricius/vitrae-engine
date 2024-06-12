@@ -8,12 +8,14 @@ namespace Vitrae
 OpenGLComposeSceneRender::OpenGLComposeSceneRender(const SetupParams &params)
     : ComposeSceneRender(
           std::span<const PropertySpec>{
-              {PropertySpec{.name = params.sceneInputPropertyName,
-                            .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<Scene>>()}}},
+              {PropertySpec{.name = "scene",
+                            .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<Scene>>()},
+               PropertySpec{.name = params.perspectiveInputPropertyName,
+                            .typeInfo = Variant::getTypeInfo<glm::mat4>()}}},
           std::span<const PropertySpec>{
               {PropertySpec{.name = params.displayOutputPropertyName,
                             .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>()}}}),
-      m_sceneInputNameId(params.sceneInputPropertyName),
+      m_root(params.root), m_sceneInputNameId(params.perspectiveInputPropertyName),
       m_displayOutputNameId(params.displayOutputPropertyName)
 {}
 
