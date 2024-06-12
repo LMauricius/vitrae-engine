@@ -12,11 +12,8 @@ void ComposeConstant::run(RenderRunContext args) const
     args.properties.set(m_outputNameId, m_value);
 }
 
-void ComposeConstant::prepareRequiredFrameStores(
-    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const
-{}
-
-void ComposeConstant::prepareRequiredTextures(
+void ComposeConstant::prepareRequiredLocalAssets(
+    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
     std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const
 {}
 

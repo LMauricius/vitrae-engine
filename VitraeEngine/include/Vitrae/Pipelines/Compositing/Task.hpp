@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vitrae/Assets/FrameStore.hpp"
 #include "Vitrae/Pipelines/Task.hpp"
 #include "Vitrae/Util/ScopedDict.hpp"
 
@@ -24,10 +25,9 @@ class ComposeTask : public Task
     using Task::Task;
 
     virtual void run(RenderRunContext args) const = 0;
-    virtual void prepareRequiredFrameStores(
-        std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const;
-    virtual void prepareRequiredTextures(
-        std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const;
+    virtual void prepareRequiredLocalAssets(
+        std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
+        std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const = 0;
 };
 
 namespace StandardCompositorOutputNames

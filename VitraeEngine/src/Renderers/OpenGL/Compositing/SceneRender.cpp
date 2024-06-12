@@ -19,17 +19,14 @@ OpenGLComposeSceneRender::OpenGLComposeSceneRender(const SetupParams &params)
 
 void OpenGLComposeSceneRender::run(RenderRunContext args) const {}
 
-void OpenGLComposeSceneRender::prepareRequiredFrameStores(
-    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const
+void OpenGLComposeSceneRender::prepareRequiredLocalAssets(
+    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
+    std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const
 {
     // We just need to check whether the frame store is already prepared
     if (frameStores.find(m_displayOutputNameId) == frameStores.end()) {
         throw std::runtime_error("Frame store not found");
     }
 }
-
-void OpenGLComposeSceneRender::prepareRequiredTextures(
-    std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const
-{}
 
 } // namespace Vitrae

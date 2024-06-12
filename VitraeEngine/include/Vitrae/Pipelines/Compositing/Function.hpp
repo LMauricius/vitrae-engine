@@ -26,9 +26,8 @@ class ComposeFunction : public virtual ComposeTask
     ~ComposeFunction() = default;
 
     void run(RenderRunContext args) const override;
-    void prepareRequiredFrameStores(
-        std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const override;
-    void prepareRequiredTextures(
+    void prepareRequiredLocalAssets(
+        std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
         std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const override;
 };
 

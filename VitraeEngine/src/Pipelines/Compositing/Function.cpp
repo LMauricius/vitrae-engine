@@ -12,11 +12,8 @@ void ComposeFunction::run(RenderRunContext args) const
     mp_function(args);
 }
 
-void ComposeFunction::prepareRequiredFrameStores(
-    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores) const
-{}
-
-void ComposeFunction::prepareRequiredTextures(
+void ComposeFunction::prepareRequiredLocalAssets(
+    std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
     std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const
 {}
 
