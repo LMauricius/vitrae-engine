@@ -32,7 +32,7 @@ class Task : public dynasma::PolymorphicBase
     Task(Task &&) = default;
 
     template <class ContainerT>
-    inline Task(ContainerT inputSpecs, ContainerT outputSpecs)
+    inline Task(const ContainerT &inputSpecs, const ContainerT &outputSpecs)
         requires(std::ranges::range<ContainerT> &&
                  std::convertible_to<std::ranges::range_value_t<ContainerT>, const PropertySpec &>)
     {
