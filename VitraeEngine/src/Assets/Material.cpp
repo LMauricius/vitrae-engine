@@ -26,8 +26,9 @@ Material::Material(const AssimpLoadParams &params)
         for (int i = 0; i < params.p_extMaterial->GetTextureCount(textureInfo.aiTextureId); i++) {
             aiString path;
             params.p_extMaterial->GetTexture(textureInfo.aiTextureId, i, &path);
-            m_textures[textureInfo.textureNameId] = textureManager.register_asset(
-                {Texture::FileLoadParams{.filepath = path.C_Str(), .root = params.root}});
+            m_textures[textureInfo.textureNameId] =
+                textureManager.register_asset({Texture::FileLoadParams{
+                    .root = params.root, .filepath = path.C_Str(), .useMipMaps = true}});
         }
     }
 }
