@@ -30,14 +30,14 @@ class ComposeTask : public Task
         std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const;
 };
 
-namespace StandardComposeOutputNames
+namespace StandardCompositorOutputNames
 {
-constexpr const char RENDER_OUTPUT[] = "display";
+constexpr const char OUTPUT[] = "rendered_scene";
 } // namespace StandardComposeOutputNames
 
-namespace StandardComposeOutputTypes
+namespace StandardCompositorOutputTypes
 {
-constexpr const TypeInfo &SURFACE_SHADER_OUTPUT_TYPE = Variant::getTypeInfo<void>();
+constexpr const TypeInfo &OUTPUT_TYPE = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>();
 }
 
 } // namespace Vitrae

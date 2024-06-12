@@ -43,7 +43,8 @@ Both are based on `AbstractTask` pipelines, and support properties of similar ty
     - Value getters:
         - ShaderConstant
     - End results:
-        - `fragment_shade` - The color of a pixel in SurfaceShader
+        - `view_position` - The position of the vertex in the vertex method of a SurfaceShader
+        - `shade` - The color of a pixel in the fragment method of a SurfaceShader
         - `computed_data` - Output data of a ComputeShader
 - Rendering:
     - Basic task: ComposeTask
@@ -54,4 +55,4 @@ Both are based on `AbstractTask` pipelines, and support properties of similar ty
     - Value getters:
         - ComposeConstant
     - End results:
-        - `display` - A token result representing a finished image.
+        - `rendered_scene` - A framebuffer result representing a finished image.
