@@ -140,6 +140,9 @@ OpenGLTexture::OpenGLTexture(const EmptyParams &params)
         break;
     }
 
+    mWidth = params.size.x;
+    mHeight = params.size.y;
+
     loadToGPU(nullptr);
 }
 

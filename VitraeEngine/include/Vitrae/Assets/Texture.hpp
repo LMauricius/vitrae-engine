@@ -61,6 +61,11 @@ class Texture : public dynasma::PolymorphicBase
 
     virtual std::size_t memory_cost() const = 0;
     virtual ~Texture() = 0;
+
+    inline glm::vec2 getSize() const { return glm::vec2(mWidth, mHeight); }
+
+  protected:
+    int mWidth, mHeight;
 };
 
 struct TextureSeed
