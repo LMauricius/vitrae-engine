@@ -16,8 +16,6 @@ class OpenGLRenderer;
 class OpenGLTexture : public Texture
 {
   public:
-    OpenGLTexture(WrappingType horWrap, WrappingType verWrap, FilterType minFilter,
-                  FilterType magFilter, bool useMipMaps);
     OpenGLTexture(const FileLoadParams &params);
     OpenGLTexture(const EmptyParams &params);
     ~OpenGLTexture();
@@ -30,6 +28,9 @@ class OpenGLTexture : public Texture
     GLuint glTextureId;
 
   protected:
+    OpenGLTexture(WrappingType horWrap, WrappingType verWrap, FilterType minFilter,
+                  FilterType magFilter, bool useMipMaps);
+
     int mWidth, mHeight, mGLChannelFormat;
     GLint mGLMagFilter, mGLMinFilter, mGLWrapS, mGLWrapT;
     bool mUseMipMaps;
