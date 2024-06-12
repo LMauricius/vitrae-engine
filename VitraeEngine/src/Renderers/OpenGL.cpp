@@ -8,6 +8,11 @@
 
 #include "dynasma/keepers/naive.hpp"
 #include "dynasma/managers/basic.hpp"
+
+#include "glad/glad.h"
+// must be after glad.h
+#include "GLFW/glfw3.h"
+
 namespace Vitrae
 {
 OpenGLRenderer::OpenGLRenderer()
