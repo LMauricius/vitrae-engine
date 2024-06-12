@@ -16,19 +16,31 @@ class OpenGLRenderer;
 class OpenGLTexture : public Texture
 {
   public:
+    OpenGLTexture(WrappingType horWrap, WrappingType verWrap, FilterType minFilter,
+                  FilterType magFilter, bool useMipMaps);
     OpenGLTexture(const FileLoadParams &params);
+    OpenGLTexture(const EmptyParams &params);
     ~OpenGLTexture();
 
-    void loadToGPU(OpenGLRenderer &rend);
-    void unloadFromGPU(OpenGLRenderer &rend);
+    void loadToGPU(const unsigned char *data);
+    void unloadFromGPU();
 
     std::size_t memory_cost() const override;
 
-    GLuint mGLTexture;
+    GLuint glTextureId;
 
   protected:
     int mWidth, mHeight, mGLChannelFormat;
-    unsigned char *mData;
+    GLint mGLMagFilter, mGLMinFilter, mGLWrapS, mGLWrapT;
+    bool mUseMipMaps;
+    union {
+        struct
+        {
+            GLint r, g, b, a;
+        } mSwizzle;
+        GLint mSwizzleArr[4];
+    };
+    bool mUseSwizzle;
 
     bool m_sentToGPU;
 };

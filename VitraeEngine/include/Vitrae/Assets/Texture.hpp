@@ -4,6 +4,8 @@
 #include "dynasma/keepers/abstract.hpp"
 #include "dynasma/managers/abstract.hpp"
 
+#include "glm/glm.hpp"
+
 #include <filesystem>
 
 namespace Vitrae
@@ -16,14 +18,47 @@ class ComponentRoot;
 class Texture : public dynasma::PolymorphicBase
 {
   public:
+    enum class ChannelType {
+        GRAYSCALE,
+        GRAYSCALE_ALPHA,
+        RGB,
+        RGBA,
+        DEPTH
+    };
+    enum class WrappingType {
+        BORDER_COLOR,
+        CLAMP,
+        REPEAT,
+        MIRROR
+    };
+    enum class FilterType {
+        NEAREST,
+        LINEAR
+    };
+
     struct FileLoadParams
     {
-        std::filesystem::path filepath;
         ComponentRoot &root;
+        std::filesystem::path filepath;
+        WrappingType horWrap = WrappingType::REPEAT;
+        WrappingType verWrap = WrappingType::REPEAT;
+        FilterType minFilter = FilterType::LINEAR;
+        FilterType magFilter = FilterType::LINEAR;
+        bool useMipMaps = true;
+    };
+    struct EmptyParams
+    {
+        ComponentRoot &root;
+        glm::vec2 size;
+        ChannelType channelType = ChannelType::RGB;
+        WrappingType horWrap = WrappingType::REPEAT;
+        WrappingType verWrap = WrappingType::REPEAT;
+        FilterType minFilter = FilterType::LINEAR;
+        FilterType magFilter = FilterType::LINEAR;
+        bool useMipMaps = true;
     };
 
     virtual std::size_t memory_cost() const = 0;
-
     virtual ~Texture() = 0;
 };
 
@@ -33,7 +68,7 @@ struct TextureSeed
 
     inline std::size_t load_cost() const { return 1; }
 
-    std::variant<Texture::FileLoadParams> kernel;
+    std::variant<Texture::FileLoadParams, Texture::EmptyParams> kernel;
 };
 
 using TextureManager = dynasma::AbstractManager<TextureSeed>;
