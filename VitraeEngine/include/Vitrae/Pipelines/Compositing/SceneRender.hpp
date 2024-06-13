@@ -9,7 +9,7 @@
 namespace Vitrae
 {
 
-class ComposeSceneRender : public virtual ComposeTask
+class ComposeSceneRender : public ComposeTask
 {
   public:
     struct SetupParams

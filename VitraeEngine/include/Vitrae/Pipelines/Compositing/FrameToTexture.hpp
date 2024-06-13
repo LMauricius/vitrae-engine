@@ -13,7 +13,7 @@
 namespace Vitrae
 {
 
-class ComposeFrameToTexture : public virtual ComposeTask
+class ComposeFrameToTexture : public ComposeTask
 {
   public:
     struct SetupParams

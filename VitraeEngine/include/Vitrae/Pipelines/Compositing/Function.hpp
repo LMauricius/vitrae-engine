@@ -10,7 +10,7 @@
 namespace Vitrae
 {
 
-class ComposeFunction : public virtual ComposeTask
+class ComposeFunction : public ComposeTask
 {
     std::function<void(const RenderRunContext &)> mp_function;
 
