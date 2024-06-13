@@ -1,11 +1,13 @@
 #include "Vitrae/Renderers/OpenGL.hpp"
 #include "Vitrae/ComponentRoot.hpp"
 #include "Vitrae/Renderers/OpenGL/Mesh.hpp"
+#include "Vitrae/Renderers/OpenGL/ShaderCompilation.hpp"
 #include "Vitrae/Renderers/OpenGL/Shading/Constant.hpp"
 #include "Vitrae/Renderers/OpenGL/Shading/Function.hpp"
 #include "Vitrae/Renderers/OpenGL/SharedBuffer.hpp"
 #include "Vitrae/Renderers/OpenGL/Texture.hpp"
 
+#include "dynasma/cachers/basic.hpp"
 #include "dynasma/keepers/naive.hpp"
 #include "dynasma/managers/basic.hpp"
 
@@ -36,6 +38,9 @@ void OpenGLRenderer::setup(ComponentRoot &root)
         new dynasma::NaiveKeeper<ShaderConstantKeeperSeed, std::allocator<OpenGLShaderConstant>>());
     root.setComponent<ShaderFunctionKeeper>(
         new dynasma::NaiveKeeper<ShaderFunctionKeeperSeed, std::allocator<OpenGLShaderFunction>>());
+    root.setComponent<CompiledGLSLShaderCacher>(
+        new dynasma::BasicCacher<CompiledGLSLShaderCacherSeed,
+                                 std::allocator<CompiledGLSLShader>>());
 }
 
 void OpenGLRenderer::free() {}
@@ -98,7 +103,9 @@ const std::map<StringId, const GLTypeSpec &> &OpenGLRenderer::getAllVertexBuffer
 OpenGLRenderer::GpuValueStorageMethod OpenGLRenderer::getGpuStorageMethod(
     const GLTypeSpec &spec) const
 {
-    if (spec.glslDefinitionSnippet.empty()) {
+    if (spec.glTypeName == "sampler2D") {
+        return GpuValueStorageMethod::UniformBinding;
+    } else if (spec.glslDefinitionSnippet.empty()) {
         return GpuValueStorageMethod::Uniform;
     } else if (spec.flexibleMemberSpec.has_value()) {
         return GpuValueStorageMethod::SSBO;

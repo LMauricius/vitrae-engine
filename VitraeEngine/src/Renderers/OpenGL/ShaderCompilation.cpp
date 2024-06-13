@@ -345,6 +345,11 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
                                                          .glNameId = glGetUniformLocation(
                                                              programGLName, uniFullName.c_str())});
             break;
+        case OpenGLRenderer::GpuValueStorageMethod::UniformBinding:
+            bindingSpecs.emplace(uniNameId, VariableSpec{.srcSpec = uniSpec.typeInfo,
+                                                         .glNameId = glGetUniformLocation(
+                                                             programGLName, uniFullName.c_str())});
+            break;
         case OpenGLRenderer::GpuValueStorageMethod::UBO:
             uboSpecs.emplace(uniNameId, VariableSpec{.srcSpec = uniSpec.typeInfo,
                                                      .glNameId = (GLint)glGetUniformBlockIndex(
