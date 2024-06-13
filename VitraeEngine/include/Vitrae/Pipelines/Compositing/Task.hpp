@@ -28,6 +28,23 @@ class ComposeTask : public Task
     virtual void prepareRequiredLocalAssets(
         std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
         std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const = 0;
+
+    /// TODO: implement this and move to sources
+
+    std::size_t memory_cost() const override { return 1; }
+
+    inline void extractUsedTypes(std::set<const TypeInfo *> &typeSet) const override
+    {
+        for (auto &specs : {m_inputSpecs, m_outputSpecs}) {
+            for (auto [nameId, spec] : specs) {
+                typeSet.insert(&spec.typeInfo);
+            }
+        }
+    }
+    inline void extractSubTasks(std::set<const Task *> &taskSet) const override
+    {
+        taskSet.insert(this);
+    }
 };
 
 namespace StandardCompositorOutputNames
