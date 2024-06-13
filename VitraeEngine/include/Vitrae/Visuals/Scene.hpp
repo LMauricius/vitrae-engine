@@ -57,7 +57,7 @@ class Scene : public dynasma::PolymorphicBase
     Scene parts (to be replaced with a more modular approach)
     */
 
-    std::vector<MeshProp> meshes;
+    std::vector<MeshProp> meshProps;
     Camera camera;
 
   protected:

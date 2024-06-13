@@ -41,7 +41,7 @@ void Scene::loadFromAssimp(const AssimpLoadParams &params)
             dynasma::FirmPtr<Mesh> p_mesh = meshKeeper.new_asset(
                 {Mesh::AssimpLoadParams{params.p_extScene->mMeshes[i], params.root}});
 
-            meshes.emplace_back(MeshProp{p_mesh, SimpleTransformation()});
+            meshProps.emplace_back(MeshProp{p_mesh, SimpleTransformation()});
         }
     }
 
