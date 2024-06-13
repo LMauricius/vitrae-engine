@@ -291,6 +291,8 @@ class Variant
         return *this;
     }
 
+    inline const TypeInfo &getAssignedTypeInfo() const { return *m_table; }
+
     // getter
 
     /**
