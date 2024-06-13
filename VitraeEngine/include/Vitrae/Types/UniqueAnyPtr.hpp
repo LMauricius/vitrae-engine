@@ -15,7 +15,7 @@ class UniqueAnyPtr
 
   public:
     // constructors
-    UniqueAnyPtr() : mPtr(nullptr), mDeleter(nullptr) {}
+    inline UniqueAnyPtr() : mPtr(nullptr), mDeleter(nullptr) {}
     template <class T> UniqueAnyPtr(T *ptr)
     {
         mPtr = ptr;
@@ -29,7 +29,7 @@ class UniqueAnyPtr
     }
 
     // move constructor
-    UniqueAnyPtr(UniqueAnyPtr &&other)
+    inline UniqueAnyPtr(UniqueAnyPtr &&other)
     {
         mPtr = other.mPtr;
         mDeleter = other.mDeleter;
@@ -37,7 +37,7 @@ class UniqueAnyPtr
         other.mDeleter = nullptr;
     }
 
-    ~UniqueAnyPtr()
+    inline ~UniqueAnyPtr()
     {
         if (mPtr != nullptr)
             (*mDeleter)(mPtr);
@@ -46,6 +46,8 @@ class UniqueAnyPtr
     // move assignment
     template <class T> UniqueAnyPtr &operator=(T *ptr)
     {
+        if (mPtr != nullptr)
+            (*mDeleter)(mPtr);
         mPtr = ptr;
         mDeleter = [](void *ptr) { delete static_cast<T *>(ptr); };
         return *this;
@@ -53,19 +55,25 @@ class UniqueAnyPtr
 
     template <class T> UniqueAnyPtr &operator=(std::unique_ptr<T> &&ptr)
     {
+        if (mPtr != nullptr)
+            (*mDeleter)(mPtr);
         mPtr = ptr.release();
         mDeleter = [](void *ptr) { delete static_cast<T *>(ptr); };
         return *this;
     }
 
-    UniqueAnyPtr &operator=(UniqueAnyPtr &&other)
+    inline UniqueAnyPtr &operator=(UniqueAnyPtr &&other)
     {
+        if (mPtr != nullptr)
+            (*mDeleter)(mPtr);
         mPtr = other.mPtr;
         mDeleter = other.mDeleter;
         other.mPtr = nullptr;
         other.mDeleter = nullptr;
         return *this;
     }
+
+    inline operator bool() const { return mPtr != nullptr; }
 
     template <class T> T *get() const { return static_cast<T *>(mPtr); }
 };
