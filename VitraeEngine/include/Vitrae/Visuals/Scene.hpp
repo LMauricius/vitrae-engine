@@ -41,13 +41,13 @@ class Scene : public dynasma::PolymorphicBase
   public:
     struct AssimpLoadParams
     {
-        const aiScene *p_extScene;
         ComponentRoot &root;
+        const aiScene *p_extScene;
     };
     struct FileLoadParams
     {
-        std::filesystem::path filepath;
         ComponentRoot &root;
+        std::filesystem::path filepath;
     };
 
     Scene(const AssimpLoadParams &params);

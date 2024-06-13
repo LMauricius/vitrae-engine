@@ -27,7 +27,7 @@ Scene::Scene(const FileLoadParams &params)
         return;
     }
 
-    loadFromAssimp({scene, params.root});
+    loadFromAssimp({.root = params.root, .p_extScene = scene});
 
     importer.FreeScene();
 }
