@@ -72,9 +72,9 @@ class OpenGLRenderer : public Renderer
     void free() override;
     void render() override;
 
-    const GLTypeSpec &specifyGlType(const GLTypeSpec &newSpec);
+    void specifyGlType(const GLTypeSpec &newSpec);
     const GLTypeSpec &getGlTypeSpec(StringId glslName) const;
-    const GLConversionSpec &specifyTypeConversion(const GLConversionSpec &newSpec);
+    void specifyTypeConversion(const GLConversionSpec &newSpec);
     const GLConversionSpec &getTypeConversion(const TypeInfo &hostType) const;
     const std::map<StringId, GLTypeSpec> &getAllGlTypeSpecs() const;
 

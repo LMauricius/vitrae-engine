@@ -19,10 +19,19 @@ namespace Vitrae
 {
 OpenGLRenderer::OpenGLRenderer()
 {
-    getVertexBufferLayoutIndex(StandardVertexBufferNames::POSITION);
-    getVertexBufferLayoutIndex(StandardVertexBufferNames::NORMAL);
-    getVertexBufferLayoutIndex(StandardVertexBufferNames::TEXTURE_COORD);
-    getVertexBufferLayoutIndex(StandardVertexBufferNames::COLOR);
+    /**/
+
+    /*
+    Mesh vertex buffers for standard components
+    */
+    specifyVertexBuffer({.name = StandardVertexBufferNames::POSITION,
+                         .typeInfo = Variant::getTypeInfo<glm::vec3>()});
+    specifyVertexBuffer(
+        {.name = StandardVertexBufferNames::NORMAL, .typeInfo = Variant::getTypeInfo<glm::vec3>()});
+    specifyVertexBuffer({.name = StandardVertexBufferNames::TEXTURE_COORD,
+                         .typeInfo = Variant::getTypeInfo<glm::vec2>()});
+    specifyVertexBuffer(
+        {.name = StandardVertexBufferNames::COLOR, .typeInfo = Variant::getTypeInfo<glm::vec4>()});
 }
 
 OpenGLRenderer::~OpenGLRenderer() {}
@@ -49,14 +58,14 @@ void OpenGLRenderer::free() {}
 
 void OpenGLRenderer::render() {}
 
-const GLTypeSpec &OpenGLRenderer::specifyGlType(const GLTypeSpec &newSpec)
+void OpenGLRenderer::specifyGlType(const GLTypeSpec &newSpec)
 {
-    return m_glTypes.emplace(StringId(newSpec.glTypeName), newSpec).first->second;
+    m_glTypes.emplace(StringId(newSpec.glTypeName), newSpec);
 }
 
-const GLConversionSpec &OpenGLRenderer::specifyTypeConversion(const GLConversionSpec &newSpec)
+void OpenGLRenderer::specifyTypeConversion(const GLConversionSpec &newSpec)
 {
-    return m_glConversions.emplace(std::type_index(*newSpec.hostType.p_id), newSpec).first->second;
+    m_glConversions.emplace(std::type_index(*newSpec.hostType.p_id), newSpec);
 }
 
 const GLTypeSpec &OpenGLRenderer::getGlTypeSpec(StringId name) const
