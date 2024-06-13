@@ -20,6 +20,8 @@ class Compositor : public dynasma::PolymorphicBase
                dynasma::FirmPtr<FrameStore> p_output);
     virtual ~Compositor() = default;
 
+    std::size_t memory_cost() const;
+
     void setComposeMethod(dynasma::FirmPtr<Method<ComposeTask>> p_method);
     void setDefaultShadingMethod(dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod,
                                  dynasma::FirmPtr<Method<ShaderTask>> p_fragmentMethod);

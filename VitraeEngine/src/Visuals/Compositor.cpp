@@ -16,6 +16,11 @@ Compositor::Compositor(ComponentRoot &root, dynasma::FirmPtr<Method<ComposeTask>
     // here we actually setup the pipeline
     setComposeMethod(p_method);
 }
+std::size_t Compositor::memory_cost() const
+{
+    /// TODO: implement
+    return sizeof(Compositor);
+}
 
 void Compositor::setComposeMethod(dynasma::FirmPtr<Method<ComposeTask>> p_method)
 {
