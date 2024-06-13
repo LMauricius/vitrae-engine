@@ -161,8 +161,11 @@ class ComponentRoot
 
     template <class aiType> MeshBufferInfoList<aiType> &getMeshBufferInfoList()
     {
-        return *(m_aiMeshInfoLists[getClassID<MeshBufferInfoList<aiType>>()]
-                     .template get<MeshBufferInfoList<aiType>>());
+        auto &listPtr = m_aiMeshInfoLists[getClassID<MeshBufferInfoList<aiType>>()];
+        if (!listPtr) {
+            listPtr = new MeshBufferInfoList<aiType>();
+        }
+        return *(listPtr.template get<MeshBufferInfoList<aiType>>());
     }
     template <class aiType> const MeshBufferInfoList<aiType> &getMeshBufferInfoList() const
     {
