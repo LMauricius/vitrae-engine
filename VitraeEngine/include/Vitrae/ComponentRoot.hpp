@@ -169,12 +169,15 @@ class ComponentRoot
     }
     template <class aiType> const MeshBufferInfoList<aiType> &getMeshBufferInfoList() const
     {
-        return *(m_aiMeshInfoLists.at(getClassID<MeshBufferInfoList<aiType>>())
-                     .template get<MeshBufferInfoList<aiType>>());
+        auto &listPtr = m_aiMeshInfoLists[getClassID<MeshBufferInfoList<aiType>>()];
+        if (!listPtr) {
+            listPtr = new MeshBufferInfoList<aiType>();
+        }
+        return *(listPtr.template get<MeshBufferInfoList<aiType>>());
     }
 
     std::map<size_t, UniqueAnyPtr> mCustomComponents;
-    std::map<size_t, UniqueAnyPtr> m_aiMeshInfoLists;
+    mutable std::map<size_t, UniqueAnyPtr> m_aiMeshInfoLists;
     std::map<aiShadingMode, AiMaterialShadingInfo> mAiMaterialShadingInfo;
     std::vector<AiMaterialTextureInfo> mAiMaterialTextureInfos;
 
