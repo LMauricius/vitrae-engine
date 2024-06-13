@@ -59,8 +59,9 @@ class Texture : public dynasma::PolymorphicBase
         glm::vec4 borderColor = {0.0f, 0.0f, 0.0f, 0.0f};
     };
 
+    virtual ~Texture() = default;
+
     virtual std::size_t memory_cost() const = 0;
-    virtual ~Texture() = 0;
 
     inline glm::vec2 getSize() const { return glm::vec2(mWidth, mHeight); }
 

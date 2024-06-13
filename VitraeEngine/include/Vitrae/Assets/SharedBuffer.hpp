@@ -41,7 +41,7 @@ class RawSharedBuffer : public dynasma::PolymorphicBase
     };
 
     RawSharedBuffer();
-    virtual ~RawSharedBuffer() = 0;
+    virtual ~RawSharedBuffer() = default;
 
     virtual void synchronize() = 0;
     virtual std::size_t memory_cost() const = 0;

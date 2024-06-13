@@ -13,7 +13,7 @@ class ComponentRoot;
 class Renderer
 {
   public:
-    virtual ~Renderer() = 0;
+    virtual ~Renderer() = default;
 
     virtual void setup(ComponentRoot &root) = 0;
     virtual void free() = 0;

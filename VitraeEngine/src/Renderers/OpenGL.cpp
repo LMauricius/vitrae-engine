@@ -25,6 +25,8 @@ OpenGLRenderer::OpenGLRenderer()
     getVertexBufferLayoutIndex(StandardVertexBufferNames::COLOR);
 }
 
+OpenGLRenderer::~OpenGLRenderer() {}
+
 void OpenGLRenderer::setup(ComponentRoot &root)
 {
     root.setComponent<MeshKeeper>(

@@ -117,6 +117,16 @@ void OpenGLMesh::unloadFromGPU()
     }
 }
 
+void OpenGLMesh::setMaterial(dynasma::LazyPtr<Material> mat)
+{
+    mMaterial = mat;
+}
+
+dynasma::LazyPtr<Material> OpenGLMesh::getMaterial() const
+{
+    return mMaterial.value();
+}
+
 std::span<const Triangle> OpenGLMesh::getTriangles() const
 {
     return mTriangles;

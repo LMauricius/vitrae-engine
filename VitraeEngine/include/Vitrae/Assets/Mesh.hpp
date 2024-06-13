@@ -31,7 +31,7 @@ class Mesh : public dynasma::PolymorphicBase
         ComponentRoot &root;
     };
 
-    virtual ~Mesh() = 0;
+    virtual ~Mesh() = default;
 
     virtual void setMaterial(dynasma::LazyPtr<Material> mat) = 0;
     virtual dynasma::LazyPtr<Material> getMaterial() const = 0;

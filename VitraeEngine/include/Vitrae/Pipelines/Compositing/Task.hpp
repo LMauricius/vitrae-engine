@@ -32,12 +32,12 @@ class ComposeTask : public Task
 
 namespace StandardCompositorOutputNames
 {
-constexpr const char OUTPUT[] = "rendered_scene";
+static constexpr const char OUTPUT[] = "rendered_scene";
 } // namespace StandardComposeOutputNames
 
 namespace StandardCompositorOutputTypes
 {
-constexpr const TypeInfo &OUTPUT_TYPE = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>();
+static constexpr const TypeInfo &OUTPUT_TYPE = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>();
 }
 
 } // namespace Vitrae
