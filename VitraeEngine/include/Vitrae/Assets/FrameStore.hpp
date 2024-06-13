@@ -39,7 +39,7 @@ class FrameStore : public dynasma::PolymorphicBase
         std::function<void(glm::vec2 motion, bool bLeft, bool bRight, bool bMiddle)> onDrag;
     };
 
-    virtual ~FrameStore() = 0;
+    virtual ~FrameStore() = default;
     virtual std::size_t memory_cost() const = 0;
     virtual void resize(glm::vec2 size) = 0;
 };
@@ -50,7 +50,7 @@ struct FrameStoreSeed
 
     inline std::size_t load_cost() const { return 1; }
 
-    std::variant<FrameStore::TextureBindParams> kernel;
+    std::variant<FrameStore::TextureBindParams, FrameStore::WindowDisplayParams> kernel;
 };
 
 using FrameStoreManager = dynasma::AbstractManager<FrameStoreSeed>;

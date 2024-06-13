@@ -1,5 +1,6 @@
 #include "Vitrae/Renderers/OpenGL.hpp"
 #include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Renderers/OpenGL/FrameStore.hpp"
 #include "Vitrae/Renderers/OpenGL/Mesh.hpp"
 #include "Vitrae/Renderers/OpenGL/ShaderCompilation.hpp"
 #include "Vitrae/Renderers/OpenGL/Shading/Constant.hpp"
@@ -107,23 +108,26 @@ OpenGLRenderer::~OpenGLRenderer() {}
 
 void OpenGLRenderer::setup(ComponentRoot &root)
 {
-    root.setComponent<MeshKeeper>(
-        new dynasma::NaiveKeeper<MeshKeeperSeed, std::allocator<OpenGLMesh>>());
-    root.setComponent<TextureManager>(
-        new dynasma::BasicManager<TextureSeed, std::allocator<OpenGLTexture>>());
-    root.setComponent<RawSharedBufferKeeper>(
-        new dynasma::NaiveKeeper<RawSharedBufferKeeperSeed,
-                                 std::allocator<OpenGLRawSharedBuffer>>());
-    root.setComponent<ShaderConstantKeeper>(
-        new dynasma::NaiveKeeper<ShaderConstantKeeperSeed, std::allocator<OpenGLShaderConstant>>());
-    root.setComponent<ShaderFunctionKeeper>(
-        new dynasma::NaiveKeeper<ShaderFunctionKeeperSeed, std::allocator<OpenGLShaderFunction>>());
-    root.setComponent<CompiledGLSLShaderCacher>(
-        new dynasma::BasicCacher<CompiledGLSLShaderCacherSeed,
-                                 std::allocator<CompiledGLSLShader>>());
+    // clang-format off
+    root.setComponent<              MeshKeeper>(new  dynasma::NaiveKeeper<              MeshKeeperSeed, std::allocator<           OpenGLMesh>>());
+    root.setComponent<          TextureManager>(new dynasma::BasicManager<                 TextureSeed, std::allocator<        OpenGLTexture>>());
+    root.setComponent<       FrameStoreManager>(new dynasma::BasicManager<              FrameStoreSeed, std::allocator<     OpenGLFrameStore>>());
+    root.setComponent<   RawSharedBufferKeeper>(new  dynasma::NaiveKeeper<   RawSharedBufferKeeperSeed, std::allocator<OpenGLRawSharedBuffer>>());
+    root.setComponent<    ShaderConstantKeeper>(new  dynasma::NaiveKeeper<    ShaderConstantKeeperSeed, std::allocator< OpenGLShaderConstant>>());
+    root.setComponent<    ShaderFunctionKeeper>(new  dynasma::NaiveKeeper<    ShaderFunctionKeeperSeed, std::allocator< OpenGLShaderFunction>>());
+    root.setComponent<CompiledGLSLShaderCacher>(new  dynasma::BasicCacher<CompiledGLSLShaderCacherSeed, std::allocator<   CompiledGLSLShader>>());
+    // clang-format on
+
+    glfwInit();
+    gladLoadGL();
+
+    glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 }
 
-void OpenGLRenderer::free() {}
+void OpenGLRenderer::free()
+{
+    glfwTerminate();
+}
 
 void OpenGLRenderer::render() {}
 

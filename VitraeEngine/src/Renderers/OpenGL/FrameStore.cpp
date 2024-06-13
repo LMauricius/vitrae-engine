@@ -87,6 +87,15 @@ OpenGLFrameStore::~OpenGLFrameStore()
     std::visit([](auto &&contextSwitcher) { contextSwitcher.destroyContext(); }, m_contextSwitcher);
 }
 
+std::size_t OpenGLFrameStore::memory_cost() const
+{
+    return sizeof(OpenGLFrameStore);
+}
+void OpenGLFrameStore::resize(glm::vec2 size)
+{
+    /// TODO: resize capabilities
+}
+
 void OpenGLFrameStore::startRender(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
     std::visit([&](auto &&contextSwitcher) { contextSwitcher.enterContext(topLeft, bottomRight); },
