@@ -31,9 +31,9 @@ OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
     // load vertices
     auto extractVertexData =
         [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
-            std::span<const ComponentRoot::AiMeshBufferInfo<aiType>> auBufferInfos,
+            std::span<const ComponentRoot::AiMeshBufferInfo<aiType>> aiBufferInfos,
             std::map<StringId, std::valarray<glmType>> &namedBuffers) {
-            for (auto &info : auBufferInfos) {
+            for (auto &info : aiBufferInfos) {
                 // get buffers
                 std::size_t layoutInd = rend.getVertexBufferLayoutIndex(info.name);
                 const aiType *src = info.extractor(*params.p_extMesh);
