@@ -49,6 +49,7 @@ OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
         exit(EXIT_FAILURE);
     }
     glfwMakeContextCurrent(window);
+    gladLoadGL(); // seems we need to do this after setting the first context... for whatev reason
 
     m_contextSwitcher = WindowContextSwitcher{window, params.onClose, params.onDrag};
 
@@ -59,7 +60,7 @@ OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
         auto switcher = static_cast<WindowContextSwitcher *>(glfwGetWindowUserPointer(window));
         switcher->onClose();
     });
-    glfwSetWindowPosCallback(window, [](GLFWwindow *window, int xpos, int ypos) {
+    glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xpos, double ypos) {
         auto switcher = static_cast<WindowContextSwitcher *>(glfwGetWindowUserPointer(window));
 
         if (switcher->bLeft || switcher->bRight || switcher->bMiddle) {
