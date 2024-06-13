@@ -25,7 +25,7 @@ class OpenGLComposeSceneRender : public ComposeSceneRender
 
   protected:
     ComponentRoot &m_root;
-    StringId m_sceneInputNameId, m_displayOutputNameId;
+    StringId m_viewInputNameId, m_perspectiveInputNameId, m_displayOutputNameId;
 };
 
 } // namespace Vitrae
