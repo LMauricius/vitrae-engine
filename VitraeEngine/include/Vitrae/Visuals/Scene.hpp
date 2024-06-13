@@ -53,6 +53,8 @@ class Scene : public dynasma::PolymorphicBase
     Scene(const AssimpLoadParams &params);
     Scene(const FileLoadParams &params);
 
+    std::size_t memory_cost() const;
+
     /*
     Scene parts (to be replaced with a more modular approach)
     */

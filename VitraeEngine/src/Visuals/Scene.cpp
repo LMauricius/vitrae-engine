@@ -32,6 +32,11 @@ Scene::Scene(const FileLoadParams &params)
     importer.FreeScene();
 }
 
+std::size_t Scene::memory_cost() const
+{
+    return sizeof(Scene);
+}
+
 void Scene::loadFromAssimp(const AssimpLoadParams &params)
 {
     MeshKeeper &meshKeeper = params.root.getComponent<MeshKeeper>();
