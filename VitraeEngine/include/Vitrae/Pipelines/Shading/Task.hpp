@@ -11,17 +11,25 @@ class ShaderTask : public Task
     using Task::Task;
 };
 
-namespace StandardShaderOutputNames
+namespace StandardShaderPropertyNames
 {
-static constexpr const char FRAGMENT_SHADER_OUTPUT[] = "shade";
-static constexpr const char VERTEX_SHADER_OUTPUT[] = "view_position";
-static constexpr const char COMPUTE_SHADER_OUTPUT[] = "computed_data";
+static constexpr const char INPUT_VIEW[] = "mat_view";
+static constexpr const char INPUT_PROJECTION[] = "mat_proj";
+static constexpr const char INPUT_MODEL[] = "mat_model";
+
+static constexpr const char FRAGMENT_OUTPUT[] = "shade";
+static constexpr const char VERTEX_OUTPUT[] = "view_position";
+static constexpr const char COMPUTE_OUTPUT[] = "computed_data";
 } // namespace StandardShaderOutputNames
 
-namespace StandardShaderOutputTypes
+namespace StandardShaderPropertyTypes
 {
-static constexpr const TypeInfo &FRAGMENT_SHADER_OUTPUT_TYPE = Variant::getTypeInfo<glm::vec4>();
-static constexpr const TypeInfo &VERTEX_SHADER_OUTPUT_TYPE = Variant::getTypeInfo<glm::vec3>();
+static constexpr const TypeInfo &INPUT_VIEW = Variant::getTypeInfo<glm::mat4>();
+static constexpr const TypeInfo &INPUT_PROJECTION = Variant::getTypeInfo<glm::mat4>();
+static constexpr const TypeInfo &INPUT_MODEL = Variant::getTypeInfo<glm::mat4>();
+
+static constexpr const TypeInfo &FRAGMENT_OUTPUT = Variant::getTypeInfo<glm::vec4>();
+static constexpr const TypeInfo &VERTEX_OUTPUT = Variant::getTypeInfo<glm::vec3>();
 }
 
 } // namespace Vitrae

@@ -80,14 +80,14 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
     // generate pipelines, from the end result to the first pipeline
     {
         std::vector<PropertySpec> passedVarSpecs = {
-            {.name = StandardShaderOutputNames::FRAGMENT_SHADER_OUTPUT,
-             .typeInfo = StandardShaderOutputTypes::FRAGMENT_SHADER_OUTPUT_TYPE}};
+            {.name = StandardShaderPropertyNames::FRAGMENT_OUTPUT,
+             .typeInfo = StandardShaderPropertyTypes::FRAGMENT_OUTPUT}};
 
         for (auto p_helper : invHelperOrder) {
             if (p_helper->shaderType == GL_VERTEX_SHADER) {
                 passedVarSpecs.push_back(
-                    PropertySpec{.name = StandardShaderOutputNames::VERTEX_SHADER_OUTPUT,
-                                 .typeInfo = StandardShaderOutputTypes::VERTEX_SHADER_OUTPUT_TYPE});
+                    PropertySpec{.name = StandardShaderPropertyNames::VERTEX_OUTPUT,
+                                 .typeInfo = StandardShaderPropertyTypes::VERTEX_OUTPUT});
             }
             std::span<const PropertySpec> passedVarSpecsSpan(passedVarSpecs);
 
