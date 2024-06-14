@@ -19,7 +19,8 @@ class OpenGLShaderFunction : public ShaderFunction, public OpenGLShaderTask
     String m_fileSnippet;
 
   public:
-    OpenGLShaderFunction(const SetupParams &params);
+    OpenGLShaderFunction(const FileLoadParams &params);
+    OpenGLShaderFunction(const StringParams &params);
     ~OpenGLShaderFunction() = default;
 
     std::size_t memory_cost() const override;

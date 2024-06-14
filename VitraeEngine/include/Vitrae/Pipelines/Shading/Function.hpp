@@ -13,15 +13,26 @@ namespace Vitrae
 class ShaderFunction : public virtual ShaderTask
 {
   public:
-    struct SetupParams
+    struct FileLoadParams
     {
         std::vector<PropertySpec> inputSpecs;
         std::vector<PropertySpec> outputSpecs;
         std::filesystem::path filepath;
         String functionName;
     };
+    struct StringParams
+    {
+        std::vector<PropertySpec> inputSpecs;
+        std::vector<PropertySpec> outputSpecs;
+        String snippet;
+        String functionName;
+    };
 
-    inline ShaderFunction(const SetupParams &params)
+    inline ShaderFunction(const FileLoadParams &params)
+        : ShaderTask(params.inputSpecs, params.outputSpecs)
+    {}
+
+    inline ShaderFunction(const StringParams &params)
         : ShaderTask(params.inputSpecs, params.outputSpecs)
     {}
 };
@@ -29,7 +40,7 @@ class ShaderFunction : public virtual ShaderTask
 struct ShaderFunctionKeeperSeed
 {
     using Asset = ShaderFunction;
-    std::variant<ShaderFunction::SetupParams> kernel;
+    std::variant<ShaderFunction::FileLoadParams, ShaderFunction::StringParams> kernel;
     inline std::size_t load_cost() const { return 1; }
 };
 
