@@ -18,10 +18,9 @@ class Camera : public SimpleTransformation
 {
   public:
     float zNear = 1.0, zFar = 1000.0;
-    float width, height;
     float fov = 45.0;
 
-    inline glm::mat4 getPerspectiveMatrix() const
+    inline glm::mat4 getPerspectiveMatrix(float width, float height) const
     {
         return glm::perspective(glm::radians(fov), width / height, zNear, zFar);
     }
