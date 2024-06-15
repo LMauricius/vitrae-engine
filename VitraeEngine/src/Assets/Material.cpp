@@ -10,10 +10,8 @@ Material::Material(const AssimpLoadParams &params)
 
     // get shading type
     aiShadingMode aiMode;
-    unsigned int aiModeSize = 1;
-    params.p_extMaterial->Get(AI_MATKEY_SHADING_MODEL, &aiMode, &aiModeSize);
-    if (aiModeSize != 1) {
-        throw std::runtime_error("Invalid aiModeSize");
+    if (params.p_extMaterial->Get(AI_MATKEY_SHADING_MODEL, aiMode) != aiReturn_SUCCESS) {
+        aiMode = aiShadingMode_Phong;
     }
     const ComponentRoot::AiMaterialShadingInfo &shadingInfo =
         params.root.getAiMaterialShadingInfo(aiMode);
