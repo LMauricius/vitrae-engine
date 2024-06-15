@@ -27,8 +27,9 @@ class Mesh : public dynasma::PolymorphicBase
   public:
     struct AssimpLoadParams
     {
-        const aiMesh *p_extMesh;
         ComponentRoot &root;
+        const aiMesh *p_extMesh;
+        std::filesystem::path sceneFilepath;
     };
 
     virtual ~Mesh() = default;

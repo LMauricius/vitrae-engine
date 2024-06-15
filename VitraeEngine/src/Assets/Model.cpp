@@ -41,7 +41,8 @@ Model::Model(const FileLoadParams &params)
         matById.reserve(extScenePtr->mNumMaterials);
         for (int i = 0; i < extScenePtr->mNumMaterials; i++) {
             auto p_mat = matKeeper.new_asset({
-                Material::AssimpLoadParams{extScenePtr->mMaterials[i], params.root},
+                Material::AssimpLoadParams{params.root, extScenePtr->mMaterials[i],
+                                           params.filepath},
             });
             matById.emplace_back(p_mat);
         }
@@ -53,7 +54,11 @@ Model::Model(const FileLoadParams &params)
 
             auto p_mesh = meshKeeper
                               .new_asset({
-                                  Mesh::AssimpLoadParams{extScenePtr->mMeshes[i], params.root},
+                                  Mesh::AssimpLoadParams{
+                                      params.root,
+                                      extScenePtr->mMeshes[i],
+                                      filepath,
+                                  },
                               })
                               .getLoaded();
 

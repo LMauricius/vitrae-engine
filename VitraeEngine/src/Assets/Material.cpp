@@ -8,6 +8,8 @@ Material::Material(const AssimpLoadParams &params)
 {
     TextureManager &textureManager = params.root.getComponent<TextureManager>();
 
+    std::filesystem::path parentDirPath = params.sceneFilepath.parent_path();
+
     // get shading type
     aiShadingMode aiMode;
     if (params.p_extMaterial->Get(AI_MATKEY_SHADING_MODEL, aiMode) != aiReturn_SUCCESS) {
@@ -24,9 +26,14 @@ Material::Material(const AssimpLoadParams &params)
         for (int i = 0; i < params.p_extMaterial->GetTextureCount(textureInfo.aiTextureId); i++) {
             aiString path;
             params.p_extMaterial->GetTexture(textureInfo.aiTextureId, i, &path);
-            m_textures[textureInfo.textureNameId] =
-                textureManager.register_asset({Texture::FileLoadParams{
-                    .root = params.root, .filepath = path.C_Str(), .useMipMaps = true}});
+
+            String relconvPath = String(path.C_Str());
+            std::replace(relconvPath.begin(), relconvPath.end(), '\\', '/');
+
+            m_textures[textureInfo.textureNameId] = textureManager.register_asset(
+                {Texture::FileLoadParams{.root = params.root,
+                                         .filepath = parentDirPath / relconvPath,
+                                         .useMipMaps = true}});
         }
     }
 }

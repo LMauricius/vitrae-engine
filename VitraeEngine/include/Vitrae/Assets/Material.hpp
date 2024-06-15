@@ -22,8 +22,9 @@ class Material : public dynasma::PolymorphicBase
   public:
     struct AssimpLoadParams
     {
-        const aiMaterial *p_extMaterial;
         ComponentRoot &root;
+        const aiMaterial *p_extMaterial;
+        std::filesystem::path sceneFilepath;
     };
 
     Material(const AssimpLoadParams &params);

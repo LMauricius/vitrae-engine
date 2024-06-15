@@ -42,6 +42,7 @@ class Scene : public dynasma::PolymorphicBase
     {
         ComponentRoot &root;
         const aiScene *p_extScene;
+        std::filesystem::path sceneFilepath;
     };
     struct FileLoadParams
     {

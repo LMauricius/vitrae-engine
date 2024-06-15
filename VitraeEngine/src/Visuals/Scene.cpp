@@ -27,7 +27,7 @@ Scene::Scene(const FileLoadParams &params)
         return;
     }
 
-    loadFromAssimp({.root = params.root, .p_extScene = scene});
+    loadFromAssimp({.root = params.root, .p_extScene = scene, .sceneFilepath = params.filepath});
 
     importer.FreeScene();
 }
@@ -48,7 +48,8 @@ void Scene::loadFromAssimp(const AssimpLoadParams &params)
         matById.reserve(params.p_extScene->mNumMaterials);
         for (int i = 0; i < params.p_extScene->mNumMaterials; i++) {
             auto p_mat = matKeeper.new_asset({
-                Material::AssimpLoadParams{params.p_extScene->mMaterials[i], params.root},
+                Material::AssimpLoadParams{params.root, params.p_extScene->mMaterials[i],
+                                           params.sceneFilepath},
             });
             matById.emplace_back(p_mat);
         }
@@ -57,8 +58,8 @@ void Scene::loadFromAssimp(const AssimpLoadParams &params)
     // load meshes
     if (params.p_extScene->HasMeshes()) {
         for (unsigned int i = 0; i < params.p_extScene->mNumMeshes; ++i) {
-            dynasma::FirmPtr<Mesh> p_mesh = meshKeeper.new_asset(
-                {Mesh::AssimpLoadParams{params.p_extScene->mMeshes[i], params.root}});
+            dynasma::FirmPtr<Mesh> p_mesh = meshKeeper.new_asset({Mesh::AssimpLoadParams{
+                params.root, params.p_extScene->mMeshes[i], params.sceneFilepath}});
 
             // set material
             p_mesh->setMaterial(matById[params.p_extScene->mMeshes[i]->mMaterialIndex]);
