@@ -40,16 +40,34 @@ std::size_t Scene::memory_cost() const
 void Scene::loadFromAssimp(const AssimpLoadParams &params)
 {
     MeshKeeper &meshKeeper = params.root.getComponent<MeshKeeper>();
+    MaterialKeeper &matKeeper = params.root.getComponent<MaterialKeeper>();
 
+    // load materials
+    std::vector<dynasma::LazyPtr<Material>> matById;
+    if (params.p_extScene->HasMaterials()) {
+        matById.reserve(params.p_extScene->mNumMaterials);
+        for (int i = 0; i < params.p_extScene->mNumMaterials; i++) {
+            auto p_mat = matKeeper.new_asset({
+                Material::AssimpLoadParams{params.p_extScene->mMaterials[i], params.root},
+            });
+            matById.emplace_back(p_mat);
+        }
+    }
+
+    // load meshes
     if (params.p_extScene->HasMeshes()) {
         for (unsigned int i = 0; i < params.p_extScene->mNumMeshes; ++i) {
             dynasma::FirmPtr<Mesh> p_mesh = meshKeeper.new_asset(
                 {Mesh::AssimpLoadParams{params.p_extScene->mMeshes[i], params.root}});
 
+            // set material
+            p_mesh->setMaterial(matById[params.p_extScene->mMeshes[i]->mMaterialIndex]);
+
             meshProps.emplace_back(MeshProp{p_mesh, SimpleTransformation()});
         }
     }
 
+    // load the camera
     if (params.p_extScene->HasCameras()) {
         const aiCamera *p_ext_camera = params.p_extScene->mCameras[0];
 

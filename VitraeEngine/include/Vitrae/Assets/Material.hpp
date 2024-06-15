@@ -41,7 +41,7 @@ class Material : public dynasma::PolymorphicBase
     std::map<StringId, dynasma::FirmPtr<Texture>> m_textures;
 };
 
-struct ImmediateMaterialSeed
+struct MaterialKeeperSeed
 {
     using Asset = Material;
 
@@ -51,7 +51,7 @@ struct ImmediateMaterialSeed
 };
 
 // using MaterialManager = dynasma::AbstractManager<MaterialSeed>;
-using MaterialKeeper = dynasma::AbstractKeeper<ImmediateMaterialSeed>;
+using MaterialKeeper = dynasma::AbstractKeeper<MaterialKeeperSeed>;
 
 /**
  * Namespace containing all standard material texture names
