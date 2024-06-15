@@ -47,8 +47,8 @@ static constexpr const char INPUT_PROJECTION[] = "mat_proj";
 static constexpr const char INPUT_MODEL[] = "mat_model";
 
 static constexpr const char FRAGMENT_OUTPUT[] = "shade";
-static constexpr const char VERTEX_OUTPUT[] = "view_position";
-static constexpr const char COMPUTE_OUTPUT[] = "computed_data";
+static constexpr const char VERTEX_OUTPUT[] = "position_view";
+static constexpr const char COMPUTE_OUTPUT[] = "data_computed";
 } // namespace StandardShaderOutputNames
 
 namespace StandardShaderPropertyTypes
