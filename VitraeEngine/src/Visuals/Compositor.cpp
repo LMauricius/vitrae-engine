@@ -56,12 +56,18 @@ void Compositor::compose() const
 {
     ScopedDict localVars(&parameters);
 
+    // set the output frame property
+    localVars.set(StandardCompositorOutputNames::OUTPUT,
+                  m_preparedFrameStores.at(StandardCompositorOutputNames::OUTPUT));
+
+    // setup the rendering context
     Renderer &rend = m_root.getComponent<Renderer>();
     RenderRunContext context{.properties = localVars,
                              .renderer = rend,
                              .preparedCompositorFrameStores = m_preparedFrameStores,
                              .preparedCompositorTextures = m_preparedTextures};
 
+    // execute the pipeline
     for (auto &pipeitem : m_pipeline.items) {
         pipeitem.p_task->run(context);
     }
