@@ -17,6 +17,8 @@ template <TaskChild BasicTask> class Pipeline
         std::map<StringId, StringId> outputToLocalVariables;
     };
 
+    Pipeline() = default;
+
     /**
      * Constructs a pipeline using the preffered method to get desired results
      * @param method The preffered method
