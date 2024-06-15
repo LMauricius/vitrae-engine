@@ -33,7 +33,6 @@ template <TaskChild BasicTask> class Pipeline
         }
 
         // solve dependencies
-        std::set<dynasma::FirmPtr<BasicTask>> visitedTasks;
         std::set<StringId> visitedOutputs;
 
         for (auto &outputSpec : desiredOutputSpecs) {
@@ -55,12 +54,8 @@ template <TaskChild BasicTask> class Pipeline
                 method.getTask(desiredOutputSpec.name);
 
             if (task.has_value()) {
-
-                // task inputs (also handle deps)
-                std::map<StringId, StringId> inputToLocalVariables;
-                for (auto [inputNameId, inputSpec] : task.value()->getInputSpecs()) {
-                    tryAddDependency(method, visitedOutputs, desiredOutputSpec, false);
-                    inputToLocalVariables.emplace(inputSpec.name, inputSpec.name);
+                if (task.value() == dynasma::FirmPtr<BasicTask>() || &*task.value() == nullptr) {
+                    throw std::runtime_error("No task found for output " + desiredOutputSpec.name);
                 }
 
                 // task outputs (store the outputs as visited)
@@ -73,6 +68,13 @@ template <TaskChild BasicTask> class Pipeline
                         visitedOutputs.insert(taskOutputSpec.name);
                     }
                     outputToLocalVariables.emplace(taskOutputSpec.name, taskOutputSpec.name);
+                }
+
+                // task inputs (also handle deps)
+                std::map<StringId, StringId> inputToLocalVariables;
+                for (auto [inputNameId, inputSpec] : task.value()->getInputSpecs()) {
+                    tryAddDependency(method, visitedOutputs, inputSpec, false);
+                    inputToLocalVariables.emplace(inputSpec.name, inputSpec.name);
                 }
 
                 items.push_back({task.value(), inputToLocalVariables, outputToLocalVariables});
