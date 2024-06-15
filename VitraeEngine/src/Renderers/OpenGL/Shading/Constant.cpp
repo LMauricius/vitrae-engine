@@ -3,12 +3,7 @@
 
 namespace Vitrae
 {
-OpenGLShaderConstant::OpenGLShaderConstant(const SetupParams &params)
-    : ShaderConstant(params), ShaderTask({}, {{params.outputSpec.name, params.outputSpec}}),
-      OpenGLShaderTask(
-          std::map<StringId, PropertySpec>{},
-          std::map<StringId, PropertySpec>{{params.outputSpec.name, params.outputSpec}})
-{}
+OpenGLShaderConstant::OpenGLShaderConstant(const SetupParams &params) : ShaderConstant(params) {}
 
 std::size_t OpenGLShaderConstant::memory_cost() const
 {

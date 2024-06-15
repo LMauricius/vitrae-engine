@@ -9,7 +9,7 @@
 namespace Vitrae
 {
 
-class ShaderConstant : public virtual ShaderTask
+class ShaderConstant : public ShaderTask
 {
   public:
     struct SetupParams

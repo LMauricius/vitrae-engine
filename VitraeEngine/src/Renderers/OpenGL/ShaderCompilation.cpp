@@ -1,7 +1,6 @@
 #include "Vitrae/Renderers/OpenGL/ShaderCompilation.hpp"
 #include "Vitrae/ComponentRoot.hpp"
 #include "Vitrae/Renderers/OpenGL.hpp"
-#include "Vitrae/Renderers/OpenGL/Shading/Task.hpp"
 
 #include <fstream>
 
@@ -35,13 +34,6 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
     String elemVarPrefix = "vertex_";
     std::map<StringId, PropertySpec> elemVarSpecs;
 
-    struct ConvPipeItemReferences
-    {
-        dynasma::FirmPtr<OpenGLShaderTask> p_task;
-        const std::map<StringId, StringId> &inputToLocalVariables;
-        const std::map<StringId, StringId> &outputToLocalVariables;
-    };
-
     struct CompilationHelp
     {
         // the specified shading method
@@ -52,7 +44,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
         std::set<StringId> pipethroughInputNames;
 
         // items converted to OpenGLShaderTask
-        std::vector<ConvPipeItemReferences> convertedPipeItems;
+        Pipeline<ShaderTask> pipeline;
 
         // prefix for output variables
         String outVarPrefix;
@@ -91,27 +83,18 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
             }
             std::span<const PropertySpec> passedVarSpecsSpan(passedVarSpecs);
 
-            Pipeline<ShaderTask> pipeline(p_helper->p_method, passedVarSpecsSpan);
+            p_helper->pipeline = Pipeline<ShaderTask>(p_helper->p_method, passedVarSpecsSpan);
 
             passedVarSpecs.clear();
-            for (auto [reqNameId, reqSpec] : pipeline.inputSpecs) {
+            for (auto [reqNameId, reqSpec] : p_helper->pipeline.inputSpecs) {
                 passedVarSpecs.push_back(reqSpec);
             }
 
             // store useful pipeline data
-            p_helper->inputSpecs = std::move(pipeline.inputSpecs);
-            p_helper->outputSpecs = std::move(pipeline.outputSpecs);
-            p_helper->localSpecs = std::move(pipeline.localSpecs);
-            p_helper->pipethroughInputNames = std::move(pipeline.pipethroughInputNames);
-
-            // Convert PipeItems
-            for (auto &item : pipeline.items) {
-                p_helper->convertedPipeItems.push_back(ConvPipeItemReferences{
-                    .p_task = dynasma::dynamic_pointer_cast<OpenGLShaderTask>(item.p_task),
-                    .inputToLocalVariables = std::move(item.inputToLocalVariables),
-                    .outputToLocalVariables = std::move(item.outputToLocalVariables),
-                });
-            }
+            p_helper->inputSpecs = std::move(p_helper->pipeline.inputSpecs);
+            p_helper->outputSpecs = std::move(p_helper->pipeline.outputSpecs);
+            p_helper->localSpecs = std::move(p_helper->pipeline.localSpecs);
+            p_helper->pipethroughInputNames = std::move(p_helper->pipeline.pipethroughInputNames);
         }
     }
 
@@ -143,7 +126,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
         for (auto p_helper : helperOrder) {
             std::set<const TypeInfo *> usedTypeSet;
 
-            for (auto &pipeItem : p_helper->convertedPipeItems) {
+            for (auto &pipeItem : p_helper->pipeline.items) {
                 pipeItem.p_task->extractUsedTypes(usedTypeSet);
             }
 
@@ -161,7 +144,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
         for (auto p_helper : helperOrder) {
             // code output
             std::stringstream ss;
-            OpenGLShaderTask::BuildContext context{.output = ss, .renderer = rend};
+            ShaderTask::BuildContext context{.output = ss, .renderer = rend};
             std::map<StringId, String> inputParametersToGlobalVars;
             std::map<StringId, String> outputParametersToGlobalVars;
 
@@ -267,19 +250,19 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
             ss << "\n";
 
             // p_task function declarations
-            for (auto &pipeItem : p_helper->convertedPipeItems) {
+            for (auto &pipeItem : p_helper->pipeline.items) {
                 pipeItem.p_task->outputDeclarationCode(context);
                 ss << "\n\n";
             }
 
             // p_task function definitions
-            for (auto &pipeItem : p_helper->convertedPipeItems) {
+            for (auto &pipeItem : p_helper->pipeline.items) {
                 pipeItem.p_task->outputDefinitionCode(context);
                 ss << "\n\n";
             }
 
             ss << "void main() {\n";
-            for (auto &pipeItem : p_helper->convertedPipeItems) {
+            for (auto &pipeItem : p_helper->pipeline.items) {
                 pipeItem.p_task->outputUsageCode(context, inputParametersToGlobalVars,
                                                  outputParametersToGlobalVars);
                 ss << "\n\n";

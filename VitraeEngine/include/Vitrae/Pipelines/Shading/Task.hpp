@@ -1,14 +1,43 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Task.hpp"
+#include "Vitrae/Util/ScopedDict.hpp"
 
 #include "glm/glm.hpp"
 
 namespace Vitrae
 {
+
+class Renderer;
+
 class ShaderTask : public Task
 {
+  public:
+    struct BuildContext
+    {
+        std::stringstream &output;
+        Renderer &renderer;
+    };
+
+    struct RunContext
+    {
+        const ScopedDict &properties;
+        Renderer &renderer;
+    };
+
+    struct SetupContext
+    {
+        std::vector<std::function<void(RunContext)>> setupFunctions;
+        Renderer &renderer;
+    };
+
     using Task::Task;
+
+    virtual void outputDeclarationCode(BuildContext args) const = 0;
+    virtual void outputDefinitionCode(BuildContext args) const = 0;
+    virtual void outputUsageCode(
+        BuildContext args, const std::map<StringId, String> &inputParamsToSharedVariables,
+        const std::map<StringId, String> &outputParamsToSharedVariables) const = 0;
 };
 
 namespace StandardShaderPropertyNames

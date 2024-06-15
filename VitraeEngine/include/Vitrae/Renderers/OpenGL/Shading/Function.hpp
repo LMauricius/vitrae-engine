@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Shading/Function.hpp"
-#include "Vitrae/Renderers/OpenGL/Shading/Task.hpp"
 
 #include "dynasma/keepers/abstract.hpp"
 
@@ -11,7 +10,7 @@
 namespace Vitrae
 {
 
-class OpenGLShaderFunction : public ShaderFunction, public OpenGLShaderTask
+class OpenGLShaderFunction : public ShaderFunction
 {
     std::vector<StringId> m_inputOrder;
     std::vector<StringId> m_outputOrder;

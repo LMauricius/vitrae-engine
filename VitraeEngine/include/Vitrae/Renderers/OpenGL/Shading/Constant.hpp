@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vitrae/Pipelines/Shading/Constant.hpp"
-#include "Vitrae/Renderers/OpenGL/Shading/Task.hpp"
 
 #include "dynasma/keepers/abstract.hpp"
 
@@ -11,7 +10,7 @@
 namespace Vitrae
 {
 
-class OpenGLShaderConstant : public ShaderConstant, public OpenGLShaderTask
+class OpenGLShaderConstant : public ShaderConstant
 {
   public:
     OpenGLShaderConstant(const SetupParams &params);

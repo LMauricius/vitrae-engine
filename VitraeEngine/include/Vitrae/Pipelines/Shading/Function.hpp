@@ -10,7 +10,7 @@
 namespace Vitrae
 {
 
-class ShaderFunction : public virtual ShaderTask
+class ShaderFunction : public ShaderTask
 {
   public:
     struct FileLoadParams

@@ -6,9 +6,7 @@
 namespace Vitrae
 {
 
-OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params)
-    : ShaderFunction(params), ShaderTask(params.inputSpecs, params.outputSpecs),
-      OpenGLShaderTask(params.inputSpecs, params.outputSpecs), m_functionName(params.functionName)
+OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params) : ShaderFunction(params)
 {
     for (const auto &spec : params.inputSpecs) {
         m_inputOrder.emplace_back(spec.name);
@@ -23,9 +21,7 @@ OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params)
     m_fileSnippet = sstr.str();
 }
 
-OpenGLShaderFunction::OpenGLShaderFunction(const StringParams &params)
-    : ShaderFunction(params), ShaderTask(params.inputSpecs, params.outputSpecs),
-      OpenGLShaderTask(params.inputSpecs, params.outputSpecs), m_functionName(params.functionName)
+OpenGLShaderFunction::OpenGLShaderFunction(const StringParams &params) : ShaderFunction(params)
 {
     for (const auto &spec : params.inputSpecs) {
         m_inputOrder.emplace_back(spec.name);
