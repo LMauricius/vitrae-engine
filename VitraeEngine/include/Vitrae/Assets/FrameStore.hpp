@@ -42,6 +42,8 @@ class FrameStore : public dynasma::PolymorphicBase
     virtual ~FrameStore() = default;
     virtual std::size_t memory_cost() const = 0;
     virtual void resize(glm::vec2 size) = 0;
+
+    virtual glm::vec2 getSize() const = 0;
 };
 
 struct FrameStoreSeed

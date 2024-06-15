@@ -85,7 +85,7 @@ OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
 
 OpenGLFrameStore::~OpenGLFrameStore()
 {
-    std::visit([](auto &&contextSwitcher) { contextSwitcher.destroyContext(); }, m_contextSwitcher);
+    std::visit([](auto &contextSwitcher) { contextSwitcher.destroyContext(); }, m_contextSwitcher);
 }
 
 std::size_t OpenGLFrameStore::memory_cost() const
@@ -97,15 +97,20 @@ void OpenGLFrameStore::resize(glm::vec2 size)
     /// TODO: resize capabilities
 }
 
+glm::vec2 OpenGLFrameStore::getSize() const
+{
+    return std::visit([](auto &contextSwitcher) { return contextSwitcher.getSize(); },
+                      m_contextSwitcher);
+}
 void OpenGLFrameStore::startRender(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
-    std::visit([&](auto &&contextSwitcher) { contextSwitcher.enterContext(topLeft, bottomRight); },
+    std::visit([&](auto &contextSwitcher) { contextSwitcher.enterContext(topLeft, bottomRight); },
                m_contextSwitcher);
 }
 
 void OpenGLFrameStore::finishRender()
 {
-    std::visit([](auto &&contextSwitcher) { contextSwitcher.exitContext(); }, m_contextSwitcher);
+    std::visit([](auto &contextSwitcher) { contextSwitcher.exitContext(); }, m_contextSwitcher);
 }
 
 /*
@@ -115,6 +120,10 @@ Framebuffer drawing
 void OpenGLFrameStore::FramebufferContextSwitcher::destroyContext()
 {
     glDeleteFramebuffers(1, &glFramebufferId);
+}
+glm::vec2 OpenGLFrameStore::FramebufferContextSwitcher::getSize() const
+{
+    return glm::vec2(width, height);
 }
 void OpenGLFrameStore::FramebufferContextSwitcher::enterContext(glm::vec2 topLeft,
                                                                 glm::vec2 bottomRight)
@@ -135,6 +144,12 @@ Window drawing
 void OpenGLFrameStore::WindowContextSwitcher::destroyContext()
 {
     glfwDestroyWindow(window);
+}
+glm::vec2 OpenGLFrameStore::WindowContextSwitcher::getSize() const
+{
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    return glm::vec2(width, height);
 }
 void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, glm::vec2 bottomRight)
 {

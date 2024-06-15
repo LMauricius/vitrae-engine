@@ -21,6 +21,8 @@ class OpenGLFrameStore : public FrameStore
     std::size_t memory_cost() const override;
     void resize(glm::vec2 size) override;
 
+    glm::vec2 getSize() const override;
+
     void startRender(glm::vec2 topLeft, glm::vec2 bottomRight);
     void finishRender();
 
@@ -30,6 +32,7 @@ class OpenGLFrameStore : public FrameStore
         void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
         void destroyContext();
+        glm::vec2 getSize() const;
 
         int width, height;
         GLuint glFramebufferId;
@@ -39,6 +42,7 @@ class OpenGLFrameStore : public FrameStore
         void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
         void destroyContext();
+        glm::vec2 getSize() const;
 
         GLFWwindow *window;
 
