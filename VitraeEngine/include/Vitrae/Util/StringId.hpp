@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <string>
 #include <string_view>
 
@@ -13,6 +14,9 @@ class StringId
     friend std::hash<StringId>;
 
     std::size_t m_hash;
+#ifndef NDEBUG
+    char *m_str;
+#endif
 
   public:
     constexpr StringId(const char *str) : StringId(std::string_view{str}) {}
@@ -24,13 +28,45 @@ class StringId
 
         for (char c : str)
             m_hash = (m_hash ^ c) * 0x100000001b3ULL;
+
+#ifndef NDEBUG
+        m_str = new char[str.size() + 1];
+        std::copy(str.begin(), str.end(), m_str);
+        m_str[str.size()] = '\0';
+#endif
     }
-    constexpr StringId(StringId &&) = default;
-    constexpr StringId(const StringId &) = default;
+    constexpr StringId(StringId &&id)
+    {
+        m_hash = id.m_hash;
+#ifndef NDEBUG
+        m_str = id.m_str;
+        id.m_str = nullptr;
+#endif
+    }
+    constexpr StringId(const StringId &id)
+    {
+        m_hash = id.m_hash;
+#ifndef NDEBUG
+        m_str = new char[std::strlen(id.m_str) + 1];
+        std::strcpy(m_str, id.m_str);
+#endif
+    }
+
+#ifndef NDEBUG
+    constexpr ~StringId()
+    {
+        if (m_str)
+            delete[] m_str;
+    }
+#endif
 
     constexpr StringId &operator=(StringId id)
     {
         m_hash = id.m_hash;
+#ifndef NDEBUG
+        m_str = new char[std::strlen(id.m_str) + 1];
+        std::strcpy(m_str, id.m_str);
+#endif
         return *this;
     }
 
