@@ -353,7 +353,8 @@ class Variant
      */
     union {
         void *mp_longVal;
-        char m_shortBufferVal[sizeof(void *)];
+        char m_shortBufferVal[sizeof(void *) * 2]; // size of two pointers, because many stored
+                                                   // variant data consists of 2 pointers
     } m_val;
     /**
      * Pointer to the function table
