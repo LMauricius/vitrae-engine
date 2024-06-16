@@ -32,8 +32,11 @@ void OpenGLComposeClearRender::run(RenderRunContext args) const
     OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(m_root.getComponent<Renderer>());
     CompiledGLSLShaderCacher &shaderCacher = m_root.getComponent<CompiledGLSLShaderCacher>();
 
-    OpenGLFrameStore &frame = static_cast<OpenGLFrameStore &>(
-        *args.properties.get(m_displayOutputNameId).get<dynasma::FirmPtr<FrameStore>>());
+    dynasma::FirmPtr<FrameStore> p_frame =
+        m_displayInputNameId.has_value()
+            ? args.properties.get(m_displayInputNameId.value()).get<dynasma::FirmPtr<FrameStore>>()
+            : args.preparedCompositorFrameStores.at(m_displayOutputNameId);
+    OpenGLFrameStore &frame = static_cast<OpenGLFrameStore &>(*p_frame);
 
     frame.enterRender({0.0f, 0.0f}, {1.0f, 1.0f});
 
@@ -41,6 +44,8 @@ void OpenGLComposeClearRender::run(RenderRunContext args) const
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     frame.exitRender();
+
+    args.properties.set(m_displayOutputNameId, p_frame);
 }
 
 void OpenGLComposeClearRender::prepareRequiredLocalAssets(

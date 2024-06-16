@@ -58,8 +58,11 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
     glm::mat4 viewMat = args.properties.get(m_viewInputNameId).get<glm::mat4>();
     glm::mat4 perspectiveMat = args.properties.get(m_perspectiveInputNameId).get<glm::mat4>();
 
-    OpenGLFrameStore &frame = static_cast<OpenGLFrameStore &>(
-        *args.properties.get(m_displayOutputNameId).get<dynasma::FirmPtr<FrameStore>>());
+    dynasma::FirmPtr<FrameStore> p_frame =
+        m_displayInputNameId.has_value()
+            ? args.properties.get(m_displayInputNameId.value()).get<dynasma::FirmPtr<FrameStore>>()
+            : args.preparedCompositorFrameStores.at(m_displayOutputNameId);
+    OpenGLFrameStore &frame = static_cast<OpenGLFrameStore &>(*p_frame);
 
     // build map of shaders to materials to mesh props
     std::map<std::pair<dynasma::FirmPtr<Method<ShaderTask>>, dynasma::FirmPtr<Method<ShaderTask>>>,
@@ -158,6 +161,8 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
     }
 
     frame.exitRender();
+
+    args.properties.set(m_displayOutputNameId, p_frame);
 }
 
 void OpenGLComposeSceneRender::prepareRequiredLocalAssets(
