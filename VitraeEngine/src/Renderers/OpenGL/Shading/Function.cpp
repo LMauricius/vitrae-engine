@@ -19,6 +19,7 @@ OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params) : Shade
     std::ostringstream sstr;
     sstr << stream.rdbuf();
     m_fileSnippet = sstr.str();
+    m_functionName = params.functionName;
 }
 
 OpenGLShaderFunction::OpenGLShaderFunction(const StringParams &params) : ShaderFunction(params)
@@ -31,6 +32,7 @@ OpenGLShaderFunction::OpenGLShaderFunction(const StringParams &params) : ShaderF
     }
 
     m_fileSnippet = params.snippet;
+    m_functionName = params.functionName;
 }
 
 std::size_t OpenGLShaderFunction::memory_cost() const
@@ -65,10 +67,9 @@ void OpenGLShaderFunction::outputDeclarationCode(BuildContext args) const
         if (hadFirstArg) {
             args.output << ", ";
         }
-        args.output << glTypeSpec.glTypeName << " i_" << spec.name;
+        args.output << glTypeSpec.glTypeName;
         hadFirstArg = true;
     }
-    hadFirstArg = false;
     for (const auto &nameId : m_outputOrder) {
         const PropertySpec &spec = m_outputSpecs.at(nameId);
         const GLTypeSpec &glTypeSpec = renderer.getTypeConversion(spec.typeInfo).glTypeSpec;
@@ -101,12 +102,11 @@ void OpenGLShaderFunction::outputUsageCode(
         args.output << inputParamsToSharedVariables.at(nameId);
         hadFirstArg = true;
     }
-    hadFirstArg = false;
     for (const auto &nameId : m_outputOrder) {
         if (hadFirstArg) {
             args.output << ", ";
         }
-        args.output << inputParamsToSharedVariables.at(nameId);
+        args.output << outputParamsToSharedVariables.at(nameId);
         hadFirstArg = true;
     }
     args.output << ");\n";
