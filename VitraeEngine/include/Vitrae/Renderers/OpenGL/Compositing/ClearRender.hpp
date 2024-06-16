@@ -1,22 +1,18 @@
 #pragma once
 
-#include "Vitrae/Pipelines/Compositing/SceneRender.hpp"
-#include "Vitrae/Util/ScopedDict.hpp"
-
-#include <functional>
-#include <vector>
+#include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
 
 namespace Vitrae
 {
 
 class OpenGLRenderer;
 
-class OpenGLComposeSceneRender : public ComposeSceneRender
+class OpenGLComposeClearRender : public ComposeClearRender
 {
   public:
-    using ComposeSceneRender::ComposeSceneRender;
+    using ComposeClearRender::ComposeClearRender;
 
-    OpenGLComposeSceneRender(const SetupParams &params);
+    OpenGLComposeClearRender(const SetupParams &params);
 
     void run(RenderRunContext args) const override;
     void prepareRequiredLocalAssets(
@@ -25,7 +21,8 @@ class OpenGLComposeSceneRender : public ComposeSceneRender
 
   protected:
     ComponentRoot &m_root;
-    StringId m_viewInputNameId, m_perspectiveInputNameId, m_displayOutputNameId;
+    glm::vec4 m_color;
+    StringId m_displayOutputNameId;
     std::optional<StringId> m_displayInputNameId;
 };
 

@@ -4,19 +4,18 @@
 
 #include "dynasma/keepers/abstract.hpp"
 
-#include <functional>
+#include <variant>
 
 namespace Vitrae
 {
 
-class ComposeSceneRender : public ComposeTask
+class ComposeClearRender : public ComposeTask
 {
   public:
     struct SetupParams
     {
         ComponentRoot &root;
-        String viewInputPropertyName;
-        String perspectiveInputPropertyName;
+        glm::vec4 backgroundColor;
         String displayInputPropertyName;
         String displayOutputPropertyName;
     };
@@ -24,12 +23,12 @@ class ComposeSceneRender : public ComposeTask
     using ComposeTask::ComposeTask;
 };
 
-struct ComposeSceneRenderKeeperSeed
+struct ComposeClearRenderKeeperSeed
 {
-    using Asset = ComposeSceneRender;
-    std::variant<ComposeSceneRender::SetupParams> kernel;
+    using Asset = ComposeClearRender;
+    std::variant<ComposeClearRender::SetupParams> kernel;
     inline std::size_t load_cost() const { return 1; }
 };
 
-using ComposeSceneRenderKeeper = dynasma::AbstractKeeper<ComposeSceneRenderKeeperSeed>;
+using ComposeClearRenderKeeper = dynasma::AbstractKeeper<ComposeClearRenderKeeperSeed>;
 } // namespace Vitrae

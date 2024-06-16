@@ -14,18 +14,38 @@ namespace Vitrae
 
 OpenGLComposeSceneRender::OpenGLComposeSceneRender(const SetupParams &params)
     : ComposeSceneRender(
-          std::span<const PropertySpec>{
-              {PropertySpec{.name = "scene",
-                            .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<Scene>>()},
-               PropertySpec{.name = params.viewInputPropertyName,
-                            .typeInfo = Variant::getTypeInfo<glm::mat4>()},
-               PropertySpec{.name = params.perspectiveInputPropertyName,
-                            .typeInfo = Variant::getTypeInfo<glm::mat4>()}}},
+          params.displayInputPropertyName.empty()
+              ? std::span<const PropertySpec>{{PropertySpec{.name = "scene",
+                                                            .typeInfo = Variant::getTypeInfo<
+                                                                dynasma::FirmPtr<Scene>>()},
+                                               PropertySpec{.name = params.viewInputPropertyName,
+                                                            .typeInfo =
+                                                                Variant::getTypeInfo<glm::mat4>()},
+                                               PropertySpec{
+                                                   .name = params.perspectiveInputPropertyName,
+                                                   .typeInfo = Variant::getTypeInfo<glm::mat4>()}}}
+              : std::span<const PropertySpec>{{PropertySpec{.name = "scene",
+                                                            .typeInfo = Variant::getTypeInfo<
+                                                                dynasma::FirmPtr<Scene>>()},
+                                               PropertySpec{.name = params.viewInputPropertyName,
+                                                            .typeInfo =
+                                                                Variant::getTypeInfo<glm::mat4>()},
+                                               PropertySpec{
+                                                   .name = params.perspectiveInputPropertyName,
+                                                   .typeInfo = Variant::getTypeInfo<glm::mat4>()},
+
+                                               {PropertySpec{
+                                                   .name = params.displayInputPropertyName,
+                                                   .typeInfo = Variant::getTypeInfo<
+                                                       dynasma::FirmPtr<FrameStore>>()}}}},
           std::span<const PropertySpec>{
               {PropertySpec{.name = params.displayOutputPropertyName,
                             .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>()}}}),
       m_root(params.root), m_viewInputNameId(params.viewInputPropertyName),
       m_perspectiveInputNameId(params.perspectiveInputPropertyName),
+      m_displayInputNameId(params.displayInputPropertyName.empty()
+                               ? std::optional<StringId>()
+                               : params.displayInputPropertyName),
       m_displayOutputNameId(params.displayOutputPropertyName)
 {}
 
@@ -64,12 +84,10 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                 .vertexMethod = vertexMethod, .fragmentMethod = fragmentMethod, .root = m_root}});
     }
 
-    frame.startRender({0.0f, 0.0f}, {1.0f, 1.0f});
+    frame.enterRender({0.0f, 0.0f}, {1.0f, 1.0f});
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // render the scene
     // iterate over shaders
@@ -127,26 +145,31 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
             // iterate over meshes
             for (auto p_meshProp : props) {
                 OpenGLMesh &mesh = static_cast<OpenGLMesh &>(*p_meshProp->p_mesh);
+                mesh.loadToGPU(rend);
 
                 glBindVertexArray(mesh.VAO);
                 glUniformMatrix4fv(glModelMatrixUniformId, 1, GL_FALSE,
                                    &(p_meshProp->transform.getModelMatrix()[0][0]));
-                glDrawElements(GL_TRIANGLES, mesh.getTriangles().size(), GL_UNSIGNED_INT, 0);
+                glDrawElements(GL_TRIANGLES, 3 * mesh.getTriangles().size(), GL_UNSIGNED_INT, 0);
             }
         }
 
         glUseProgram(0);
     }
 
-    frame.finishRender();
+    frame.exitRender();
 }
 
 void OpenGLComposeSceneRender::prepareRequiredLocalAssets(
     std::map<StringId, dynasma::FirmPtr<FrameStore>> &frameStores,
     std::map<StringId, dynasma::FirmPtr<Texture>> &textures) const
 {
-    // We just need to check whether the frame store is already prepared
-    if (frameStores.find(m_displayOutputNameId) == frameStores.end()) {
+    // We just need to check whether the frame store is already prepared and make it input also
+    if (auto it = frameStores.find(m_displayOutputNameId); it != frameStores.end()) {
+        if (m_displayInputNameId.has_value()) {
+            frameStores.emplace(m_displayInputNameId.value(), it->second);
+        }
+    } else {
         throw std::runtime_error("Frame store not found");
     }
 }
