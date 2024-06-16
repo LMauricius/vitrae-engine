@@ -1,5 +1,6 @@
 #include "Vitrae/Assets/Material.hpp"
 #include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Util/StringProcessing.hpp"
 
 namespace Vitrae
 {
@@ -27,8 +28,8 @@ Material::Material(const AssimpLoadParams &params)
             aiString path;
             params.p_extMaterial->GetTexture(textureInfo.aiTextureId, i, &path);
 
-            String relconvPath = String(path.C_Str());
-            std::replace(relconvPath.begin(), relconvPath.end(), '\\', '/');
+            String relconvPath =
+                searchAndReplace(searchAndReplace(path.C_Str(), "\\", "/"), "//", "/");
 
             m_textures[textureInfo.textureNameId] = textureManager.register_asset(
                 {Texture::FileLoadParams{.root = params.root,

@@ -77,4 +77,14 @@ String clearIndents(const String &str)
     return out;
 }
 
+String searchAndReplace(String input, const StringView search, const StringView replace)
+{
+    std::size_t pos = input.find(search);
+    while (pos != String::npos) {
+        input.replace(pos, search.size(), replace);
+        pos = input.find(search, pos + replace.size());
+    }
+    return input;
+}
+
 } // namespace Vitrae
