@@ -23,14 +23,17 @@ class OpenGLFrameStore : public FrameStore
 
     glm::vec2 getSize() const override;
 
-    void startRender(glm::vec2 topLeft, glm::vec2 bottomRight);
-    void finishRender();
+    void sync() override;
+
+    void enterRender(glm::vec2 topLeft, glm::vec2 bottomRight);
+    void exitRender();
 
   protected:
     struct FramebufferContextSwitcher
     {
         void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
+        void sync();
         void destroyContext();
         glm::vec2 getSize() const;
 
@@ -41,6 +44,7 @@ class OpenGLFrameStore : public FrameStore
     {
         void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
+        void sync();
         void destroyContext();
         glm::vec2 getSize() const;
 

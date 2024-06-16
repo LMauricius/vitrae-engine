@@ -102,13 +102,18 @@ glm::vec2 OpenGLFrameStore::getSize() const
     return std::visit([](auto &contextSwitcher) { return contextSwitcher.getSize(); },
                       m_contextSwitcher);
 }
-void OpenGLFrameStore::startRender(glm::vec2 topLeft, glm::vec2 bottomRight)
+void OpenGLFrameStore::sync()
+{
+    std::visit([](auto &contextSwitcher) { contextSwitcher.sync(); }, m_contextSwitcher);
+}
+
+void OpenGLFrameStore::enterRender(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
     std::visit([&](auto &contextSwitcher) { contextSwitcher.enterContext(topLeft, bottomRight); },
                m_contextSwitcher);
 }
 
-void OpenGLFrameStore::finishRender()
+void OpenGLFrameStore::exitRender()
 {
     std::visit([](auto &contextSwitcher) { contextSwitcher.exitContext(); }, m_contextSwitcher);
 }
@@ -137,6 +142,8 @@ void OpenGLFrameStore::FramebufferContextSwitcher::exitContext()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void OpenGLFrameStore::FramebufferContextSwitcher::sync() {}
+
 /*
 Window drawing
 */
@@ -153,9 +160,6 @@ glm::vec2 OpenGLFrameStore::WindowContextSwitcher::getSize() const
 }
 void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
-    // we need to call this somewhere, so before rendering is ok since it gets called periodically
-    // calling this multiple times when we have multiple windows shouldn't be a problem
-    glfwPollEvents();
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -166,8 +170,16 @@ void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, gl
 }
 void OpenGLFrameStore::WindowContextSwitcher::exitContext()
 {
-    glfwSwapBuffers(window);
     glfwMakeContextCurrent(0);
+}
+
+void OpenGLFrameStore::WindowContextSwitcher::sync()
+{
+    // we need to call this somewhere, so before rendering is ok since it gets called periodically
+    // calling this multiple times when we have multiple windows shouldn't be a problem
+    glfwPollEvents();
+
+    glfwSwapBuffers(window);
 }
 
 } // namespace Vitrae

@@ -71,6 +71,15 @@ void Compositor::compose() const
     for (auto &pipeitem : m_pipeline.items) {
         pipeitem.p_task->run(context);
     }
+
+    // sync the framebuffers
+    std::set<dynasma::FirmPtr<FrameStore>> uniqueFrameStores;
+    for (auto [nameId, p_store] : m_preparedFrameStores) {
+        uniqueFrameStores.insert(p_store);
+    }
+    for (auto p_store : uniqueFrameStores) {
+        p_store->sync();
+    }
 }
 
 } // namespace Vitrae
