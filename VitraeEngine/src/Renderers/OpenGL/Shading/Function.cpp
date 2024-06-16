@@ -110,7 +110,7 @@ void OpenGLShaderFunction::outputUsageCode(
         args.output << outputParamsToSharedVariables.at(nameId);
         hadFirstArg = true;
     }
-    args.output << ");\n";
+    args.output << ");";
 }
 
 } // namespace Vitrae

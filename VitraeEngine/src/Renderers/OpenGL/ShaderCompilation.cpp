@@ -314,7 +314,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
                 ss << "    ";
                 pipeItem.p_task->outputUsageCode(context, inputParametersToGlobalVars,
                                                  outputParametersToGlobalVars);
-                ss << "\n\n";
+                ss << "\n";
             }
 
             // pipethrough variables
