@@ -64,7 +64,9 @@ void Scene::loadFromAssimp(const AssimpLoadParams &params)
             // set material
             p_mesh->setMaterial(matById[params.p_extScene->mMeshes[i]->mMaterialIndex]);
 
-            meshProps.emplace_back(MeshProp{p_mesh, SimpleTransformation()});
+            meshProps.emplace_back(MeshProp{p_mesh, SimpleTransformation{.position = {0, 0, 0},
+                                                                         .rotation = glm::quat(),
+                                                                         .scaling = {1, 1, 1}}});
         }
     }
 

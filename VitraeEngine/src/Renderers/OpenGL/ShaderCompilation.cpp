@@ -368,7 +368,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
     // store uniform indices
     for (auto [uniNameId, uniSpec] : uniformVarSpecs) {
-        std::string uniFullName = uniSpec.name;
+        std::string uniFullName = uniVarPrefix + uniSpec.name;
 
         switch (rend.getGpuStorageMethod(rend.getTypeConversion(uniSpec.typeInfo).glTypeSpec)) {
         case OpenGLRenderer::GpuValueStorageMethod::Uniform:

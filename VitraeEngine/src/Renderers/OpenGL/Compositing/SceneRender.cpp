@@ -77,6 +77,8 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                                    .push_back(&meshProp);
     }
 
+    frame.enterRender({0.0f, 0.0f}, {1.0f, 1.0f});
+
     // test run over shaders
     for (auto &[methods, materials2props] : methods2materials2props) {
         auto [vertexMethod, fragmentMethod] = methods;
@@ -86,8 +88,6 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
             shaderCacher.retrieve_asset({CompiledGLSLShader::SurfaceShaderSpec{
                 .vertexMethod = vertexMethod, .fragmentMethod = fragmentMethod, .root = m_root}});
     }
-
-    frame.enterRender({0.0f, 0.0f}, {1.0f, 1.0f});
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -108,13 +108,13 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
         int freeBindingIndex = 0;
         GLint glModelMatrixUniformId;
         for (auto [propertyNameId, uniSpec] : p_compiledShader->uniformSpecs) {
-            if (propertyNameId == "mat_model") {
+            if (propertyNameId == StandardShaderPropertyNames::INPUT_MODEL) {
                 // this is set per model
                 glModelMatrixUniformId = uniSpec.glNameId;
 
-            } else if (propertyNameId == "mat_view") {
+            } else if (propertyNameId == StandardShaderPropertyNames::INPUT_VIEW) {
                 glUniformMatrix4fv(uniSpec.glNameId, 1, GL_FALSE, &(viewMat[0][0]));
-            } else if (propertyNameId == "mat_proj") {
+            } else if (propertyNameId == StandardShaderPropertyNames::INPUT_PROJECTION) {
                 glUniformMatrix4fv(uniSpec.glNameId, 1, GL_FALSE, &(perspectiveMat[0][0]));
             } else {
                 auto p = args.properties.getPtr(propertyNameId);
