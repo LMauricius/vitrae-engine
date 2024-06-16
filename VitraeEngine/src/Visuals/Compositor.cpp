@@ -6,6 +6,7 @@
 namespace Vitrae
 {
 class Renderer;
+Compositor::Compositor(ComponentRoot &root) : m_root(root), m_pipeline() {}
 
 Compositor::Compositor(ComponentRoot &root, dynasma::FirmPtr<Method<ComposeTask>> p_method,
                        dynasma::FirmPtr<FrameStore> p_output)
@@ -28,16 +29,8 @@ void Compositor::setComposeMethod(dynasma::FirmPtr<Method<ComposeTask>> p_method
         p_method, {{PropertySpec{.name = StandardCompositorOutputNames::OUTPUT,
                                  .typeInfo = StandardCompositorOutputTypes::OUTPUT_TYPE}}});
 
-    // clear the buffers (except for the final output)
-    auto display_frame = m_preparedFrameStores.at(StandardCompositorOutputNames::OUTPUT);
-    m_preparedFrameStores.clear();
-    m_preparedTextures.clear();
-    m_preparedFrameStores[StandardCompositorOutputNames::OUTPUT] = display_frame;
-
-    // fill the buffers
-    for (auto &pipeitem : std::ranges::reverse_view{m_pipeline.items}) {
-        pipeitem.p_task->prepareRequiredLocalAssets(m_preparedFrameStores, m_preparedTextures);
-    }
+    // reset the output to trigger framestore regeneration
+    setOutput(m_preparedFrameStores.at(StandardCompositorOutputNames::OUTPUT));
 }
 
 void Compositor::setDefaultShadingMethod(dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod,
@@ -49,7 +42,15 @@ void Compositor::setDefaultShadingMethod(dynasma::FirmPtr<Method<ShaderTask>> p_
 
 void Compositor::setOutput(dynasma::FirmPtr<FrameStore> p_store)
 {
+    // clear the buffers (except for the final output)
+    m_preparedFrameStores.clear();
+    m_preparedTextures.clear();
     m_preparedFrameStores[StandardCompositorOutputNames::OUTPUT] = p_store;
+
+    // fill the buffers
+    for (auto &pipeitem : std::ranges::reverse_view{m_pipeline.items}) {
+        pipeitem.p_task->prepareRequiredLocalAssets(m_preparedFrameStores, m_preparedTextures);
+    }
 }
 
 void Compositor::compose() const
