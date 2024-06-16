@@ -77,7 +77,7 @@ void OpenGLShaderFunction::outputDeclarationCode(BuildContext args) const
         if (hadFirstArg) {
             args.output << ", ";
         }
-        args.output << "out " << glTypeSpec.glTypeName << " o_" << spec.name;
+        args.output << "out " << glTypeSpec.glTypeName;
         hadFirstArg = true;
     }
     args.output << ");\n";
