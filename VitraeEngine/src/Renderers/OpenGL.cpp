@@ -19,7 +19,7 @@
 
 namespace Vitrae
 {
-OpenGLRenderer::OpenGLRenderer()
+OpenGLRenderer::OpenGLRenderer() : m_vertexBufferFreeIndex(0)
 {
     /*
     Standard GLSL ypes
@@ -86,8 +86,8 @@ OpenGLRenderer::OpenGLRenderer()
     specifyTypeConversion({.hostType = Variant::getTypeInfo<dynasma::FirmPtr<Texture>>(),
                            .glTypeSpec = getGlTypeSpec("sampler2D"),
                            .setBinding = [](int bindingIndex, const Variant &hostValue) {
-                               OpenGLTexture &tex = static_cast<OpenGLTexture &>(
-                                   *hostValue.get<dynasma::FirmPtr<Texture>>());
+                               auto p_tex = hostValue.get<dynasma::FirmPtr<Texture>>();
+                               OpenGLTexture &tex = static_cast<OpenGLTexture &>(*p_tex);
                                glActiveTexture(GL_TEXTURE0 + bindingIndex);
                                glBindTexture(GL_TEXTURE_2D, tex.glTextureId);
                            }});
