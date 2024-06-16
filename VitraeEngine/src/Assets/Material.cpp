@@ -47,6 +47,13 @@ std::size_t Material::memory_cost() const
     return sizeof(Material);
 }
 
+void Material::setMethods(dynasma::FirmPtr<Method<ShaderTask>> vertexMethod,
+                          dynasma::FirmPtr<Method<ShaderTask>> fragmentMethod)
+{
+    m_vertexMethod = vertexMethod;
+    m_fragmentMethod = fragmentMethod;
+}
+
 dynasma::FirmPtr<Method<ShaderTask>> Material::getVertexMethod() const
 {
     return m_vertexMethod;

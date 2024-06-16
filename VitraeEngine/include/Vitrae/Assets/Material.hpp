@@ -32,6 +32,9 @@ class Material : public dynasma::PolymorphicBase
 
     std::size_t memory_cost() const;
 
+    void setMethods(dynasma::FirmPtr<Method<ShaderTask>> vertexMethod,
+                    dynasma::FirmPtr<Method<ShaderTask>> fragmentMethod);
+
     dynasma::FirmPtr<Method<ShaderTask>> getVertexMethod() const;
     dynasma::FirmPtr<Method<ShaderTask>> getFragmentMethod() const;
     const std::map<StringId, dynasma::FirmPtr<Texture>> &getTextures() const;
