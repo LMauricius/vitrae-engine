@@ -58,7 +58,7 @@ static constexpr const TypeInfo &INPUT_PROJECTION = Variant::getTypeInfo<glm::ma
 static constexpr const TypeInfo &INPUT_MODEL = Variant::getTypeInfo<glm::mat4>();
 
 static constexpr const TypeInfo &FRAGMENT_OUTPUT = Variant::getTypeInfo<glm::vec4>();
-static constexpr const TypeInfo &VERTEX_OUTPUT = Variant::getTypeInfo<glm::vec3>();
+static constexpr const TypeInfo &VERTEX_OUTPUT = Variant::getTypeInfo<glm::vec4>();
 }
 
 } // namespace Vitrae
