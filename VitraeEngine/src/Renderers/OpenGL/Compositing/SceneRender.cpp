@@ -41,13 +41,6 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
     OpenGLFrameStore &frame = static_cast<OpenGLFrameStore &>(
         *args.properties.get(m_displayOutputNameId).get<dynasma::FirmPtr<FrameStore>>());
 
-    frame.startRender({0.0f, 0.0f}, {1.0f, 1.0f});
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // build map of shaders to materials to mesh props
     std::map<std::pair<dynasma::FirmPtr<Method<ShaderTask>>, dynasma::FirmPtr<Method<ShaderTask>>>,
              std::map<dynasma::FirmPtr<const Material>, std::vector<const MeshProp *>>>
@@ -60,6 +53,23 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                                [meshProp.p_mesh->getMaterial()]
                                    .push_back(&meshProp);
     }
+
+    // test run over shaders
+    for (auto &[methods, materials2props] : methods2materials2props) {
+        auto [vertexMethod, fragmentMethod] = methods;
+
+        // compile shader for this material
+        dynasma::FirmPtr<CompiledGLSLShader> p_compiledShader =
+            shaderCacher.retrieve_asset({CompiledGLSLShader::SurfaceShaderSpec{
+                .vertexMethod = vertexMethod, .fragmentMethod = fragmentMethod, .root = m_root}});
+    }
+
+    frame.startRender({0.0f, 0.0f}, {1.0f, 1.0f});
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // render the scene
     // iterate over shaders

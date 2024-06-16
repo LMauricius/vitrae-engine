@@ -287,8 +287,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
             }
             outputParametersToGlobalVars.merge(std::move(predefinedOutputParameters));
 
-            ss << "\n"
-               << "\n";
+            ss << "\n";
 
             // p_task function definitions
             for (auto &pipeItem : p_helper->pipeline.items) {
@@ -296,8 +295,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
                 ss << "\n";
             }
 
-            ss << "\n"
-               << "\n";
+            ss << "\n";
 
             // execution pipeline
             ss << "void main() {\n";

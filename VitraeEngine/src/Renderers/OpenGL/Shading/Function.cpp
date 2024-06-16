@@ -1,5 +1,6 @@
 #include "Vitrae/Renderers/OpenGL/Shading/Function.hpp"
 #include "Vitrae/Renderers/OpenGL.hpp"
+#include "Vitrae/Util/StringProcessing.hpp"
 
 #include <fstream>
 
@@ -18,7 +19,7 @@ OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params) : Shade
     std::ifstream stream(params.filepath);
     std::ostringstream sstr;
     sstr << stream.rdbuf();
-    m_fileSnippet = sstr.str();
+    m_fileSnippet = clearIndents(sstr.str());
     m_functionName = params.functionName;
 }
 
@@ -31,7 +32,7 @@ OpenGLShaderFunction::OpenGLShaderFunction(const StringParams &params) : ShaderF
         m_outputOrder.emplace_back(spec.name);
     }
 
-    m_fileSnippet = params.snippet;
+    m_fileSnippet = clearIndents(params.snippet);
     m_functionName = params.functionName;
 }
 
