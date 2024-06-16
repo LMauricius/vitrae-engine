@@ -65,8 +65,8 @@ OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
 
         if (switcher->bLeft || switcher->bRight || switcher->bMiddle) {
 
-            switcher->onDrag(glm::vec2(xpos, ypos), switcher->bLeft, switcher->bRight,
-                             switcher->bMiddle);
+            switcher->onDrag(glm::vec2(xpos, ypos) - switcher->lastPos, switcher->bLeft,
+                             switcher->bRight, switcher->bMiddle);
         }
 
         switcher->lastPos = glm::vec2(xpos, ypos);
