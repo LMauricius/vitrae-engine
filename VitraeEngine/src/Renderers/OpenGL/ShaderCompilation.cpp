@@ -35,6 +35,9 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
     String elemVarPrefix = "elem_";
     std::map<StringId, PropertySpec> elemVarSpecs;
 
+    // local variables are intermediate results
+    String localVarPrefix = "m_";
+
     struct CompilationHelp
     {
         // the specified shading method
@@ -297,8 +300,16 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
             ss << "\n";
 
-            // execution pipeline
+            // local variables
             ss << "void main() {\n";
+            for (auto [nameId, spec] : p_helper->pipeline.localSpecs) {
+                ss << "    " << specToGlName(spec.typeInfo) << " " << localVarPrefix << spec.name
+                   << ";\n";
+                inputParametersToGlobalVars.emplace(nameId, localVarPrefix + spec.name);
+                outputParametersToGlobalVars.emplace(nameId, localVarPrefix + spec.name);
+            }
+
+            // execution pipeline
             for (auto &pipeItem : p_helper->pipeline.items) {
                 ss << "    ";
                 pipeItem.p_task->outputUsageCode(context, inputParametersToGlobalVars,
