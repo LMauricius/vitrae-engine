@@ -109,6 +109,7 @@ OpenGLTexture::OpenGLTexture(const FileLoadParams &params)
 
         stbi_image_free(data);
     } else {
+        params.root.getInfoStream() << "Texture '" << params.filepath << "' loaded." << std::endl;
         loadToGPU(data);
     }
 }
