@@ -27,8 +27,8 @@ struct SimpleTransformation
 
     inline glm::mat4 getModelMatrix() const
     {
-        return glm::translate(glm::mat4_cast(rotation) * glm::scale(glm::mat4(1), scaling),
-                              position);
+        return glm::translate(glm::mat4(1), position) * glm::mat4_cast(rotation) *
+               glm::scale(glm::mat4(1), scaling);
     }
 
     inline glm::mat4 getViewMatrix() const { return glm::inverse(getModelMatrix()); }
