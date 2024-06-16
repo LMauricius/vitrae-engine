@@ -78,7 +78,7 @@ OpenGLTexture::OpenGLTexture(const FileLoadParams &params)
 {
     int stbChannelFormat;
     unsigned char *data =
-        stbi_load(params.filepath.c_str(), &mWidth, &mHeight, &stbChannelFormat, STBI_rgb_alpha);
+        stbi_load(params.filepath.c_str(), &mWidth, &mHeight, &stbChannelFormat, STBI_default);
 
     mUseSwizzle = false;
     switch (stbChannelFormat) {
