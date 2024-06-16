@@ -109,8 +109,7 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                 rend.getTypeConversion(it->second.srcSpec).setUniform(it->second.glNameId, value);
             } else if (auto it = p_compiledShader->bindingSpecs.find(nameId);
                        it != p_compiledShader->bindingSpecs.end()) {
-                rend.getTypeConversion(it->second.srcSpec)
-                    .setBinding(it->second.glNameId, freeBindingIndex);
+                rend.getTypeConversion(it->second.srcSpec).setBinding(freeBindingIndex, value);
                 glUniform1i(it->second.glNameId, freeBindingIndex);
                 freeBindingIndex++;
             }
@@ -132,8 +131,7 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                 glBindVertexArray(mesh.VAO);
                 glUniformMatrix4fv(glModelMatrixUniformId, 1, GL_FALSE,
                                    &(p_meshProp->transform.getModelMatrix()[0][0]));
-                glDrawElements(GL_TRIANGLES, sizeof(unsigned int) * 3 * mesh.getTriangles().size(),
-                               GL_UNSIGNED_INT, 0);
+                glDrawElements(GL_TRIANGLES, mesh.getTriangles().size(), GL_UNSIGNED_INT, 0);
             }
         }
 
