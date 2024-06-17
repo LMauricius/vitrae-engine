@@ -3,7 +3,7 @@
 #include "Vitrae/Pipelines/Pipeline.hpp"
 #include "Vitrae/Pipelines/Shading/Task.hpp"
 #include "Vitrae/Types/Typedefs.hpp"
-#include "Vitrae/Util/Property.hpp"
+#include "Vitrae/Util/Variant.hpp"
 
 #include "dynasma/cachers/abstract.hpp"
 #include "dynasma/pointer.hpp"

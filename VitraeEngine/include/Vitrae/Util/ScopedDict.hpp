@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Vitrae/Util/Property.hpp"
 #include "Vitrae/Util/StringId.hpp"
+#include "Vitrae/Util/Variant.hpp"
 
 #include <map>
 

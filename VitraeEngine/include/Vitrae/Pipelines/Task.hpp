@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Vitrae/Types/Typedefs.hpp"
-#include "Vitrae/Util/Property.hpp"
+#include "Vitrae/Util/PropertyList.hpp"
 #include "Vitrae/Util/StringId.hpp"
+#include "Vitrae/Util/Variant.hpp"
 
 #include "dynasma/pointer.hpp"
 #include "dynasma/util/dynamic_typing.hpp"
@@ -13,12 +14,6 @@
 
 namespace Vitrae
 {
-
-struct PropertySpec
-{
-    std::string name;
-    const TypeInfo &typeInfo;
-};
 
 class Task : public dynasma::PolymorphicBase
 {
