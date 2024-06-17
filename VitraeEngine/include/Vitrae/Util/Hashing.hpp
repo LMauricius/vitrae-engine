@@ -1,11 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <span>
 
 namespace Vitrae
 {
 
-template <std::size_t N> inline std::size_t combinedHashes(std::size_t (*hashes)[N])
+template <std::size_t N> inline std::size_t combinedHashes(std::span<const std::size_t, N> hashes)
 {
     std::size_t seed = 0;
 
