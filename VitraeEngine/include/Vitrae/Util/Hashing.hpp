@@ -6,7 +6,8 @@
 namespace Vitrae
 {
 
-template <std::size_t N> inline std::size_t combinedHashes(std::span<const std::size_t, N> hashes)
+template <std::size_t N = std::dynamic_extent>
+inline std::size_t combinedHashes(std::span<const std::size_t, N> hashes)
 {
     std::size_t seed = hashes[0];
 

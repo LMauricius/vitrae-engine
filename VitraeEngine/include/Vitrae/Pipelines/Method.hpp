@@ -49,6 +49,15 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
         for (auto method : params.fallbackMethods) {
             m_fallbackMethods.push_back(method);
         }
+
+        m_hash = 0;
+        for (auto [nameId, p_task] : m_tasksPerOutput) {
+            m_hash = combinedHashes<3>(
+                {{m_hash, std::hash<StringId>{}(nameId), static_cast<std::size_t>(&*p_task)}});
+        }
+        for (auto method : m_fallbackMethods) {
+            m_hash = combinedHashes<2>({{m_hash, method->getHash()}});
+        }
     }
 
     // Destructor
@@ -64,16 +73,6 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
             calcd += method->memory_cost();
         }
         return calcd;
-    }
-
-    /**
-     * Register a new task
-     */
-    void registerTask(dynasma::FirmPtr<BasicTask> task)
-    {
-        for (auto [outputId, outputSpec] : task->getOutputSpecs()) {
-            m_tasksPerOutput[outputId] = task;
-        }
     }
 
     /**
@@ -94,29 +93,23 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
         return std::nullopt;
     }
 
-    /**
-     * Register a new fallback method
-     */
-    void registerFallbackMethod(dynasma::FirmPtr<Method> method)
-    {
-        m_fallbackMethods.push_back(method);
-    }
-
-    /**
-     * Moves the specified fallback method to the top of the list
-     */
-    void preferFallbackMethod(dynasma::FirmPtr<Method> method)
-    {
-        auto it = std::find(m_fallbackMethods.begin(), m_fallbackMethods.end(), method);
-        if (it != m_fallbackMethods.end()) {
-            m_fallbackMethods.erase(it);
-            m_fallbackMethods.push_front(method);
-        }
-    }
+    std::size_t getHash() const { return m_hash; }
 
   protected:
     std::map<StringId, dynasma::FirmPtr<BasicTask>> m_tasksPerOutput;
     std::vector<dynasma::FirmPtr<Method>> m_fallbackMethods;
+    std::size_t m_hash;
 };
 
 } // namespace Vitrae
+
+namespace std
+{
+template <typename BasicTask> struct hash<Vitrae::Method<BasicTask>>
+{
+    std::size_t operator()(const Vitrae::Method<BasicTask> &method) const
+    {
+        return method.getHash();
+    }
+};
+} // namespace std
