@@ -83,11 +83,13 @@ class PropertyList
     Getters
     */
 
-    const std::map<StringId, PropertySpec> &getMappedSpecs() { return m_mappedSpecs; }
+    const std::map<StringId, PropertySpec> &getMappedSpecs() const { return m_mappedSpecs; }
 
-    std::span<StringId> getSpecNameIds() { return m_specNameIds; }
+    std::span<const StringId> getSpecNameIds() const { return m_specNameIds; }
 
-    std::span<PropertySpec> getSpecList() { return m_specList; }
+    std::span<const PropertySpec> getSpecList() const { return m_specList; }
+
+    std::size_t getHash() const { return m_hash; }
 
     /*
     Comparisons
