@@ -5,6 +5,7 @@
 
 #include "dynasma/managers/abstract.hpp"
 #include "dynasma/pointer.hpp"
+#include "dynasma/standalone.hpp"
 #include "dynasma/util/dynamic_typing.hpp"
 
 #include <map>
@@ -53,7 +54,7 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
         m_hash = 0;
         for (auto [nameId, p_task] : m_tasksPerOutput) {
             m_hash = combinedHashes<3>(
-                {{m_hash, std::hash<StringId>{}(nameId), static_cast<std::size_t>(&*p_task)}});
+                {{m_hash, std::hash<StringId>{}(nameId), reinterpret_cast<std::size_t>(&*p_task)}});
         }
         for (auto method : m_fallbackMethods) {
             m_hash = combinedHashes<2>({{m_hash, method->getHash()}});
@@ -99,6 +100,30 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     std::map<StringId, dynasma::FirmPtr<BasicTask>> m_tasksPerOutput;
     std::vector<dynasma::FirmPtr<Method>> m_fallbackMethods;
     std::size_t m_hash;
+};
+
+template <TaskChild BasicTask> class MethodCombinator
+{
+    std::map<std::size_t, dynasma::FirmPtr<Method<BasicTask>>> m_hash2combinedMethods;
+
+  public:
+    template <std::same_as<dynasma::FirmPtr<Method<BasicTask>>>... MethodPtrs>
+    dynasma::FirmPtr<Method<BasicTask>> getCombinedMethod(MethodPtrs... p_methods)
+    {
+        std::size_t combinedMethodHash =
+            combinedHashes<sizeof...(MethodPtrs)>({{p_methods->getHash()...}});
+
+        if (auto it = m_hash2combinedMethods.find(combinedMethodHash);
+            it != m_hash2combinedMethods.end()) {
+            return it->second;
+        } else {
+            auto combinedMethod =
+                dynasma::makeStandalone<Method<BasicTask>>(typename Method<BasicTask>::MethodParams{
+                    .tasks = {}, .fallbackMethods = {p_methods...}});
+            m_hash2combinedMethods.emplace(combinedMethodHash, combinedMethod);
+            return combinedMethod;
+        }
+    }
 };
 
 } // namespace Vitrae
