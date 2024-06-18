@@ -1,7 +1,8 @@
 #include <iostream>
 
 #include "assetCollection.hpp"
-#include "classicShading.hpp"
+
+#include "Vitrae/Renderers/OpenGL.hpp"
 
 using namespace Vitrae;
 
@@ -15,10 +16,19 @@ int main(int argc, char **argv)
         sceneScale = std::stof(argv[2]);
     }
 
-    AssetCollection collection(path, sceneScale);
+    /*
+    Setup the system
+    */
 
-    ClassicShading shadingModel(collection.root);
-    shadingModel.overrideSceneMaterials(collection.root, collection.comp);
+    ComponentRoot root;
+    Renderer *p_rend(new OpenGLRenderer());
+    root.setComponent<Renderer>(p_rend);
+    p_rend->setup(root);
+
+    /*
+    Assets
+    */
+    AssetCollection collection(root, *p_rend, path, sceneScale);
 
     /*
     Render loop!
@@ -31,6 +41,7 @@ int main(int argc, char **argv)
     /*
     Free resources
     */
+    p_rend->free();
 
     return 0;
 }

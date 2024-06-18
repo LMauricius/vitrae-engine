@@ -17,24 +17,15 @@
 
 #include "glm/gtx/vector_angle.hpp"
 
-AssetCollection::AssetCollection(std::filesystem::path scenePath, float sceneScale)
-    : root(), p_rend(new OpenGLRenderer()), running(true), comp(root)
+AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
+                                 std::filesystem::path scenePath, float sceneScale)
+    : root(root), rend(rend), modeSetter(root), methodsClassic(root), running(true), comp(root)
 {
     /*
-    Setup renderer
+    Shading setup
     */
-    root.setComponent<Renderer>(p_rend);
-    p_rend->setup(root);
-
-    /*
-    Dummy values
-    */
-    root.addAiMaterialShadingInfo(aiShadingMode_Phong,
-                                  Vitrae::ComponentRoot::AiMaterialShadingInfo{
-                                      .vertexMethod = dynasma::makeStandalone<Method<ShaderTask>>(
-                                          Method<ShaderTask>::MethodParams{{}, {}}),
-                                      .fragmentMethod = dynasma::makeStandalone<Method<ShaderTask>>(
-                                          Method<ShaderTask>::MethodParams{{}, {}})});
+    modeSetter.setModes(root);
+    methodsClassic.apply(comp);
 
     /*
     Setup window
@@ -109,13 +100,10 @@ AssetCollection::AssetCollection(std::filesystem::path scenePath, float sceneSca
     comp.setOutput(p_windowFrame);
 }
 
-AssetCollection::~AssetCollection()
-{
-    p_rend->free();
-}
+AssetCollection::~AssetCollection() {}
 
 void AssetCollection::render()
 {
-    p_rend->render();
+    rend.render();
     comp.compose();
 }

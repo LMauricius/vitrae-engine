@@ -9,9 +9,13 @@ using namespace Vitrae;
 
 struct MethodCollection
 {
+    ComponentRoot &root;
     dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod;
     dynasma::FirmPtr<Method<ShaderTask>> p_fragmentMethod;
     dynasma::FirmPtr<Method<ComposeTask>> p_composeMethod;
 
+    MethodCollection(ComponentRoot &root);
     virtual ~MethodCollection() = default;
+
+    void apply(Compositor &comp);
 };

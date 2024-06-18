@@ -9,7 +9,7 @@
 
 #include "dynasma/standalone.hpp"
 
-MethodsClassic::MethodsClassic(ComponentRoot &root)
+MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
 {
     /*
     VERTEX SHADING
