@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Vitrae/Assets/FrameStore.hpp"
+#include "Vitrae/Pipelines/Method.hpp"
+#include "Vitrae/Pipelines/Shading/Task.hpp"
 #include "Vitrae/Pipelines/Task.hpp"
 #include "Vitrae/Util/ScopedDict.hpp"
 
@@ -14,6 +16,8 @@ struct RenderRunContext
 {
     ScopedDict &properties;
     Renderer &renderer;
+    MethodCombinator<ShaderTask> &methodCombinator;
+    dynasma::FirmPtr<Method<ShaderTask>> p_defaultVertexMethod, p_defaultFragmentMethod;
     const std::map<StringId, dynasma::FirmPtr<FrameStore>> &preparedCompositorFrameStores;
     const std::map<StringId, dynasma::FirmPtr<Texture>> &preparedCompositorTextures;
 };

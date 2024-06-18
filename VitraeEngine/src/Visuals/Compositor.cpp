@@ -53,7 +53,7 @@ void Compositor::setOutput(dynasma::FirmPtr<FrameStore> p_store)
     }
 }
 
-void Compositor::compose() const
+void Compositor::compose()
 {
     ScopedDict localVars(&parameters);
 
@@ -65,6 +65,9 @@ void Compositor::compose() const
     Renderer &rend = m_root.getComponent<Renderer>();
     RenderRunContext context{.properties = localVars,
                              .renderer = rend,
+                             .methodCombinator = m_shadingMethodCombinator,
+                             .p_defaultVertexMethod = m_defaultVertexMethod,
+                             .p_defaultFragmentMethod = m_defaultFragmentMethod,
                              .preparedCompositorFrameStores = m_preparedFrameStores,
                              .preparedCompositorTextures = m_preparedTextures};
 

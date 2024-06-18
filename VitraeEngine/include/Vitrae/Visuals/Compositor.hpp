@@ -28,13 +28,14 @@ class Compositor : public dynasma::PolymorphicBase
                                  dynasma::FirmPtr<Method<ShaderTask>> p_fragmentMethod);
     void setOutput(dynasma::FirmPtr<FrameStore> p_store);
 
-    void compose() const;
+    void compose();
 
     ScopedDict parameters;
 
   protected:
     ComponentRoot &m_root;
     Pipeline<ComposeTask> m_pipeline;
+    MethodCombinator<ShaderTask> m_shadingMethodCombinator;
     std::map<StringId, dynasma::FirmPtr<FrameStore>> m_preparedFrameStores;
     std::map<StringId, dynasma::FirmPtr<Texture>> m_preparedTextures;
     dynasma::FirmPtr<Method<ShaderTask>> m_defaultVertexMethod, m_defaultFragmentMethod;
