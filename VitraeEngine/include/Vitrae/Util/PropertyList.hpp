@@ -30,7 +30,7 @@ class PropertyList : public dynasma::PolymorphicBase
     std::size_t m_hash;
 
   public:
-    PropertyList() = delete;
+    inline PropertyList() : m_hash(0) {}
     PropertyList(PropertyList const &) = default;
     PropertyList(PropertyList &&) = default;
 

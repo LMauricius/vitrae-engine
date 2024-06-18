@@ -84,4 +84,15 @@ void Scene::loadFromAssimp(const AssimpLoadParams &params)
     }
 }
 
+glm::mat4 DirectionalLight::getViewMatrix(const Camera &cam)
+{
+    return glm::lookAt(cam.position, cam.position + direction, glm::vec3(0, 1, 0));
+}
+
+glm::mat4 DirectionalLight::getProjectionMatrix()
+{
+    return glm::ortho(-shadow_distance, shadow_distance, -shadow_distance, shadow_distance,
+                      -shadow_above, shadow_below);
+}
+
 } // namespace Vitrae
