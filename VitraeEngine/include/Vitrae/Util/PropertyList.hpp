@@ -1,10 +1,14 @@
 #pragma once
 
 #include "Vitrae/Util/Hashing.hpp"
+#include "Vitrae/Util/StringId.hpp"
 #include "Vitrae/Util/Variant.hpp"
+
+#include "dynasma/util/dynamic_typing.hpp"
 
 #include <map>
 #include <span>
+#include <vector>
 
 namespace Vitrae
 {
@@ -15,7 +19,7 @@ struct PropertySpec
     const TypeInfo &typeInfo;
 };
 
-class PropertyList
+class PropertyList : public dynasma::PolymorphicBase
 {
     friend struct std::hash<PropertyList>;
 
@@ -44,12 +48,13 @@ class PropertyList
             m_specNameIds.push_back(nameId);
             m_specList.push_back(spec);
 
-            m_hash = combinedHashes(
-                {m_hash, std::hash<StringId>{}(nameId), spec.typeInfo.p_id->hash_code()});
+            m_hash = combinedHashes<3>(
+                {{m_hash, std::hash<StringId>{}(nameId), spec.typeInfo.p_id->hash_code()}});
         }
     }
 
-    PropertyList(const std::map<StringId, PropertySpec> &mappedSpecs) : m_mappedSpecs(mappedSpecs)
+    inline PropertyList(const std::map<StringId, PropertySpec> &mappedSpecs)
+        : m_mappedSpecs(mappedSpecs)
     {
         m_hash = 0;
         for (auto [nameId, spec] : m_mappedSpecs) {
@@ -83,13 +88,13 @@ class PropertyList
     Getters
     */
 
-    const std::map<StringId, PropertySpec> &getMappedSpecs() const { return m_mappedSpecs; }
+    inline const std::map<StringId, PropertySpec> &getMappedSpecs() const { return m_mappedSpecs; }
 
-    std::span<const StringId> getSpecNameIds() const { return m_specNameIds; }
+    inline std::span<const StringId> getSpecNameIds() const { return m_specNameIds; }
 
-    std::span<const PropertySpec> getSpecList() const { return m_specList; }
+    inline std::span<const PropertySpec> getSpecList() const { return m_specList; }
 
-    std::size_t getHash() const { return m_hash; }
+    inline std::size_t getHash() const { return m_hash; }
 
     /*
     Comparisons
