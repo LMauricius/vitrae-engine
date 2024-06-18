@@ -30,7 +30,10 @@ void Compositor::setComposeMethod(dynasma::FirmPtr<Method<ComposeTask>> p_method
                                  .typeInfo = StandardCompositorOutputTypes::OUTPUT_TYPE}}});
 
     // reset the output to trigger framestore regeneration
-    setOutput(m_preparedFrameStores.at(StandardCompositorOutputNames::OUTPUT));
+    if (auto it = m_preparedFrameStores.find(StandardCompositorOutputNames::OUTPUT);
+        it != m_preparedFrameStores.end()) {
+        setOutput(it->second);
+    }
 }
 
 void Compositor::setDefaultShadingMethod(dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod,
