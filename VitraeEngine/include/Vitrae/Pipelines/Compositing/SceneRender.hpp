@@ -19,6 +19,7 @@ class ComposeSceneRender : public ComposeTask
         String perspectiveInputPropertyName;
         String displayInputPropertyName;
         String displayOutputPropertyName;
+        PropertyList customInputPropertyNames;
     };
 
     using ComposeTask::ComposeTask;

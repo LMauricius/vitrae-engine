@@ -14,30 +14,13 @@ namespace Vitrae
 
 OpenGLComposeSceneRender::OpenGLComposeSceneRender(const SetupParams &params)
     : ComposeSceneRender(
-          params.displayInputPropertyName.empty()
-              ? std::span<const PropertySpec>{{PropertySpec{.name = "scene",
-                                                            .typeInfo = Variant::getTypeInfo<
-                                                                dynasma::FirmPtr<Scene>>()},
-                                               PropertySpec{.name = params.viewInputPropertyName,
-                                                            .typeInfo =
-                                                                Variant::getTypeInfo<glm::mat4>()},
-                                               PropertySpec{
-                                                   .name = params.perspectiveInputPropertyName,
-                                                   .typeInfo = Variant::getTypeInfo<glm::mat4>()}}}
-              : std::span<const PropertySpec>{{PropertySpec{.name = "scene",
-                                                            .typeInfo = Variant::getTypeInfo<
-                                                                dynasma::FirmPtr<Scene>>()},
-                                               PropertySpec{.name = params.viewInputPropertyName,
-                                                            .typeInfo =
-                                                                Variant::getTypeInfo<glm::mat4>()},
-                                               PropertySpec{
-                                                   .name = params.perspectiveInputPropertyName,
-                                                   .typeInfo = Variant::getTypeInfo<glm::mat4>()},
-
-                                               {PropertySpec{
-                                                   .name = params.displayInputPropertyName,
-                                                   .typeInfo = Variant::getTypeInfo<
-                                                       dynasma::FirmPtr<FrameStore>>()}}}},
+          std::span<const PropertySpec>{
+              {PropertySpec{.name = "scene",
+                            .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<Scene>>()},
+               PropertySpec{.name = params.viewInputPropertyName,
+                            .typeInfo = Variant::getTypeInfo<glm::mat4>()},
+               PropertySpec{.name = params.perspectiveInputPropertyName,
+                            .typeInfo = Variant::getTypeInfo<glm::mat4>()}}},
           std::span<const PropertySpec>{
               {PropertySpec{.name = params.displayOutputPropertyName,
                             .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>()}}}),
@@ -47,7 +30,17 @@ OpenGLComposeSceneRender::OpenGLComposeSceneRender(const SetupParams &params)
                                ? std::optional<StringId>()
                                : params.displayInputPropertyName),
       m_displayOutputNameId(params.displayOutputPropertyName)
-{}
+{
+    if (!params.displayInputPropertyName.empty()) {
+        m_inputSpecs.emplace(
+            params.displayInputPropertyName,
+            PropertySpec{.name = params.displayInputPropertyName,
+                         .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<FrameStore>>()});
+    }
+    for (const auto [nameId, spec] : params.customInputPropertyNames.getMappedSpecs()) {
+        m_inputSpecs.emplace(nameId, spec);
+    }
+}
 
 void OpenGLComposeSceneRender::run(RenderRunContext args) const
 {
