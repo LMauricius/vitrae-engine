@@ -67,11 +67,8 @@ AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
 
                         // Scene scaling (in case of wrong scale)
                         if (bMiddle) {
-                            for (auto &prop : p_scene->meshProps) {
-                                float scale = glm::pow(0.99f, motion.x);
-                                prop.transform.position = prop.transform.position * scale;
-                                prop.transform.scale(glm::vec3(scale));
-                            }
+                            p_scene->camera.move(p_scene->camera.rotation *
+                                                 (0.02f * glm::vec3{-motion.x, -motion.y, 0.0}));
                         }
                     }}})
             .getLoaded();
