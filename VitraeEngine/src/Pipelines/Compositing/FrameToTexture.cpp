@@ -71,13 +71,13 @@ void ComposeFrameToTexture::prepareRequiredLocalAssets(
         auto texture = textureManager.register_asset(
             {Texture::EmptyParams{.root = m_root,
                                   .size = m_size,
-                                  .channelType = m_channelType,
+                                  .channelType = Texture::ChannelType::DEPTH,
                                   .horWrap = m_horWrap,
                                   .verWrap = m_verWrap,
                                   .minFilter = m_minFilter,
                                   .magFilter = m_magFilter,
                                   .useMipMaps = m_useMipMaps,
-                                  .borderColor = {0.0f, 0.0f, 0.0f, 0.0f}}});
+                                  .borderColor = {1.0f, 1.0f, 1.0f, 1.0f}}});
         frameParams.p_depthTexture = texture;
         textures.emplace(m_depthTextureOutputNameId, texture);
     }
