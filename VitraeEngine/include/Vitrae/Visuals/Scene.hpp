@@ -29,9 +29,9 @@ class Camera : public SimpleTransformation
 class DirectionalLight
 {
   public:
-    glm::vec3 direction = {0.2, -0.7, 0.0};
-    glm::vec3 color_primary = {0.8, 0.75, 0.6}, color_ambient = {0.2, 0.25, 0.3};
-    float shadow_above = 500.0, shadow_below = 500.0, shadow_distance = 1000.0;
+    glm::vec3 direction = {0.3, -0.7, 0.15};
+    glm::vec3 color_primary = {0.6, 0.5, 0.4}, color_ambient = {0.4, 0.5, 0.6};
+    float shadow_above = 80.0, shadow_below = 80.0, shadow_distance = 80.0;
 
     glm::mat4 getViewMatrix(const Camera &cam);
     glm::mat4 getProjectionMatrix();
