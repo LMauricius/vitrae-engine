@@ -79,16 +79,6 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
 
     frame.enterRender({0.0f, 0.0f}, {1.0f, 1.0f});
 
-    // test run over shaders
-    for (auto &[methods, materials2props] : methods2materials2props) {
-        auto [vertexMethod, fragmentMethod] = methods;
-
-        // compile shader for this material
-        dynasma::FirmPtr<CompiledGLSLShader> p_compiledShader =
-            shaderCacher.retrieve_asset({CompiledGLSLShader::SurfaceShaderSpec{
-                .vertexMethod = vertexMethod, .fragmentMethod = fragmentMethod, .root = m_root}});
-    }
-
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
@@ -99,8 +89,11 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
 
         // compile shader for this material
         dynasma::FirmPtr<CompiledGLSLShader> p_compiledShader =
-            shaderCacher.retrieve_asset({CompiledGLSLShader::SurfaceShaderSpec{
-                .vertexMethod = vertexMethod, .fragmentMethod = fragmentMethod, .root = m_root}});
+            shaderCacher.retrieve_asset({CompiledGLSLShader::SurfaceShaderParams(
+                args.methodCombinator.getCombinedMethod(args.p_defaultVertexMethod, vertexMethod),
+                args.methodCombinator.getCombinedMethod(args.p_defaultFragmentMethod,
+                                                        fragmentMethod),
+                p_frame->getRenderComponents(), m_root)});
 
         glUseProgram(p_compiledShader->programGLName);
 
