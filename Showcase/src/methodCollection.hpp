@@ -7,13 +7,11 @@
 
 using namespace Vitrae;
 
-struct ShadingOverrider
+struct MethodCollection
 {
     dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod;
     dynasma::FirmPtr<Method<ShaderTask>> p_fragmentMethod;
     dynasma::FirmPtr<Method<ComposeTask>> p_composeMethod;
 
-    virtual ~ShadingOverrider() = default;
-
-    void overrideSceneMaterials(ComponentRoot &root, Compositor &compositor);
+    virtual ~MethodCollection() = default;
 };

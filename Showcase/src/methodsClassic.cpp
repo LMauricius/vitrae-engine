@@ -1,4 +1,4 @@
-#include "classicShading.hpp"
+#include "methodsClassic.hpp"
 
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
 #include "Vitrae/Pipelines/Compositing/FrameToTexture.hpp"
@@ -9,7 +9,7 @@
 
 #include "dynasma/standalone.hpp"
 
-ClassicShading::ClassicShading(ComponentRoot &root)
+MethodsClassic::MethodsClassic(ComponentRoot &root)
 {
     /*
     VERTEX SHADING
@@ -79,7 +79,7 @@ ClassicShading::ClassicShading(ComponentRoot &root)
                 },
             .snippet = R"(
                     void phongCombine(in sampler2D tex_diffuse, in vec2 tex_coord, out vec4 shade) {
-                        shade = texture2D(tex_diffuse, tex_coord);//vec4(tex_coord.x, tex_coord.y, 1.0, 1.0); //
+                        shade = texture2D(tex_diffuse, tex_coord);
                     }
                 )",
             .functionName = "phongCombine"}});
