@@ -185,14 +185,10 @@ void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, gl
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
 
-    glfwMakeContextCurrent(window);
     glViewport(topLeft.x * width, topLeft.y * height, (bottomRight.x - topLeft.x) * width,
                (bottomRight.y - topLeft.y) * height);
 }
-void OpenGLFrameStore::WindowContextSwitcher::exitContext()
-{
-    glfwMakeContextCurrent(0);
-}
+void OpenGLFrameStore::WindowContextSwitcher::exitContext() {}
 
 void OpenGLFrameStore::WindowContextSwitcher::sync()
 {
