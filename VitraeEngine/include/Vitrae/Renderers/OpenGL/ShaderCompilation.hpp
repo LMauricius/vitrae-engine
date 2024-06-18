@@ -32,17 +32,29 @@ class CompiledGLSLShader : public dynasma::PolymorphicBase
         GLenum shaderType;
     };
 
-    struct SurfaceShaderSpec
+    class SurfaceShaderParams
     {
-        dynasma::FirmPtr<Method<ShaderTask>> vertexMethod;
-        dynasma::FirmPtr<Method<ShaderTask>> fragmentMethod;
-        ComponentRoot &root;
+        dynasma::FirmPtr<Method<ShaderTask>> mp_vertexMethod;
+        dynasma::FirmPtr<Method<ShaderTask>> mp_fragmentMethod;
+        dynasma::FirmPtr<const PropertyList> mp_fragmentOutputs;
+        ComponentRoot *mp_root;
+        std::size_t m_hash;
 
-        inline bool operator<(const SurfaceShaderSpec &o) const
-        {
-            return std::tie(vertexMethod, fragmentMethod) <
-                   std::tie(o.vertexMethod, o.fragmentMethod);
-        }
+      public:
+        SurfaceShaderParams(dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod,
+                            dynasma::FirmPtr<Method<ShaderTask>> p_fragmentMethod,
+                            dynasma::FirmPtr<const PropertyList> p_fragmentOutputs,
+                            ComponentRoot &root);
+
+        inline auto getVertexMethodPtr() const { return mp_vertexMethod; }
+        inline auto getFragmentMethodPtr() const { return mp_fragmentMethod; }
+        inline auto getFragmentOutputsPtr() const { return mp_fragmentOutputs; }
+        inline ComponentRoot &getRoot() const { return *mp_root; }
+
+        inline std::size_t getHash() const { return m_hash; }
+
+        inline bool operator==(const SurfaceShaderParams &o) const { return m_hash == o.m_hash; }
+        inline auto operator<=>(const SurfaceShaderParams &o) const { return m_hash <=> o.m_hash; }
     };
 
     struct VariableSpec
@@ -51,8 +63,9 @@ class CompiledGLSLShader : public dynasma::PolymorphicBase
         GLint glNameId;
     };
 
-    CompiledGLSLShader(std::span<const CompilationSpec> compilationSpecs, ComponentRoot &root);
-    CompiledGLSLShader(const SurfaceShaderSpec &params);
+    CompiledGLSLShader(std::span<const CompilationSpec> compilationSpecs, ComponentRoot &root,
+                       const PropertyList &desiredOutputs);
+    CompiledGLSLShader(const SurfaceShaderParams &params);
     ~CompiledGLSLShader();
 
     inline std::size_t memory_cost() const { return 1; }
@@ -68,7 +81,7 @@ struct CompiledGLSLShaderCacherSeed
 {
     using Asset = CompiledGLSLShader;
 
-    std::variant<CompiledGLSLShader::SurfaceShaderSpec> kernel;
+    std::variant<CompiledGLSLShader::SurfaceShaderParams> kernel;
 
     inline std::size_t load_cost() const { return 1; }
 

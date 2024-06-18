@@ -6,18 +6,29 @@
 
 namespace Vitrae
 {
-CompiledGLSLShader::CompiledGLSLShader(const SurfaceShaderSpec &params)
-    : CompiledGLSLShader({{CompilationSpec{.p_method = params.vertexMethod,
+
+CompiledGLSLShader::SurfaceShaderParams::SurfaceShaderParams(
+    dynasma::FirmPtr<Method<ShaderTask>> p_vertexMethod,
+    dynasma::FirmPtr<Method<ShaderTask>> p_fragmentMethod,
+    dynasma::FirmPtr<const PropertyList> p_fragmentOutputs, ComponentRoot &root)
+    : mp_vertexMethod(p_vertexMethod), mp_fragmentMethod(p_fragmentMethod),
+      mp_fragmentOutputs(p_fragmentOutputs), mp_root(&root),
+      m_hash(combinedHashes<3>(
+          {{p_vertexMethod->getHash(), p_fragmentMethod->getHash(), p_fragmentOutputs->getHash()}}))
+{}
+
+CompiledGLSLShader::CompiledGLSLShader(const SurfaceShaderParams &params)
+    : CompiledGLSLShader({{CompilationSpec{.p_method = params.getVertexMethodPtr(),
                                            .outVarPrefix = "vert_",
                                            .shaderType = GL_VERTEX_SHADER},
-                           CompilationSpec{.p_method = params.fragmentMethod,
+                           CompilationSpec{.p_method = params.getFragmentMethodPtr(),
                                            .outVarPrefix = "frag_",
                                            .shaderType = GL_FRAGMENT_SHADER}}},
-                         params.root)
+                         params.getRoot(), *params.getFragmentOutputsPtr())
 {}
 
 CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilationSpecs,
-                                       ComponentRoot &root)
+                                       ComponentRoot &root, const PropertyList &desiredOutputs)
 {
     OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(root.getComponent<Renderer>());
 
@@ -71,9 +82,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
     // generate pipelines, from the end result to the first pipeline
     {
-        std::vector<PropertySpec> passedVarSpecs = {
-            {.name = StandardShaderPropertyNames::FRAGMENT_OUTPUT,
-             .typeInfo = StandardShaderPropertyTypes::FRAGMENT_OUTPUT}};
+        std::vector<PropertySpec> passedVarSpecs(desiredOutputs.getSpecList().begin(),
+                                                 desiredOutputs.getSpecList().end());
 
         for (auto p_helper : invHelperOrder) {
             if (p_helper->shaderType == GL_VERTEX_SHADER) {
@@ -81,9 +91,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
                     PropertySpec{.name = StandardShaderPropertyNames::VERTEX_OUTPUT,
                                  .typeInfo = StandardShaderPropertyTypes::VERTEX_OUTPUT});
             }
-            std::span<const PropertySpec> passedVarSpecsSpan(passedVarSpecs);
 
-            p_helper->pipeline = Pipeline<ShaderTask>(p_helper->p_method, passedVarSpecsSpan);
+            p_helper->pipeline = Pipeline<ShaderTask>(p_helper->p_method, passedVarSpecs);
 
             passedVarSpecs.clear();
             for (auto [reqNameId, reqSpec] : p_helper->pipeline.inputSpecs) {
@@ -334,8 +343,9 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
             // debug
             std::ofstream file;
-            file.open(std::string("concat.") + p_helper->outVarPrefix + "shader" +
-                      std::to_string((std::size_t) & *p_helper->p_method) + ".glsl");
+            file.open(std::string("shader.concat.") +
+                      std::to_string(p_helper->p_method->getHash()) + p_helper->outVarPrefix +
+                      ".glsl");
             file << srcCode;
             file.close();
 
