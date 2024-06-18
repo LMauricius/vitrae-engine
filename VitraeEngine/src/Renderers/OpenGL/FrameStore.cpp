@@ -3,6 +3,8 @@
 #include "Vitrae/Renderers/OpenGL.hpp"
 #include "Vitrae/Renderers/OpenGL/Texture.hpp"
 
+#include "dynasma/standalone.hpp"
+
 namespace Vitrae
 {
 OpenGLFrameStore::OpenGLFrameStore(const FrameStore::TextureBindParams &params)
@@ -13,6 +15,7 @@ OpenGLFrameStore::OpenGLFrameStore(const FrameStore::TextureBindParams &params)
     glBindFramebuffer(GL_FRAMEBUFFER, glFramebufferId);
 
     int width, height;
+    std::vector<PropertySpec> renderComponents;
 
     if (params.p_depthTexture.has_value()) {
         auto p_texture =
@@ -30,6 +33,10 @@ OpenGLFrameStore::OpenGLFrameStore(const FrameStore::TextureBindParams &params)
                                p_texture->glTextureId, 0);
         width = p_texture->getSize().x;
         height = p_texture->getSize().y;
+
+        renderComponents.emplace_back(
+            PropertySpec{.name = StandardShaderPropertyNames::FRAGMENT_OUTPUT,
+                         .typeInfo = StandardShaderPropertyTypes::FRAGMENT_OUTPUT});
     }
 
     glDrawBuffer(GL_NONE);
@@ -37,6 +44,9 @@ OpenGLFrameStore::OpenGLFrameStore(const FrameStore::TextureBindParams &params)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     m_contextSwitcher = FramebufferContextSwitcher{width, height, glFramebufferId};
+    mp_renderComponents =
+        dynasma::makeStandalone<PropertyList, std::vector<Vitrae::PropertySpec> &&>(
+            std::move(renderComponents));
 }
 
 OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
@@ -50,6 +60,11 @@ OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
     }
     glfwMakeContextCurrent(window);
     gladLoadGL(); // seems we need to do this after setting the first context... for whatev reason
+
+    mp_renderComponents =
+        dynasma::makeStandalone<PropertyList, std::span<const Vitrae::PropertySpec>>(
+            {{PropertySpec{.name = StandardShaderPropertyNames::FRAGMENT_OUTPUT,
+                           .typeInfo = StandardShaderPropertyTypes::FRAGMENT_OUTPUT}}});
 
     m_contextSwitcher = WindowContextSwitcher{window, params.onClose, params.onDrag};
 
@@ -102,6 +117,12 @@ glm::vec2 OpenGLFrameStore::getSize() const
     return std::visit([](auto &contextSwitcher) { return contextSwitcher.getSize(); },
                       m_contextSwitcher);
 }
+
+dynasma::FirmPtr<const PropertyList> OpenGLFrameStore::getRenderComponents() const
+{
+    return mp_renderComponents;
+}
+
 void OpenGLFrameStore::sync()
 {
     std::visit([](auto &contextSwitcher) { contextSwitcher.sync(); }, m_contextSwitcher);

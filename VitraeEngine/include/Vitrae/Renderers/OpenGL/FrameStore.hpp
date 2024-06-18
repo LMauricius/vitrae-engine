@@ -22,6 +22,7 @@ class OpenGLFrameStore : public FrameStore
     void resize(glm::vec2 size) override;
 
     glm::vec2 getSize() const override;
+    dynasma::FirmPtr<const PropertyList> getRenderComponents() const override;
 
     void sync() override;
 
@@ -29,6 +30,7 @@ class OpenGLFrameStore : public FrameStore
     void exitRender();
 
   protected:
+    dynasma::FirmPtr<const PropertyList> mp_renderComponents;
     struct FramebufferContextSwitcher
     {
         void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);

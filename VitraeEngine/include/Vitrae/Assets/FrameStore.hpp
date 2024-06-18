@@ -2,6 +2,7 @@
 
 #include "Vitrae/Assets/Texture.hpp"
 #include "Vitrae/Types/Typedefs.hpp"
+#include "Vitrae/Util/PropertyList.hpp"
 
 #include "dynasma/core_concepts.hpp"
 #include "dynasma/keepers/abstract.hpp"
@@ -44,6 +45,7 @@ class FrameStore : public dynasma::PolymorphicBase
     virtual void resize(glm::vec2 size) = 0;
 
     virtual glm::vec2 getSize() const = 0;
+    virtual dynasma::FirmPtr<const PropertyList> getRenderComponents() const = 0;
 
     virtual void sync() = 0;
 };
