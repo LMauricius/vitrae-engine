@@ -109,6 +109,14 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                 }
             }
         }
+        for (auto [propertyNameId, uniSpec] : p_compiledShader->bindingSpecs) {
+            auto p = args.properties.getPtr(propertyNameId);
+            if (p) {
+                rend.getTypeConversion(uniSpec.srcSpec).setBinding(freeBindingIndex, *p);
+                glUniform1i(uniSpec.glNameId, freeBindingIndex);
+                freeBindingIndex++;
+            }
+        }
 
         auto setPropertyToShader = [&](StringId nameId, const Variant &value) {
             if (auto it = p_compiledShader->uniformSpecs.find(nameId);
