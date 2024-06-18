@@ -32,6 +32,7 @@ class OpenGLTexture : public Texture
                   FilterType magFilter, bool useMipMaps, glm::vec4 borderColor);
 
     GLint mGLChannelFormat;
+    GLenum mGLChannelType;
     GLint mGLMagFilter, mGLMinFilter, mGLWrapS, mGLWrapT;
     bool mUseMipMaps;
     glm::vec4 mBorderColor;

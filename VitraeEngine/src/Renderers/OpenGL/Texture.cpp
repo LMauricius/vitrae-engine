@@ -80,6 +80,7 @@ OpenGLTexture::OpenGLTexture(const FileLoadParams &params)
     unsigned char *data =
         stbi_load(params.filepath.c_str(), &mWidth, &mHeight, &stbChannelFormat, STBI_default);
 
+    mGLChannelType = GL_UNSIGNED_BYTE;
     mUseSwizzle = false;
     switch (stbChannelFormat) {
     case STBI_grey:
@@ -124,20 +125,25 @@ OpenGLTexture::OpenGLTexture(const EmptyParams &params)
         mGLChannelFormat = GL_RED;
         mSwizzle = {GL_RED, GL_RED, GL_RED, GL_ONE};
         mUseSwizzle = true;
+        mGLChannelType = GL_UNSIGNED_BYTE;
         break;
     case ChannelType::GRAYSCALE_ALPHA:
         mGLChannelFormat = GL_RG;
         mSwizzle = {GL_RED, GL_RED, GL_RED, GL_GREEN};
         mUseSwizzle = true;
+        mGLChannelType = GL_UNSIGNED_BYTE;
         break;
     case ChannelType::RGB:
         mGLChannelFormat = GL_RGB;
+        mGLChannelType = GL_UNSIGNED_BYTE;
         break;
     case ChannelType::RGBA:
         mGLChannelFormat = GL_RGBA;
+        mGLChannelType = GL_UNSIGNED_BYTE;
         break;
     case ChannelType::DEPTH:
         mGLChannelFormat = GL_DEPTH_COMPONENT;
+        mGLChannelType = GL_FLOAT;
         break;
     }
 
@@ -163,8 +169,9 @@ void OpenGLTexture::loadToGPU(const unsigned char *data)
         m_sentToGPU = true;
         glGenTextures(1, &glTextureId);
         glBindTexture(GL_TEXTURE_2D, glTextureId);
+
         glTexImage2D(GL_TEXTURE_2D, 0, mGLChannelFormat, mWidth, mHeight, 0, mGLChannelFormat,
-                     GL_UNSIGNED_BYTE, data);
+                     mGLChannelType, data);
 
         if (mUseSwizzle) {
             glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, mSwizzleArr);
