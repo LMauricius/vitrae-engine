@@ -1,4 +1,5 @@
 #include "methodsClassic.hpp"
+#include "shadingModes.hpp"
 
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
 #include "Vitrae/Pipelines/Compositing/FrameToTexture.hpp"
@@ -74,12 +75,12 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                 },
             .outputSpecs =
                 {
-                    PropertySpec{.name = StandardShaderPropertyNames::FRAGMENT_OUTPUT,
+                    PropertySpec{.name = ShaderModePropertyNames::PHONG_SHADE,
                                  .typeInfo = StandardShaderPropertyTypes::FRAGMENT_OUTPUT},
                 },
             .snippet = R"(
-                    void phongCombine(in sampler2D tex_diffuse, in vec2 tex_coord, out vec4 shade) {
-                        shade = texture2D(tex_diffuse, tex_coord);
+                    void phongCombine(in sampler2D tex_diffuse, in vec2 tex_coord, out vec4 phong_shade) {
+                        phong_shade = texture2D(tex_diffuse, tex_coord);
                     }
                 )",
             .functionName = "phongCombine"}});
