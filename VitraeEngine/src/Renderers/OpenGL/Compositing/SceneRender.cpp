@@ -29,7 +29,7 @@ OpenGLComposeSceneRender::OpenGLComposeSceneRender(const SetupParams &params)
       m_displayInputNameId(params.displayInputPropertyName.empty()
                                ? std::optional<StringId>()
                                : params.displayInputPropertyName),
-      m_displayOutputNameId(params.displayOutputPropertyName)
+      m_displayOutputNameId(params.displayOutputPropertyName), m_cullingMode(params.cullingMode)
 {
     if (!params.displayInputPropertyName.empty()) {
         m_inputSpecs.emplace(
@@ -74,6 +74,20 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    switch (m_cullingMode) {
+    case CullingMode::None:
+        glDisable(GL_CULL_FACE);
+        break;
+    case CullingMode::Backface:
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+        break;
+    case CullingMode::Frontface:
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        break;
+    }
 
     // render the scene
     // iterate over shaders

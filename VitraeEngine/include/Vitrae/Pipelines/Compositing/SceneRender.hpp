@@ -12,6 +12,12 @@ namespace Vitrae
 class ComposeSceneRender : public ComposeTask
 {
   public:
+    enum class CullingMode {
+        None,
+        Backface,
+        Frontface
+    };
+
     struct SetupParams
     {
         ComponentRoot &root;
@@ -19,6 +25,7 @@ class ComposeSceneRender : public ComposeTask
         String perspectiveInputPropertyName;
         String displayInputPropertyName;
         String displayOutputPropertyName;
+        CullingMode cullingMode = CullingMode::Backface;
         PropertyList customInputPropertyNames;
     };
 

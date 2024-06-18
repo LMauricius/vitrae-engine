@@ -27,6 +27,8 @@ class OpenGLComposeSceneRender : public ComposeSceneRender
     ComponentRoot &m_root;
     StringId m_viewInputNameId, m_perspectiveInputNameId, m_displayOutputNameId;
     std::optional<StringId> m_displayInputNameId;
+
+    CullingMode m_cullingMode;
 };
 
 } // namespace Vitrae
