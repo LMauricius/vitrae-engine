@@ -80,7 +80,7 @@ void OpenGLShaderFunction::outputDeclarationCode(BuildContext args) const
         args.output << "out " << glTypeSpec.glTypeName;
         hadFirstArg = true;
     }
-    args.output << ");\n";
+    args.output << ");";
 }
 
 void OpenGLShaderFunction::outputDefinitionCode(BuildContext args) const
