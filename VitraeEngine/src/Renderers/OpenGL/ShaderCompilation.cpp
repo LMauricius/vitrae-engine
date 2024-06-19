@@ -198,7 +198,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
             // input variables, uniforms and SSBOs
             for (auto [nameId, spec] : p_helper->pipeline.inputSpecs) {
-                if (predefinedInputParameters.find(nameId) != predefinedInputParameters.end()) {
+                if (spec.typeInfo == Variant::getTypeInfo<void>() ||
+                    predefinedInputParameters.find(nameId) != predefinedInputParameters.end()) {
                     // do nothing for predefined
                 } else if (uniformVarSpecs.find(nameId) != uniformVarSpecs.end()) {
 
@@ -286,7 +287,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
             // output variables
             for (auto [nameId, spec] : p_helper->pipeline.outputSpecs) {
-                if (uniformVarSpecs.find(nameId) == uniformVarSpecs.end() &&
+                if (spec.typeInfo != Variant::getTypeInfo<void>() &&
+                    uniformVarSpecs.find(nameId) == uniformVarSpecs.end() &&
                     predefinedOutputParameters.find(nameId) == predefinedOutputParameters.end()) {
 
                     // NORMAL OUTPUTS
@@ -315,8 +317,10 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
             // local variables
             ss << "void main() {\n";
             for (auto [nameId, spec] : p_helper->pipeline.localSpecs) {
-                ss << "    " << specToGlName(spec.typeInfo) << " " << localVarPrefix << spec.name
-                   << ";\n";
+                if (spec.typeInfo != Variant::getTypeInfo<void>()) {
+                    ss << "    " << specToGlName(spec.typeInfo) << " " << localVarPrefix
+                       << spec.name << ";\n";
+                }
                 inputParametersToGlobalVars.emplace(nameId, localVarPrefix + spec.name);
                 outputParametersToGlobalVars.emplace(nameId, localVarPrefix + spec.name);
             }

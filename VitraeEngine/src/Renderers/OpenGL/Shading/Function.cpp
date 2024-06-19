@@ -10,10 +10,14 @@ namespace Vitrae
 OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params) : ShaderFunction(params)
 {
     for (const auto &spec : params.inputSpecs) {
-        m_inputOrder.emplace_back(spec.name);
+        if (spec.typeInfo != Variant::getTypeInfo<void>()) {
+            m_inputOrder.emplace_back(spec.name);
+        }
     }
     for (const auto &spec : params.outputSpecs) {
-        m_outputOrder.emplace_back(spec.name);
+        if (spec.typeInfo != Variant::getTypeInfo<void>()) {
+            m_outputOrder.emplace_back(spec.name);
+        }
     }
 
     std::ifstream stream(params.filepath);
@@ -26,10 +30,14 @@ OpenGLShaderFunction::OpenGLShaderFunction(const FileLoadParams &params) : Shade
 OpenGLShaderFunction::OpenGLShaderFunction(const StringParams &params) : ShaderFunction(params)
 {
     for (const auto &spec : params.inputSpecs) {
-        m_inputOrder.emplace_back(spec.name);
+        if (spec.typeInfo != Variant::getTypeInfo<void>()) {
+            m_inputOrder.emplace_back(spec.name);
+        }
     }
     for (const auto &spec : params.outputSpecs) {
-        m_outputOrder.emplace_back(spec.name);
+        if (spec.typeInfo != Variant::getTypeInfo<void>()) {
+            m_outputOrder.emplace_back(spec.name);
+        }
     }
 
     m_fileSnippet = clearIndents(params.snippet);
