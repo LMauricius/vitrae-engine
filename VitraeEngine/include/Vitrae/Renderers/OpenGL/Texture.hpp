@@ -18,6 +18,7 @@ class OpenGLTexture : public Texture
   public:
     OpenGLTexture(const FileLoadParams &params);
     OpenGLTexture(const EmptyParams &params);
+    OpenGLTexture(const PureColorParams &params);
     ~OpenGLTexture();
 
     void loadToGPU(const unsigned char *data);

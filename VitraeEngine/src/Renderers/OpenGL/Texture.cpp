@@ -153,6 +153,23 @@ OpenGLTexture::OpenGLTexture(const EmptyParams &params)
     loadToGPU(nullptr);
 }
 
+OpenGLTexture::OpenGLTexture(const PureColorParams &params)
+    : OpenGLTexture(WrappingType::REPEAT, WrappingType::REPEAT, FilterType::NEAREST,
+                    FilterType::NEAREST, false, params.color)
+{
+    mUseSwizzle = false;
+    mGLChannelFormat = GL_RGBA;
+    mGLChannelType = GL_UNSIGNED_BYTE;
+
+    mWidth = 1;
+    mHeight = 1;
+
+    unsigned char data[4] = {255 * params.color.r, 255 * params.color.g, 255 * params.color.b,
+                             255 * params.color.a};
+
+    loadToGPU(nullptr);
+}
+
 OpenGLTexture::~OpenGLTexture()
 {
     unloadFromGPU();

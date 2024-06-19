@@ -58,6 +58,11 @@ class Texture : public dynasma::PolymorphicBase
         bool useMipMaps = true;
         glm::vec4 borderColor = {0.0f, 0.0f, 0.0f, 0.0f};
     };
+    struct PureColorParams
+    {
+        ComponentRoot &root;
+        glm::vec4 color;
+    };
 
     virtual ~Texture() = default;
 
@@ -75,7 +80,7 @@ struct TextureSeed
 
     inline std::size_t load_cost() const { return 1; }
 
-    std::variant<Texture::FileLoadParams, Texture::EmptyParams> kernel;
+    std::variant<Texture::FileLoadParams, Texture::EmptyParams, Texture::PureColorParams> kernel;
 };
 
 using TextureManager = dynasma::AbstractManager<TextureSeed>;
