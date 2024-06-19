@@ -72,7 +72,12 @@ template <TaskChild BasicTask> class Pipeline
                 // task inputs (also handle deps)
                 std::map<StringId, StringId> inputToLocalVariables;
                 for (auto [inputNameId, inputSpec] : task.value()->getInputSpecs()) {
-                    tryAddDependency(method, visitedOutputs, inputSpec, false);
+                    if (task.value()->getOutputSpecs().find(inputNameId) !=
+                        task.value()->getOutputSpecs().end()) {
+                        inputSpecs.emplace(inputNameId, inputSpec);
+                    } else {
+                        tryAddDependency(method, visitedOutputs, inputSpec, false);
+                    }
                     inputToLocalVariables.emplace(inputSpec.name, inputSpec.name);
                 }
 
