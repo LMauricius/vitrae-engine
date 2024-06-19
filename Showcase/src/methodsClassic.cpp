@@ -209,6 +209,8 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                                                  Variant::getTypeInfo<dynasma::FirmPtr<Texture>>()},
                                 PropertySpec{.name = StandardVertexBufferNames::TEXTURE_COORD,
                                              .typeInfo = Variant::getTypeInfo<glm::vec2>()},
+                                PropertySpec{.name = "normal",
+                                             .typeInfo = Variant::getTypeInfo<glm::vec3>()},
                                 PropertySpec{.name = "light_direction",
                                              .typeInfo = Variant::getTypeInfo<glm::vec3>()},
                                 PropertySpec{.name = "light_color_primary",
@@ -218,18 +220,19 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                             },
                         .outputSpecs =
                             {
-                                PropertySpec{.name = "shade_diffuse",
+                                PropertySpec{.name = "shade_specular",
                                              .typeInfo = Variant::getTypeInfo<glm::vec3>()},
                             },
                         .snippet = R"(
                     void lightSpecular(
-                        in vec3 camera_position, in vec4 position_world, 
+                        in vec3 camera_position, in vec4 position_world,
+                        in sampler2D tex_specular, in vec2 tex_coord,
                         in vec3 normal, in vec3 light_direction,
                         in vec3 light_color_primary, in float light_shadow_factor,
                         out vec3 shade_specular
                     ) {
                         vec4 color_specular = texture2D(tex_specular, tex_coord);
-                        vec3 dirToEye = camera_position - position_world;
+                        vec3 dirToEye = camera_position - position_world.xyz;
                         vec3 reflRay = 2 * dot(-light_direction, normal) * normal + light_direction;
                         shade_specular =
                             pow(max(dot(reflRay, dirToEye), 0.0), 1.0 / color_specular.a) * light_shadow_factor *
@@ -249,7 +252,7 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                                      .typeInfo = Variant::getTypeInfo<glm::vec3>()},
                         PropertySpec{.name = "shade_ambient",
                                      .typeInfo = Variant::getTypeInfo<glm::vec3>()},
-                        PropertySpec{.name = StandardMaterialTextureNames::DIFFUSE,
+                        PropertySpec{.name = StandardMaterialTextureNames::SPECULAR,
                                      .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<Texture>>()},
                         PropertySpec{.name = StandardVertexBufferNames::TEXTURE_COORD,
                                      .typeInfo = Variant::getTypeInfo<glm::vec2>()},
