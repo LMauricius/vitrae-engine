@@ -43,6 +43,50 @@ ComponentRoot::ComponentRoot()
                  return nullptr;
              }
          }});
+
+    /*
+    Material properties
+    */
+
+    addAiMaterialPropertyInfo({StandardMaterialPropertyNames::COL_DIFFUSE,
+                               [](const aiMaterial &extMat) -> std::optional<Variant> {
+                                   aiColor4D color;
+                                   if (extMat.Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+                                       return Variant(
+                                           glm::vec4(color.r, color.g, color.b, color.a));
+                                   } else {
+                                       return std::nullopt;
+                                   }
+                               }});
+    addAiMaterialPropertyInfo({StandardMaterialPropertyNames::COL_SPECULAR,
+                               [](const aiMaterial &extMat) -> std::optional<Variant> {
+                                   aiColor4D color;
+                                   if (extMat.Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
+                                       return Variant(
+                                           glm::vec4(color.r, color.g, color.b, color.a));
+                                   } else {
+                                       return std::nullopt;
+                                   }
+                               }});
+    addAiMaterialPropertyInfo({StandardMaterialPropertyNames::COL_EMISSIVE,
+                               [](const aiMaterial &extMat) -> std::optional<Variant> {
+                                   aiColor4D color;
+                                   if (extMat.Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) {
+                                       return Variant(
+                                           glm::vec4(color.r, color.g, color.b, color.a));
+                                   } else {
+                                       return std::nullopt;
+                                   }
+                               }});
+    addAiMaterialPropertyInfo({StandardMaterialPropertyNames::SHININESS,
+                               [](const aiMaterial &extMat) -> std::optional<Variant> {
+                                   float shininess;
+                                   if (extMat.Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) {
+                                       return Variant(shininess);
+                                   } else {
+                                       return std::nullopt;
+                                   }
+                               }});
 }
 
 ComponentRoot::~ComponentRoot() {}

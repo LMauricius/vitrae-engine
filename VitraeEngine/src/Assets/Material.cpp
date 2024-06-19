@@ -39,6 +39,14 @@ Material::Material(const AssimpLoadParams &params)
             m_textures[textureInfo.textureNameId] = textureInfo.defaultTexture.getLoaded();
         }
     }
+
+    // get all properties
+    for (auto &propertyInfo : params.root.getAiMaterialPropertyInfos()) {
+        std::optional<Variant> value = propertyInfo.extractor(*params.p_extMaterial);
+        if (value.has_value()) {
+            m_properties[propertyInfo.nameId] = std::move(value.value());
+        }
+    }
 }
 
 Material::~Material() {}
@@ -56,6 +64,16 @@ void Material::setMethods(dynasma::FirmPtr<Method<ShaderTask>> vertexMethod,
     m_fragmentMethod = fragmentMethod;
 }
 
+void Material::setProperty(StringId key, const Variant &value)
+{
+    m_properties[key] = value;
+}
+
+void Material::setProperty(StringId key, Variant &&value)
+{
+    m_properties[key] = std::move(value);
+}
+
 dynasma::FirmPtr<Method<ShaderTask>> Material::getVertexMethod() const
 {
     return m_vertexMethod;
@@ -69,6 +87,11 @@ dynasma::FirmPtr<Method<ShaderTask>> Material::getFragmentMethod() const
 const std::map<StringId, dynasma::FirmPtr<Texture>> &Material::getTextures() const
 {
     return m_textures;
+}
+
+const std::map<StringId, Variant> &Material::getProperties() const
+{
+    return m_properties;
 }
 
 } // namespace Vitrae

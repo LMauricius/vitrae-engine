@@ -133,6 +133,35 @@ class ComponentRoot
     void addAiMaterialTextureInfo(AiMaterialTextureInfo newInfo);
     std::span<const AiMaterialTextureInfo> getAiMaterialTextureInfos() const;
 
+    /**
+     * Information about an aiMaterial property
+     */
+    struct AiMaterialPropertyInfo
+    {
+        /// The name of the property
+        StringId nameId;
+
+        /// The extractor function
+        std::function<std::optional<Variant>(const aiMaterial &extMat)> extractor;
+    };
+
+    /**
+     * @return Span of AiMaterialPropertyInfo.
+     */
+    std::span<const AiMaterialPropertyInfo> getAiMaterialPropertyInfos() const
+    {
+        return std::span(mMaterialPropertyInfos);
+    }
+
+    /**
+     * Adds a new AiMaterialPropertyInfo to the list.
+     * @param newInfo The AiMaterialPropertyInfo to add
+     */
+    void addAiMaterialPropertyInfo(const AiMaterialPropertyInfo &newInfo)
+    {
+        this->mMaterialPropertyInfos.push_back(newInfo);
+    }
+
     /*
     === Streams ===
     */
@@ -181,6 +210,7 @@ class ComponentRoot
     mutable std::map<size_t, UniqueAnyPtr> m_aiMeshInfoLists;
     std::map<aiShadingMode, AiMaterialShadingInfo> mAiMaterialShadingInfo;
     std::vector<AiMaterialTextureInfo> mAiMaterialTextureInfos;
+    std::vector<AiMaterialPropertyInfo> mMaterialPropertyInfos;
 
     std::ostream *mErrStream, *mInfoStream, *mWarningStream;
 };
