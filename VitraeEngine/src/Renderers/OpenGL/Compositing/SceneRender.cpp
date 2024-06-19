@@ -147,10 +147,12 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
         // iterate over materials
         for (auto [material, props] : materials2props) {
 
-            // get the textures
-            std::map<StringId, dynasma::FirmPtr<const OpenGLTexture>> namedTextures;
+            // get the textures and properties
             for (auto [nameId, p_texture] : material->getTextures()) {
                 setPropertyToShader(nameId, p_texture);
+            }
+            for (auto [nameId, value] : material->getProperties()) {
+                setPropertyToShader(nameId, value);
             }
 
             // iterate over meshes
