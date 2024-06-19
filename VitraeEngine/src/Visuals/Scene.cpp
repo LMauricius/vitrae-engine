@@ -84,9 +84,23 @@ void Scene::loadFromAssimp(const AssimpLoadParams &params)
     }
 }
 
-glm::mat4 DirectionalLight::getViewMatrix(const Camera &cam)
+glm::mat4 DirectionalLight::getViewMatrix(const Camera &cam, float roundingStep)
 {
-    return glm::lookAt(cam.position, cam.position + direction, glm::vec3(0, 1, 0));
+    float worldRoundingStep = shadow_distance * 2 * roundingStep;
+
+    glm::vec3 cameraRoundedPos;
+    if (roundingStep == 0.0) {
+        cameraRoundedPos = cam.position;
+    } else {
+        glm::mat3 shadowAffineMat =
+            glm::mat3(glm::lookAt(glm::vec3(0, 0, 0), direction, glm::vec3(0, 1, 0)));
+
+        glm::vec3 cameraShadowPos = shadowAffineMat * cam.position;
+        cameraRoundedPos = glm::inverse(shadowAffineMat) *
+                           (glm::round(cameraShadowPos / worldRoundingStep) * worldRoundingStep);
+    }
+
+    return glm::lookAt(cameraRoundedPos, cameraRoundedPos + direction, glm::vec3(0, 1, 0));
 }
 
 glm::mat4 DirectionalLight::getProjectionMatrix()
