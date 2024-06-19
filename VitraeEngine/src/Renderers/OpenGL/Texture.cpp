@@ -164,10 +164,10 @@ OpenGLTexture::OpenGLTexture(const PureColorParams &params)
     mWidth = 1;
     mHeight = 1;
 
-    unsigned char data[4] = {255 * params.color.r, 255 * params.color.g, 255 * params.color.b,
-                             255 * params.color.a};
+    unsigned char data[4] = {255.0 * params.color.r, 255.0 * params.color.g, 255.0 * params.color.b,
+                             255.0 * params.color.a};
 
-    loadToGPU(nullptr);
+    loadToGPU(data);
 }
 
 OpenGLTexture::~OpenGLTexture()
