@@ -1,5 +1,7 @@
+#include <QtWidgets/QApplication>
 #include <iostream>
 
+#include "SettingsWindow.h"
 #include "assetCollection.hpp"
 
 #include "Vitrae/Renderers/OpenGL.hpp"
@@ -31,10 +33,18 @@ int main(int argc, char **argv)
     AssetCollection collection(root, *p_rend, path, sceneScale);
 
     /*
+    GUI setup
+    */
+    QApplication app(argc, argv);
+    SettingsWindow settingsWindow(collection);
+    settingsWindow.show();
+
+    /*
     Render loop!
     */
 
     while (collection.running) {
+        app.processEvents();
         collection.render();
     }
 
