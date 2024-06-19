@@ -293,10 +293,13 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                     ss << "out " << specToGlName(spec.typeInfo) << " " << p_helper->outVarPrefix
                        << spec.name << ";\n";
+                    inputParametersToGlobalVars.emplace(nameId, p_helper->outVarPrefix + spec.name);
                     outputParametersToGlobalVars.emplace(nameId,
                                                          p_helper->outVarPrefix + spec.name);
                 }
             }
+            inputParametersToGlobalVars.insert(predefinedOutputParameters.begin(),
+                                               predefinedOutputParameters.end());
             outputParametersToGlobalVars.merge(std::move(predefinedOutputParameters));
 
             ss << "\n";
