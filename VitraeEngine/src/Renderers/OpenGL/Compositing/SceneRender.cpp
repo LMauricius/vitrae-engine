@@ -70,7 +70,7 @@ void OpenGLComposeSceneRender::run(RenderRunContext args) const
                                    .push_back(&meshProp);
     }
 
-    frame.enterRender({0.0f, 0.0f}, {1.0f, 1.0f});
+    frame.enterRender(args.properties, {0.0f, 0.0f}, {1.0f, 1.0f});
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);

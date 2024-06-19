@@ -128,10 +128,14 @@ void OpenGLFrameStore::sync()
     std::visit([](auto &contextSwitcher) { contextSwitcher.sync(); }, m_contextSwitcher);
 }
 
-void OpenGLFrameStore::enterRender(glm::vec2 topLeft, glm::vec2 bottomRight)
+void OpenGLFrameStore::enterRender(const ScopedDict &properties, glm::vec2 topLeft,
+                                   glm::vec2 bottomRight)
 {
-    std::visit([&](auto &contextSwitcher) { contextSwitcher.enterContext(topLeft, bottomRight); },
-               m_contextSwitcher);
+    std::visit(
+        [&](auto &contextSwitcher) {
+            contextSwitcher.enterContext(properties, topLeft, bottomRight);
+        },
+        m_contextSwitcher);
 }
 
 void OpenGLFrameStore::exitRender()
@@ -151,7 +155,8 @@ glm::vec2 OpenGLFrameStore::FramebufferContextSwitcher::getSize() const
 {
     return glm::vec2(width, height);
 }
-void OpenGLFrameStore::FramebufferContextSwitcher::enterContext(glm::vec2 topLeft,
+void OpenGLFrameStore::FramebufferContextSwitcher::enterContext(const ScopedDict &properties,
+                                                                glm::vec2 topLeft,
                                                                 glm::vec2 bottomRight)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, glFramebufferId);
@@ -179,9 +184,15 @@ glm::vec2 OpenGLFrameStore::WindowContextSwitcher::getSize() const
     glfwGetFramebufferSize(window, &width, &height);
     return glm::vec2(width, height);
 }
-void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, glm::vec2 bottomRight)
+void OpenGLFrameStore::WindowContextSwitcher::enterContext(const ScopedDict &properties,
+                                                           glm::vec2 topLeft, glm::vec2 bottomRight)
 {
     glfwMakeContextCurrent(window);
+    if (auto p = properties.getPtr("vsync"); p && p->get<bool>()) {
+        glfwSwapInterval(1);
+    } else {
+        glfwSwapInterval(0);
+    }
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);

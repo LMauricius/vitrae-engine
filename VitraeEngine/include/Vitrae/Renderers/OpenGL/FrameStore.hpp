@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vitrae/Assets/FrameStore.hpp"
+#include "Vitrae/Util/ScopedDict.hpp"
 
 #include "glad/glad.h"
 // must be after glad.h
@@ -26,14 +27,14 @@ class OpenGLFrameStore : public FrameStore
 
     void sync() override;
 
-    void enterRender(glm::vec2 topLeft, glm::vec2 bottomRight);
+    void enterRender(const ScopedDict &properties, glm::vec2 topLeft, glm::vec2 bottomRight);
     void exitRender();
 
   protected:
     dynasma::FirmPtr<const PropertyList> mp_renderComponents;
     struct FramebufferContextSwitcher
     {
-        void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
+        void enterContext(const ScopedDict &properties, glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
         void sync();
         void destroyContext();
@@ -44,7 +45,7 @@ class OpenGLFrameStore : public FrameStore
     };
     struct WindowContextSwitcher
     {
-        void enterContext(glm::vec2 topLeft, glm::vec2 bottomRight);
+        void enterContext(const ScopedDict &properties, glm::vec2 topLeft, glm::vec2 bottomRight);
         void exitContext();
         void sync();
         void destroyContext();
