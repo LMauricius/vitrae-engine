@@ -106,39 +106,32 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                                  .typeInfo = Variant::getTypeInfo<float>()},
                 },
             .snippet = R"(
-                    float getLightShadowFactorPixel(
-                        in sampler2D tex_shadow, in ivec2 coord, float depth
-                    ) {
-                        if (texelFetch(tex_shadow, coord, 0).r < depth) {
-                            return 0.0;
-                        }
-                        else {
-                            return 1.0;
-                        }
-                    }
                     void lightShadowFactor(
                         in sampler2D tex_shadow, in vec3 position_shadow,
                         out float light_shadow_factor)
                     {
+                        const int maskSize = 2;
+                        const float blurRadius = 0.8;
+
                         vec2 shadowSize = textureSize(tex_shadow, 0);
-                        vec2 coord = position_shadow.xy * shadowSize;
-                        ivec2 minCoord = ivec2(floor(coord));
-                        ivec2 maxCoord = ivec2(ceil(coord));
-                        vec2 slider = coord - vec2(minCoord);
+
+                        vec2 stride = blurRadius / float(maskSize) / shadowSize;
+
+                        int counter = 0;
                         light_shadow_factor = 0;
-                        for (int i = -1; i <= 1; ++i) {
-                            for (int j = -1; j <= 1; ++j) {
-                                ivec2 offset = ivec2(i, j);
-                                light_shadow_factor += (
-                                        getLightShadowFactorPixel(tex_shadow, minCoord + offset, position_shadow.z) * (1.0 - slider.x) +
-                                        getLightShadowFactorPixel(tex_shadow, ivec2(maxCoord.x, minCoord.y) + offset, position_shadow.z) * slider.x
-                                    ) * (1.0 - slider.y) + (
-                                        getLightShadowFactorPixel(tex_shadow, ivec2(minCoord.x, maxCoord.y) + offset, position_shadow.z) * (1.0 - slider.x) +
-                                        getLightShadowFactorPixel(tex_shadow, maxCoord + offset, position_shadow.z) * slider.x
-                                    ) * slider.y;
+                        for (int i = -maskSize; i <= maskSize; ++i) {
+                            int shift = int((i % 2) == 0);
+                            for (int j = -maskSize+shift; j <= maskSize-shift; j += 2) {
+                                if (texture(tex_shadow, position_shadow.xy + vec2(ivec2(i, j)) * stride).r < position_shadow.z + 0.5/shadowSize.x) {
+                                    light_shadow_factor += 0.0;
+                                }
+                                else {
+                                    light_shadow_factor += 1.0;
+                                }
+                                ++counter;
                             }
                         }
-                        light_shadow_factor /= 9.0;
+                        light_shadow_factor /= float(counter);
                     }
                 )",
             .functionName = "lightShadowFactor"}});
@@ -209,6 +202,11 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                                                  Variant::getTypeInfo<dynasma::FirmPtr<Texture>>()},
                                 PropertySpec{.name = StandardVertexBufferNames::TEXTURE_COORD,
                                              .typeInfo = Variant::getTypeInfo<glm::vec2>()},
+                                PropertySpec{
+                                    .name = StandardMaterialPropertyNames::COL_SPECULAR,
+                                    .typeInfo = StandardMaterialPropertyTypes::COL_SPECULAR},
+                                PropertySpec{.name = StandardMaterialPropertyNames::SHININESS,
+                                             .typeInfo = StandardMaterialPropertyTypes::SHININESS},
                                 PropertySpec{.name = "normal",
                                              .typeInfo = Variant::getTypeInfo<glm::vec3>()},
                                 PropertySpec{.name = "light_direction",
@@ -226,17 +224,17 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                         .snippet = R"(
                     void lightSpecular(
                         in vec3 camera_position, in vec4 position_world,
-                        in sampler2D tex_specular, in vec2 tex_coord,
+                        in sampler2D tex_specular, in vec2 tex_coord, in vec4 color_specular, in float shininess,
                         in vec3 normal, in vec3 light_direction,
                         in vec3 light_color_primary, in float light_shadow_factor,
                         out vec3 shade_specular
                     ) {
-                        vec4 color_specular = texture2D(tex_specular, tex_coord);
-                        vec3 dirToEye = camera_position - position_world.xyz;
+                        vec4 color_specular_tot = texture2D(tex_specular, tex_coord);
+                        vec3 dirToEye = normalize(camera_position - position_world.xyz);
                         vec3 reflRay = 2 * dot(-light_direction, normal) * normal + light_direction;
                         shade_specular =
-                            pow(max(dot(reflRay, dirToEye), 0.0), 1.0 / color_specular.a) * light_shadow_factor *
-                            color_specular.rgb * light_color_primary;
+                            pow(max(dot(reflRay, dirToEye), 0.001), shininess) * light_shadow_factor *
+                            color_specular_tot.rgb * light_color_primary;
                     }
                 )",
                         .functionName = "lightSpecular"}});
@@ -307,7 +305,7 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
             context.properties.set("mat_shadow_view",
                                    p_scene->light.getViewMatrix(p_scene->camera));
             context.properties.set("mat_shadow_persp", p_scene->light.getProjectionMatrix());
-            context.properties.set("light_direction", p_scene->light.direction);
+            context.properties.set("light_direction", glm::normalize(p_scene->light.direction));
             context.properties.set("light_color_primary", p_scene->light.color_primary);
             context.properties.set("light_color_ambient", p_scene->light.color_ambient);
         }});
