@@ -181,6 +181,7 @@ glm::vec2 OpenGLFrameStore::WindowContextSwitcher::getSize() const
 }
 void OpenGLFrameStore::WindowContextSwitcher::enterContext(glm::vec2 topLeft, glm::vec2 bottomRight)
 {
+    glfwMakeContextCurrent(window);
 
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
