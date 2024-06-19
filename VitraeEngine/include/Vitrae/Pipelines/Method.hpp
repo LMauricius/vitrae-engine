@@ -26,6 +26,7 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     {
         std::vector<dynasma::FirmPtr<BasicTask>> tasks;
         std::vector<dynasma::FirmPtr<Method>> fallbackMethods;
+        String friendlyName = "";
     };
 
     struct MethodManagerSeed
@@ -40,7 +41,7 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     using MethodManager = dynasma::AbstractManager<MethodManagerSeed>;
 
     // Constructor
-    Method(const MethodParams &params)
+    Method(const MethodParams &params) : m_friendlyName(params.friendlyName)
     {
         for (auto task : params.tasks) {
             for (auto [outputId, outputSpec] : task->getOutputSpecs()) {
@@ -95,11 +96,13 @@ template <TaskChild BasicTask> class Method : public dynasma::PolymorphicBase
     }
 
     std::size_t getHash() const { return m_hash; }
+    StringView getFriendlyName() const { return m_friendlyName; }
 
   protected:
     std::map<StringId, dynasma::FirmPtr<BasicTask>> m_tasksPerOutput;
     std::vector<dynasma::FirmPtr<Method>> m_fallbackMethods;
     std::size_t m_hash;
+    String m_friendlyName;
 };
 
 template <TaskChild BasicTask> class MethodCombinator
@@ -119,7 +122,9 @@ template <TaskChild BasicTask> class MethodCombinator
         } else {
             auto combinedMethod =
                 dynasma::makeStandalone<Method<BasicTask>>(typename Method<BasicTask>::MethodParams{
-                    .tasks = {}, .fallbackMethods = {p_methods...}});
+                    .tasks = {},
+                    .fallbackMethods = {p_methods...},
+                    .friendlyName = (String() + (String(p_methods->getFriendlyName()) + ...))});
             m_hash2combinedMethods.emplace(combinedMethodHash, combinedMethod);
             return combinedMethod;
         }

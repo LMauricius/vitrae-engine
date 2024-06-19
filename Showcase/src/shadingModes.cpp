@@ -29,7 +29,7 @@ ShadingModeSetter::ShadingModeSetter(ComponentRoot &root)
                             }
                         )",
             .functionName = "phongShadingMode"}})},
-        .fallbackMethods = {}});
+        .fallbackMethods = {}, .friendlyName= "Phong"});
 }
 
 void ShadingModeSetter::setModes(ComponentRoot &root)

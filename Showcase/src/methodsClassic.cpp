@@ -85,7 +85,7 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
             .functionName = "shadowPosition"}});
 
     p_vertexMethod = dynasma::makeStandalone<Method<ShaderTask>>(Method<ShaderTask>::MethodParams{
-        .tasks = {p_worldPosition, p_shadowPosition, p_viewPosition}});
+        .tasks = {p_worldPosition, p_shadowPosition, p_viewPosition}, .friendlyName = "Classic"});
 
     /*
     FRAGMENT SHADING
@@ -276,9 +276,10 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                 )",
                 .functionName = "phongCombine"}});
 
-    p_fragmentMethod = dynasma::makeStandalone<Method<ShaderTask>>(Method<ShaderTask>::MethodParams{
-        .tasks = {p_shadowLightFactor, p_shadeAmbient, p_shadeDiffuse, p_shadeSpecular,
-                  p_phongCombine}});
+    p_fragmentMethod = dynasma::makeStandalone<Method<ShaderTask>>(
+        Method<ShaderTask>::MethodParams{.tasks = {p_shadowLightFactor, p_shadeAmbient,
+                                                   p_shadeDiffuse, p_shadeSpecular, p_phongCombine},
+                                         .friendlyName = "Classic"});
 
     /*
     COMPOSING
@@ -393,5 +394,6 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
     p_composeMethod =
         dynasma::makeStandalone<Method<ComposeTask>>(Method<ComposeTask>::MethodParams{
             .tasks = {p_extractLightProperties, p_extractCameraProperties, p_shadowClear,
-                      p_shadowRender, p_shadowTexture, p_clear, p_normalRender}});
+                      p_shadowRender, p_shadowTexture, p_clear, p_normalRender},
+            .friendlyName = "Classic"});
 }
