@@ -55,7 +55,7 @@ ComponentRoot::ComponentRoot()
                                        return Variant(
                                            glm::vec4(color.r, color.g, color.b, color.a));
                                    } else {
-                                       return std::nullopt;
+                                       return Variant(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
                                    }
                                }});
     addAiMaterialPropertyInfo({StandardMaterialPropertyNames::COL_SPECULAR,
@@ -65,7 +65,7 @@ ComponentRoot::ComponentRoot()
                                        return Variant(
                                            glm::vec4(color.r, color.g, color.b, color.a));
                                    } else {
-                                       return std::nullopt;
+                                       return Variant(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
                                    }
                                }});
     addAiMaterialPropertyInfo({StandardMaterialPropertyNames::COL_EMISSIVE,
@@ -75,7 +75,7 @@ ComponentRoot::ComponentRoot()
                                        return Variant(
                                            glm::vec4(color.r, color.g, color.b, color.a));
                                    } else {
-                                       return std::nullopt;
+                                       return Variant(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
                                    }
                                }});
     addAiMaterialPropertyInfo({StandardMaterialPropertyNames::SHININESS,
@@ -84,7 +84,7 @@ ComponentRoot::ComponentRoot()
                                    if (extMat.Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) {
                                        return Variant(shininess);
                                    } else {
-                                       return std::nullopt;
+                                       return Variant(1.0);
                                    }
                                }});
 }
