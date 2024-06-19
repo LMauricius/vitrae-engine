@@ -1,0 +1,64 @@
+#pragma once
+
+#include "Vitrae/Assets/Texture.hpp"
+#include "Vitrae/Types/Typedefs.hpp"
+#include "Vitrae/Util/PropertyList.hpp"
+
+#include "dynasma/core_concepts.hpp"
+#include "dynasma/keepers/abstract.hpp"
+#include "dynasma/managers/abstract.hpp"
+
+#include "glm/glm.hpp"
+
+#include <optional>
+
+namespace Vitrae
+{
+class ComponentRoot;
+
+/**
+ * A FrameStore is a single image-like resource
+ */
+class FrameStore : public dynasma::PolymorphicBase
+{
+  public:
+    struct TextureBindParams
+    {
+        ComponentRoot &root;
+        std::optional<dynasma::FirmPtr<Texture>> p_colorTexture;
+        std::optional<dynasma::FirmPtr<Texture>> p_depthTexture;
+    };
+    struct WindowDisplayParams
+    {
+        ComponentRoot &root;
+
+        std::size_t width, height;
+        String title;
+        bool isFullscreen;
+
+        std::function<void()> onClose;
+        std::function<void(glm::vec2 motion, bool bLeft, bool bRight, bool bMiddle)> onDrag;
+    };
+
+    virtual ~FrameStore() = default;
+    virtual std::size_t memory_cost() const = 0;
+    virtual void resize(glm::vec2 size) = 0;
+
+    virtual glm::vec2 getSize() const = 0;
+    virtual dynasma::FirmPtr<const PropertyList> getRenderComponents() const = 0;
+
+    virtual void sync() = 0;
+};
+
+struct FrameStoreSeed
+{
+    using Asset = FrameStore;
+
+    inline std::size_t load_cost() const { return 1; }
+
+    std::variant<FrameStore::TextureBindParams, FrameStore::WindowDisplayParams> kernel;
+};
+
+using FrameStoreManager = dynasma::AbstractManager<FrameStoreSeed>;
+
+} // namespace Vitrae

@@ -1,137 +1,135 @@
-#include "Vitrae/Renderers/OpenGL/Mesh.h"
-#include "Vitrae/Renderers/OpenGL.h"
-#include "Vitrae/Util/Types.h"
-#include "Vitrae/Util/AssimpTypeConvert.h"
-#include "Vitrae/Util/GraphicPrimitives.h"
-#include "Vitrae/ComponentRoot.h"
-#include "Vitrae/Assets/Material.h"
+#include "Vitrae/Renderers/OpenGL/Mesh.hpp"
+#include "Vitrae/Assets/Material.hpp"
+#include "Vitrae/ComponentRoot.hpp"
+#include "Vitrae/Renderers/OpenGL.hpp"
+#include "Vitrae/TypeConversion/AssimpTypeConvert.hpp"
+#include "Vitrae/Types/Typedefs.hpp"
 
-#include <vector>
 #include <map>
+#include <vector>
 
 namespace Vitrae
 {
-    OpenGLMesh::OpenGLMesh()
-    {
-        
-    }
+OpenGLMesh::OpenGLMesh() : m_sentToGPU(false) {}
 
-    OpenGLMesh::~OpenGLMesh()
-    {
-    }
+OpenGLMesh::OpenGLMesh(const AssimpLoadParams &params) : OpenGLMesh()
+{
+    OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(params.root.getComponent<Renderer>());
 
-    void OpenGLMesh::load(const SetupParams &params, OpenGLRenderer & rend)
-    {
-        // prepare vertices
-        mVertices.resize(params.extMesh.mNumVertices);
-        mTriangles.resize(params.extMesh.mNumFaces);
+    // prepare vertices
+    mTriangles.resize(params.p_extMesh->mNumFaces);
 
-        // load triangles
-        if (params.extMesh.HasFaces()) {
-            for (int i = 0; i < params.extMesh.mNumFaces; i++) {
-                for (int j = 0; j < params.extMesh.mFaces[i].mNumIndices; j++) {
-                    mTriangles[i].ind[j] = params.extMesh.mFaces[i].mIndices[j];
-                }
+    // load triangles
+    if (params.p_extMesh->HasFaces()) {
+        for (int i = 0; i < params.p_extMesh->mNumFaces; i++) {
+            for (int j = 0; j < params.p_extMesh->mFaces[i].mNumIndices; j++) {
+                mTriangles[i].ind[j] = params.p_extMesh->mFaces[i].mIndices[j];
             }
         }
+    }
 
-        // load vertices
-        auto loadVertexData = [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
-            std::vector<VertexBufferSpec<aiType>> vertexBufferSpecs,
-            std::map<String, std::vector<glmType>> &namedBuffers)
-        {
-            for (auto &spec : vertexBufferSpecs)
-            {
+    // load vertices
+    auto extractVertexData =
+        [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
+            std::span<const ComponentRoot::AiMeshBufferInfo<aiType>> aiBufferInfos,
+            std::map<StringId, std::valarray<glmType>> &namedBuffers) {
+            for (auto &info : aiBufferInfos) {
                 // get buffers
-                const aiType *src = spec.srcGetter(params.extMesh);
-                std::vector<glmType> &buffer = namedBuffers[spec.name];
-                GLuint &vbo = VBOs[spec.layoutInd];
+                std::size_t layoutInd = rend.getVertexBufferLayoutIndex(info.name);
+                const aiType *src = info.extractor(*params.p_extMesh);
+                GLuint &vbo = VBOs[layoutInd];
 
                 // fill buffers
-                namedBuffers[spec.name].resize(params.extMesh.mNumVertices);
-                if (src != nullptr)
-                {
-                    for (int i = 0; i < params.extMesh.mNumVertices; i++)
-                    {
+                if (src != nullptr) {
+                    std::valarray<glmType> &buffer = namedBuffers[info.name];
+                    buffer.resize(params.p_extMesh->mNumVertices);
+
+                    for (int i = 0; i < params.p_extMesh->mNumVertices; i++) {
                         buffer[i] = aiTypeCvt<aiType>::toGlmVal(src[i]);
                     }
                 }
-                if (spec.vertexStorage != nullptr)
-                {
-                    for (int i = 0; i < params.extMesh.mNumVertices; i++)
-                    {
-                        mVertices[i].*(spec.vertexStorage) = aiTypeCvt<aiType>::toGlmVal(src[i]);
-                    }
-                }
-                
             }
         };
-        
-        loadVertexData(rend.getVertexBufferSpecs<aiVector2D>(), namedVec2Buffers);
-        loadVertexData(rend.getVertexBufferSpecs<aiVector3D>(), namedVec3Buffers);
-        loadVertexData(rend.getVertexBufferSpecs<aiColor3D>(), namedVec3Buffers);
-        loadVertexData(rend.getVertexBufferSpecs<aiColor4D>(), namedVec4Buffers);
-    }
 
-    void OpenGLMesh::loadToGPU(OpenGLRenderer & rend)
-    {
+    extractVertexData(params.root.getAiMeshBufferInfos<aiVector2D>(), namedVec2Buffers);
+    extractVertexData(params.root.getAiMeshBufferInfos<aiVector3D>(), namedVec3Buffers);
+    extractVertexData(params.root.getAiMeshBufferInfos<aiColor3D>(), namedVec3Buffers);
+    extractVertexData(params.root.getAiMeshBufferInfos<aiColor4D>(), namedVec4Buffers);
+}
+
+OpenGLMesh::~OpenGLMesh() {}
+
+void OpenGLMesh::loadToGPU(OpenGLRenderer &rend)
+{
+    if (!m_sentToGPU) {
+        m_sentToGPU = true;
+
         // prepare OpenGL buffers
-		glGenVertexArrays(1, &VAO);
+        glGenVertexArrays(1, &VAO);
         VBOs.resize(rend.getNumVertexBuffers());
-		glGenBuffers(rend.getNumVertexBuffers(), VBOs.data());
-		glGenBuffers(1, &EBO);
+        glGenBuffers(rend.getNumVertexBuffers(), VBOs.data());
+        glGenBuffers(1, &EBO);
 
         // load vertices
-		glBindVertexArray(VAO);
+        glBindVertexArray(VAO);
 
-        auto loadVertexData = [&]<class aiType, class glmType = typename aiTypeCvt<aiType>::glmType>(
-            std::vector<VertexBufferSpec<aiType>> vertexBufferSpecs,
-            std::map<String, std::vector<glmType>> &namedBuffers)
-        {
-            for (auto &spec : vertexBufferSpecs)
-            {
-                std::vector<glmType> &buffer = namedBuffers[spec.name];
-                GLuint &vbo = VBOs[spec.layoutInd];
+        auto sendVertexData =
+            [&]<class glmType>(const std::map<StringId, std::valarray<glmType>> &namedBuffers) {
+                for (auto [name, buffer] : namedBuffers) {
+                    std::size_t layoutInd = rend.getVertexBufferLayoutIndex(name);
+                    GLuint &vbo = VBOs[layoutInd];
 
-                // send to OpenGL
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glBufferData(GL_ARRAY_BUFFER, sizeof(glmType)*buffer.size(), buffer.data(), GL_STATIC_DRAW);
-                glVertexAttribPointer(
-                    spec.layoutInd, // layout pos
-                    spec.NumComponents, spec.ComponentTypeId, GL_FALSE, // data structure info
-                    sizeof(glmType), (void*)0 // data location info
-                );
-                glEnableVertexAttribArray(spec.layoutInd);
-                
-            }
-        };
-        
-        loadVertexData(rend.getVertexBufferSpecs<aiVector2D>(), namedVec2Buffers);
-        loadVertexData(rend.getVertexBufferSpecs<aiVector3D>(), namedVec3Buffers);
-        loadVertexData(rend.getVertexBufferSpecs<aiColor3D>(), namedVec3Buffers);
-        loadVertexData(rend.getVertexBufferSpecs<aiColor4D>(), namedVec4Buffers);
+                    // send to OpenGL
+                    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(glmType) * buffer.size(), &(buffer[0]),
+                                 GL_STATIC_DRAW);
+                    glVertexAttribPointer(
+                        layoutInd, // layout pos
+                        VectorTypeInfo<glmType>::NumComponents,
+                        GLTypeInfo<typename VectorTypeInfo<glmType>::value_type>::GlTypeId,
+                        GL_FALSE,                  // data structure info
+                        sizeof(glmType), (void *)0 // data location info
+                    );
+                    glEnableVertexAttribArray(layoutInd);
+                }
+            };
+
+        sendVertexData(namedVec2Buffers);
+        sendVertexData(namedVec3Buffers);
+        sendVertexData(namedVec3Buffers);
+        sendVertexData(namedVec4Buffers);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * mTriangles.size(), (void *)(mTriangles.data()), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * mTriangles.size(),
+                     (void *)(mTriangles.data()), GL_STATIC_DRAW);
 
         glBindVertexArray(0);
     }
-
-    void OpenGLMesh::unloadFromGPU(OpenGLRenderer & rend)
-    {
-		glDeleteVertexArrays(1, &VAO);
-		glDeleteBuffers(rend.getNumVertexBuffers(), VBOs.data());
-		glDeleteBuffers(1, &EBO);
-    }
-
-    const std::vector<Vertex> &OpenGLMesh::getVertices() const
-    {
-        return mVertices;
-    }
-    
-    const std::vector<Triangle> &OpenGLMesh::getTriangles() const
-    {
-        return mTriangles;
-    }
-    
 }
+
+void OpenGLMesh::unloadFromGPU()
+{
+    if (m_sentToGPU) {
+        m_sentToGPU = false;
+        glDeleteVertexArrays(1, &VAO);
+        glDeleteBuffers(VBOs.size(), VBOs.data());
+        glDeleteBuffers(1, &EBO);
+    }
+}
+
+void OpenGLMesh::setMaterial(dynasma::LazyPtr<Material> mat)
+{
+    mMaterial = mat;
+}
+
+dynasma::LazyPtr<Material> OpenGLMesh::getMaterial() const
+{
+    return mMaterial.value();
+}
+
+std::span<const Triangle> OpenGLMesh::getTriangles() const
+{
+    return mTriangles;
+}
+
+} // namespace Vitrae
