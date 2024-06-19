@@ -252,7 +252,7 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
                                      .typeInfo = Variant::getTypeInfo<glm::vec3>()},
                         PropertySpec{.name = "shade_ambient",
                                      .typeInfo = Variant::getTypeInfo<glm::vec3>()},
-                        PropertySpec{.name = StandardMaterialTextureNames::SPECULAR,
+                        PropertySpec{.name = StandardMaterialTextureNames::DIFFUSE,
                                      .typeInfo = Variant::getTypeInfo<dynasma::FirmPtr<Texture>>()},
                         PropertySpec{.name = StandardVertexBufferNames::TEXTURE_COORD,
                                      .typeInfo = Variant::getTypeInfo<glm::vec2>()},
