@@ -64,9 +64,8 @@ template <TaskChild BasicTask> class Pipeline
                     if (outputSpecs.find(taskOutputSpec.name) == outputSpecs.end() &&
                         localSpecs.find(taskOutputSpec.name) == localSpecs.end()) {
                         localSpecs.emplace(taskOutputSpec.name, taskOutputSpec);
-
-                        visitedOutputs.insert(taskOutputSpec.name);
                     }
+                    visitedOutputs.insert(taskOutputSpec.name);
                     outputToLocalVariables.emplace(taskOutputSpec.name, taskOutputSpec.name);
                 }
 
