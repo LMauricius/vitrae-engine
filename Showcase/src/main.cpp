@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "SettingsWindow.h"
+#include "Status.hpp"
 #include "assetCollection.hpp"
 
 #include "Vitrae/Renderers/OpenGL.hpp"
@@ -36,7 +37,8 @@ int main(int argc, char **argv)
     GUI setup
     */
     QApplication app(argc, argv);
-    SettingsWindow settingsWindow(collection);
+    Status status;
+    SettingsWindow settingsWindow(collection, status);
     settingsWindow.show();
 
     /*
@@ -45,7 +47,13 @@ int main(int argc, char **argv)
 
     while (collection.running) {
         app.processEvents();
+
+        auto startTime = std::chrono::high_resolution_clock::now();
         collection.render();
+        auto endTime = std::chrono::high_resolution_clock::now();
+
+        status.update(endTime - startTime);
+        settingsWindow.updateValues();
     }
 
     /*

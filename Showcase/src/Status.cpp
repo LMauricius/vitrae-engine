@@ -14,6 +14,7 @@ void Status::update(std::chrono::duration<float> lastFrameDuration)
     totalSumFrameDuration += lastFrameDuration;
     totalFrameCount++;
     totalAvgFrameDuration = totalSumFrameDuration / totalFrameCount;
+    totalFPS = 1.0f / totalAvgFrameDuration.count();
 
     trackingSumFrameDuration += lastFrameDuration;
     trackingFrameCount++;
