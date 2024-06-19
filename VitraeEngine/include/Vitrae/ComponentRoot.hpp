@@ -127,6 +127,7 @@ class ComponentRoot
     {
         StringId textureNameId;
         aiTextureType aiTextureId;
+        dynasma::LazyPtr<Texture> defaultTexture;
     };
 
     void addAiMaterialTextureInfo(AiMaterialTextureInfo newInfo);
