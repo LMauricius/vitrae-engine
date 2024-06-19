@@ -24,9 +24,9 @@ Material::Material(const AssimpLoadParams &params)
 
     // Get all textures
     for (auto &textureInfo : params.root.getAiMaterialTextureInfos()) {
-        for (int i = 0; i < params.p_extMaterial->GetTextureCount(textureInfo.aiTextureId); i++) {
+        if (params.p_extMaterial->GetTextureCount(textureInfo.aiTextureId) > 0) {
             aiString path;
-            params.p_extMaterial->GetTexture(textureInfo.aiTextureId, i, &path);
+            params.p_extMaterial->GetTexture(textureInfo.aiTextureId, 0, &path);
 
             String relconvPath =
                 searchAndReplace(searchAndReplace(path.C_Str(), "\\", "/"), "//", "/");
@@ -35,6 +35,8 @@ Material::Material(const AssimpLoadParams &params)
                 {Texture::FileLoadParams{.root = params.root,
                                          .filepath = parentDirPath / relconvPath,
                                          .useMipMaps = true}});
+        } else {
+            m_textures[textureInfo.textureNameId] = textureInfo.defaultTexture.getLoaded();
         }
     }
 }

@@ -43,13 +43,6 @@ ComponentRoot::ComponentRoot()
                  return nullptr;
              }
          }});
-
-    /*
-    Texture types
-    */
-    addAiMaterialTextureInfo({StandardMaterialTextureNames::DIFFUSE, aiTextureType_DIFFUSE});
-    addAiMaterialTextureInfo({StandardMaterialTextureNames::SPECULAR, aiTextureType_SPECULAR});
-    addAiMaterialTextureInfo({StandardMaterialTextureNames::EMISSIVE, aiTextureType_EMISSIVE});
 }
 
 ComponentRoot::~ComponentRoot() {}

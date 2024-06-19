@@ -127,6 +127,22 @@ void OpenGLRenderer::setup(ComponentRoot &root)
     gladLoadGL();
 
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+
+    /*
+    Texture types
+    */
+    root.addAiMaterialTextureInfo(
+        {StandardMaterialTextureNames::DIFFUSE, aiTextureType_DIFFUSE,
+         root.getComponent<TextureManager>().register_asset(
+             {Texture::PureColorParams{.root = root, .color = {1.0f, 1.0f, 1.0f, 1.0f}}})});
+    root.addAiMaterialTextureInfo(
+        {StandardMaterialTextureNames::SPECULAR, aiTextureType_SPECULAR,
+         root.getComponent<TextureManager>().register_asset(
+             {Texture::PureColorParams{.root = root, .color = {0.0f, 0.0f, 0.0f, 0.0f}}})});
+    root.addAiMaterialTextureInfo(
+        {StandardMaterialTextureNames::EMISSIVE, aiTextureType_EMISSIVE,
+         root.getComponent<TextureManager>().register_asset(
+             {Texture::PureColorParams{.root = root, .color = {0.0f, 0.0f, 0.0f, 0.0f}}})});
 }
 
 void OpenGLRenderer::free()
