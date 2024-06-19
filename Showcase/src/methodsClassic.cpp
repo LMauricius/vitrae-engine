@@ -300,10 +300,10 @@ MethodsClassic::MethodsClassic(ComponentRoot &root) : MethodCollection(root)
         }},
         .p_function = [](const RenderRunContext &context) {
             auto p_scene = context.properties.get("scene").get<dynasma::FirmPtr<Scene>>();
-            auto p_windowFrame = context.properties.get(StandardCompositorOutputNames::OUTPUT)
-                                     .get<dynasma::FirmPtr<FrameStore>>();
-            context.properties.set("mat_shadow_view",
-                                   p_scene->light.getViewMatrix(p_scene->camera));
+            auto p_shadowFrame = context.preparedCompositorFrameStores.at("rendered_shadow");
+            context.properties.set(
+                "mat_shadow_view",
+                p_scene->light.getViewMatrix(p_scene->camera, 1.0 / p_shadowFrame->getSize().x));
             context.properties.set("mat_shadow_persp", p_scene->light.getProjectionMatrix());
             context.properties.set("light_direction", glm::normalize(p_scene->light.direction));
             context.properties.set("light_color_primary", p_scene->light.color_primary);
