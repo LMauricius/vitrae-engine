@@ -57,6 +57,28 @@ class CompiledGLSLShader : public dynasma::PolymorphicBase
         inline auto operator<=>(const SurfaceShaderParams &o) const { return m_hash <=> o.m_hash; }
     };
 
+    class ComputeShaderParams
+    {
+        dynasma::FirmPtr<Method<ShaderTask>> mp_computeMethod;
+        dynasma::FirmPtr<const PropertyList> mp_desiredResults;
+        ComponentRoot *mp_root;
+        std::size_t m_hash;
+
+      public:
+        ComputeShaderParams(dynasma::FirmPtr<Method<ShaderTask>> p_computeMethod,
+                            dynasma::FirmPtr<const PropertyList> p_desiredResults,
+                            ComponentRoot &root);
+
+        inline auto getComputeMethodPtr() const { return mp_computeMethod; }
+        inline auto getDesiredResultsPtr() const { return mp_desiredResults; }
+        inline ComponentRoot &getRoot() const { return *mp_root; }
+
+        inline std::size_t getHash() const { return m_hash; }
+
+        inline bool operator==(const ComputeShaderParams &o) const { return m_hash == o.m_hash; }
+        inline auto operator<=>(const ComputeShaderParams &o) const { return m_hash <=> o.m_hash; }
+    };
+
     struct VariableSpec
     {
         const TypeInfo &srcSpec;
@@ -66,6 +88,7 @@ class CompiledGLSLShader : public dynasma::PolymorphicBase
     CompiledGLSLShader(std::span<const CompilationSpec> compilationSpecs, ComponentRoot &root,
                        const PropertyList &desiredOutputs);
     CompiledGLSLShader(const SurfaceShaderParams &params);
+    CompiledGLSLShader(const ComputeShaderParams &params);
     ~CompiledGLSLShader();
 
     inline std::size_t memory_cost() const { return 1; }
