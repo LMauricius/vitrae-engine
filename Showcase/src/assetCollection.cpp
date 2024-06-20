@@ -68,7 +68,7 @@ AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
                         // Scene scaling (in case of wrong scale)
                         if (bMiddle) {
                             p_scene->camera.move(p_scene->camera.rotation *
-                                                 (0.02f * glm::vec3{-motion.x, -motion.y, 0.0}));
+                                                 (0.02f * glm::vec3{-motion.x, motion.y, 0.0}));
                         }
                     }}})
             .getLoaded();
