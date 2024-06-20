@@ -24,7 +24,7 @@ void OpenGLShaderConstant::outputDeclarationCode(BuildContext args) const
     OpenGLRenderer &renderer = static_cast<OpenGLRenderer &>(args.renderer);
     const GLTypeSpec &glTypeSpec = renderer.getTypeConversion(m_outputSpec.typeInfo).glTypeSpec;
 
-    args.output << "const " << glTypeSpec.glTypeName << " C_" << m_outputSpec.name << " = "
+    args.output << "const " << glTypeSpec.glMutableTypeName << " C_" << m_outputSpec.name << " = "
                 << m_value.toString() << ";\n";
 }
 

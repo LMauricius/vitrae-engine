@@ -76,7 +76,7 @@ void OpenGLShaderFunction::outputDeclarationCode(BuildContext args) const
         if (hadFirstArg) {
             args.output << ", ";
         }
-        args.output << glTypeSpec.glTypeName;
+        args.output << glTypeSpec.glConstTypeName;
         hadFirstArg = true;
     }
     for (const auto &nameId : m_outputOrder) {
@@ -85,7 +85,7 @@ void OpenGLShaderFunction::outputDeclarationCode(BuildContext args) const
         if (hadFirstArg) {
             args.output << ", ";
         }
-        args.output << "out " << glTypeSpec.glTypeName;
+        args.output << "out " << glTypeSpec.glMutableTypeName;
         hadFirstArg = true;
     }
     args.output << ");";

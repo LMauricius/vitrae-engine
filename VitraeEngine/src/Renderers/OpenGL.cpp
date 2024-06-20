@@ -26,33 +26,33 @@ OpenGLRenderer::OpenGLRenderer() : m_vertexBufferFreeIndex(0)
     Standard GLSL ypes
     */
     // clang-format off
-    specifyGlType({.glTypeName = "float",  .glMutableTypeName = "float",  .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "vec2",   .glMutableTypeName = "vec2",   .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "vec3",   .glMutableTypeName = "vec3",   .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "vec4",   .glMutableTypeName = "vec4",   .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "mat2",   .glMutableTypeName = "mat2",   .std140Size = 32, .std140Alignment = 16, .layoutIndexSize = 2});
-    specifyGlType({.glTypeName = "mat2x3", .glMutableTypeName = "mat2x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 2});
-    specifyGlType({.glTypeName = "mat2x4", .glMutableTypeName = "mat2x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 2});
-    specifyGlType({.glTypeName = "mat3",   .glMutableTypeName = "mat3",   .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 3});
-    specifyGlType({.glTypeName = "mat3x2", .glMutableTypeName = "mat3x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 3});
-    specifyGlType({.glTypeName = "mat3x4", .glMutableTypeName = "mat3x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 3});
-    specifyGlType({.glTypeName = "mat4",   .glMutableTypeName = "mat4",   .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 4});
-    specifyGlType({.glTypeName = "mat4x2", .glMutableTypeName = "mat4x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 4});
-    specifyGlType({.glTypeName = "mat4x3", .glMutableTypeName = "mat4x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 4});
-    specifyGlType({.glTypeName = "int",    .glMutableTypeName = "int",    .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "ivec2",  .glMutableTypeName = "ivec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "ivec3",  .glMutableTypeName = "ivec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "ivec4",  .glMutableTypeName = "ivec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uint",   .glMutableTypeName = "uint",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uvec2",  .glMutableTypeName = "uvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uvec3",  .glMutableTypeName = "uvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uvec4",  .glMutableTypeName = "uvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bool",   .glMutableTypeName = "bool",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bvec2",  .glMutableTypeName = "bvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bvec3",  .glMutableTypeName = "bvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bvec4",  .glMutableTypeName = "bvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "float",  .glConstTypeName = "float",  .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "vec2",   .glConstTypeName = "vec2",   .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "vec3",   .glConstTypeName = "vec3",   .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "vec4",   .glConstTypeName = "vec4",   .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "mat2",   .glConstTypeName = "mat2",   .std140Size = 32, .std140Alignment = 16, .layoutIndexSize = 2});
+    specifyGlType({.glMutableTypeName = "mat2x3", .glConstTypeName = "mat2x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 2});
+    specifyGlType({.glMutableTypeName = "mat2x4", .glConstTypeName = "mat2x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 2});
+    specifyGlType({.glMutableTypeName = "mat3",   .glConstTypeName = "mat3",   .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 3});
+    specifyGlType({.glMutableTypeName = "mat3x2", .glConstTypeName = "mat3x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 3});
+    specifyGlType({.glMutableTypeName = "mat3x4", .glConstTypeName = "mat3x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 3});
+    specifyGlType({.glMutableTypeName = "mat4",   .glConstTypeName = "mat4",   .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 4});
+    specifyGlType({.glMutableTypeName = "mat4x2", .glConstTypeName = "mat4x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 4});
+    specifyGlType({.glMutableTypeName = "mat4x3", .glConstTypeName = "mat4x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 4});
+    specifyGlType({.glMutableTypeName = "int",    .glConstTypeName = "int",    .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "ivec2",  .glConstTypeName = "ivec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "ivec3",  .glConstTypeName = "ivec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "ivec4",  .glConstTypeName = "ivec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "uint",   .glConstTypeName = "uint",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "uvec2",  .glConstTypeName = "uvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "uvec3",  .glConstTypeName = "uvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "uvec4",  .glConstTypeName = "uvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "bool",   .glConstTypeName = "bool",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "bvec2",  .glConstTypeName = "bvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "bvec3",  .glConstTypeName = "bvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "bvec4",  .glConstTypeName = "bvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
 
-    specifyGlType({.glTypeName = "sampler2D", .glMutableTypeName = "image2D", .std140Size = 0, .std140Alignment = 0, .layoutIndexSize = 1});
+    specifyGlType({.glMutableTypeName = "image2D", .glConstTypeName = "sampler2D", .std140Size = 0, .std140Alignment = 0, .layoutIndexSize = 1});
 
     /*
     Type conversions
@@ -85,7 +85,7 @@ OpenGLRenderer::OpenGLRenderer() : m_vertexBufferFreeIndex(0)
     // clang-format on
 
     specifyTypeConversion({.hostType = Variant::getTypeInfo<dynasma::FirmPtr<Texture>>(),
-                           .glTypeSpec = getGlTypeSpec("sampler2D"),
+                           .glTypeSpec = getGlTypeSpec("image2D"),
                            .setBinding = [](int bindingIndex, const Variant &hostValue) {
                                auto p_tex = hostValue.get<dynasma::FirmPtr<Texture>>();
                                OpenGLTexture &tex = static_cast<OpenGLTexture &>(*p_tex);
@@ -154,7 +154,7 @@ void OpenGLRenderer::render() {}
 
 void OpenGLRenderer::specifyGlType(const GLTypeSpec &newSpec)
 {
-    m_glTypes.emplace(StringId(newSpec.glTypeName), newSpec);
+    m_glTypes.emplace(StringId(newSpec.glMutableTypeName), newSpec);
 }
 
 void OpenGLRenderer::specifyTypeConversion(const GLConversionSpec &newSpec)
@@ -208,7 +208,7 @@ const std::map<StringId, const GLTypeSpec &> &OpenGLRenderer::getAllVertexBuffer
 OpenGLRenderer::GpuValueStorageMethod OpenGLRenderer::getGpuStorageMethod(
     const GLTypeSpec &spec) const
 {
-    if (spec.glTypeName == "sampler2D") {
+    if (spec.glMutableTypeName == "image1D" || spec.glMutableTypeName == "image2D") {
         return GpuValueStorageMethod::UniformBinding;
     } else if (spec.glslDefinitionSnippet.empty()) {
         return GpuValueStorageMethod::Uniform;

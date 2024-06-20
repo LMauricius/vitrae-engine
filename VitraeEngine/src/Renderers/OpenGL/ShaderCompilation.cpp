@@ -51,11 +51,11 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
     OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(root.getComponent<Renderer>());
 
     // util lambdas
-    auto specToGlName = [&](const TypeInfo &typeInfo) -> std::string_view {
-        return rend.getTypeConversion(typeInfo).glTypeSpec.glTypeName;
-    };
     auto specToMutableGlName = [&](const TypeInfo &typeInfo) -> std::string_view {
         return rend.getTypeConversion(typeInfo).glTypeSpec.glMutableTypeName;
+    };
+    auto specToConstGlName = [&](const TypeInfo &typeInfo) -> std::string_view {
+        return rend.getTypeConversion(typeInfo).glTypeSpec.glConstTypeName;
     };
 
     // uniforms are global variables given to all shader steps
@@ -248,7 +248,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                     if (glslMemberList.empty()) {
                         ss << "buffer " << spec.name << " {\n";
-                        ss << "\t" << specToGlName(spec.typeInfo) << " value" << ";\n";
+                        ss << "\t" << specToMutableGlName(spec.typeInfo) << " value" << ";\n";
                         ss << "} " << bufferVarPrefix << spec.name << ";\n";
 
                         inputParametersToGlobalVars.emplace(nameId,
@@ -280,7 +280,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                         if (glslMemberList.empty()) {
                             ss << "buffer " << spec.name << " {\n";
-                            ss << "\t" << specToGlName(spec.typeInfo) << " value" << ";\n";
+                            ss << "\t" << specToMutableGlName(spec.typeInfo) << " value" << ";\n";
                             ss << "} " << uniVarPrefix << spec.name << ";\n";
 
                             inputParametersToGlobalVars.emplace(nameId, bufferVarPrefix +
@@ -303,8 +303,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                             // SHARED LOCAL GROUP VARIABLES
 
-                            ss << "shared " << specToGlName(spec.typeInfo) << " " << sharedVarPrefix
-                               << spec.name << ";\n";
+                            ss << "shared " << specToMutableGlName(spec.typeInfo) << " "
+                               << sharedVarPrefix << spec.name << ";\n";
 
                             inputParametersToGlobalVars.emplace(nameId,
                                                                 sharedVarPrefix + spec.name);
@@ -316,7 +316,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                         // UNIFORMS
 
-                        ss << "uniform " << specToGlName(spec.typeInfo) << " " << uniVarPrefix
+                        ss << "uniform " << specToConstGlName(spec.typeInfo) << " " << uniVarPrefix
                            << spec.name << ";\n";
 
                         inputParametersToGlobalVars.emplace(nameId, uniVarPrefix + spec.name);
@@ -327,7 +327,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                         if (glslMemberList.empty()) {
                             ss << "uniform " << uniVarPrefix << spec.name << " {\n";
-                            ss << "\t" << specToGlName(spec.typeInfo) << " value" << ";\n";
+                            ss << "\t" << specToConstGlName(spec.typeInfo) << " value" << ";\n";
                             ss << "} " << spec.name << ";\n";
 
                             inputParametersToGlobalVars.emplace(nameId, uniVarPrefix + spec.name +
@@ -355,7 +355,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
                         // VERTEX ATTRIBUTES
 
                         ss << "layout(location = " << rend.getVertexBufferLayoutIndex(nameId)
-                           << ") in " << specToGlName(spec.typeInfo) << " " << elemVarPrefix
+                           << ") in " << specToConstGlName(spec.typeInfo) << " " << elemVarPrefix
                            << prevVarPrefix << spec.name << ";\n";
 
                         inputParametersToGlobalVars.emplace(nameId, elemVarPrefix + spec.name);
@@ -363,7 +363,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                         // PREVIOUS STAGE OUTPUTS
 
-                        ss << "in " << specToGlName(spec.typeInfo) << " " << prevVarPrefix
+                        ss << "in " << specToMutableGlName(spec.typeInfo) << " " << prevVarPrefix
                            << spec.name << ";\n";
 
                         inputParametersToGlobalVars.emplace(nameId, prevVarPrefix + spec.name);
@@ -382,8 +382,8 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
                     // NORMAL OUTPUTS
 
-                    ss << "out " << specToGlName(spec.typeInfo) << " " << p_helper->outVarPrefix
-                       << spec.name << ";\n";
+                    ss << "out " << specToMutableGlName(spec.typeInfo) << " "
+                       << p_helper->outVarPrefix << spec.name << ";\n";
                     inputParametersToGlobalVars.emplace(nameId, p_helper->outVarPrefix + spec.name);
                     outputParametersToGlobalVars.emplace(nameId,
                                                          p_helper->outVarPrefix + spec.name);
@@ -407,7 +407,7 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
             ss << "void main() {\n";
             for (auto [nameId, spec] : p_helper->pipeline.localSpecs) {
                 if (spec.typeInfo != Variant::getTypeInfo<void>()) {
-                    ss << "    " << specToGlName(spec.typeInfo) << " " << localVarPrefix
+                    ss << "    " << specToMutableGlName(spec.typeInfo) << " " << localVarPrefix
                        << spec.name << ";\n";
                 }
                 inputParametersToGlobalVars.emplace(nameId, localVarPrefix + spec.name);
