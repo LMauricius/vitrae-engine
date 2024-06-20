@@ -26,33 +26,33 @@ OpenGLRenderer::OpenGLRenderer() : m_vertexBufferFreeIndex(0)
     Standard GLSL ypes
     */
     // clang-format off
-    specifyGlType({.glTypeName = "float",  .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "vec2",   .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "vec3",   .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "vec4",   .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "mat2",   .std140Size = 32, .std140Alignment = 16, .layoutIndexSize = 2});
-    specifyGlType({.glTypeName = "mat2x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 2});
-    specifyGlType({.glTypeName = "mat2x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 2});
-    specifyGlType({.glTypeName = "mat3",   .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 3});
-    specifyGlType({.glTypeName = "mat3x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 3});
-    specifyGlType({.glTypeName = "mat3x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 3});
-    specifyGlType({.glTypeName = "mat4",   .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 4});
-    specifyGlType({.glTypeName = "mat4x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 4});
-    specifyGlType({.glTypeName = "mat4x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 4});
-    specifyGlType({.glTypeName = "int",    .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "ivec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "ivec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "ivec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uint",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "uvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bool",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
-    specifyGlType({.glTypeName = "bvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "float",  .glMutableTypeName = "float",  .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "vec2",   .glMutableTypeName = "vec2",   .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "vec3",   .glMutableTypeName = "vec3",   .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "vec4",   .glMutableTypeName = "vec4",   .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "mat2",   .glMutableTypeName = "mat2",   .std140Size = 32, .std140Alignment = 16, .layoutIndexSize = 2});
+    specifyGlType({.glTypeName = "mat2x3", .glMutableTypeName = "mat2x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 2});
+    specifyGlType({.glTypeName = "mat2x4", .glMutableTypeName = "mat2x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 2});
+    specifyGlType({.glTypeName = "mat3",   .glMutableTypeName = "mat3",   .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 3});
+    specifyGlType({.glTypeName = "mat3x2", .glMutableTypeName = "mat3x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 3});
+    specifyGlType({.glTypeName = "mat3x4", .glMutableTypeName = "mat3x4", .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 3});
+    specifyGlType({.glTypeName = "mat4",   .glMutableTypeName = "mat4",   .std140Size = 64, .std140Alignment = 16, .layoutIndexSize = 4});
+    specifyGlType({.glTypeName = "mat4x2", .glMutableTypeName = "mat4x2", .std140Size = 32, .std140Alignment = 8,  .layoutIndexSize = 4});
+    specifyGlType({.glTypeName = "mat4x3", .glMutableTypeName = "mat4x3", .std140Size = 48, .std140Alignment = 16, .layoutIndexSize = 4});
+    specifyGlType({.glTypeName = "int",    .glMutableTypeName = "int",    .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "ivec2",  .glMutableTypeName = "ivec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "ivec3",  .glMutableTypeName = "ivec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "ivec4",  .glMutableTypeName = "ivec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "uint",   .glMutableTypeName = "uint",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "uvec2",  .glMutableTypeName = "uvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "uvec3",  .glMutableTypeName = "uvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "uvec4",  .glMutableTypeName = "uvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "bool",   .glMutableTypeName = "bool",   .std140Size = 4,  .std140Alignment = 4,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "bvec2",  .glMutableTypeName = "bvec2",  .std140Size = 8,  .std140Alignment = 8,  .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "bvec3",  .glMutableTypeName = "bvec3",  .std140Size = 12, .std140Alignment = 16, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "bvec4",  .glMutableTypeName = "bvec4",  .std140Size = 16, .std140Alignment = 16, .layoutIndexSize = 1});
 
-    specifyGlType({.glTypeName = "sampler2D", .std140Size = 0, .std140Alignment = 0, .layoutIndexSize = 1});
+    specifyGlType({.glTypeName = "sampler2D", .glMutableTypeName = "image2D", .std140Size = 0, .std140Alignment = 0, .layoutIndexSize = 1});
 
     /*
     Type conversions

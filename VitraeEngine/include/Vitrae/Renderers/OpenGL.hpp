@@ -24,6 +24,7 @@ class RawSharedBuffer;
 struct GLTypeSpec
 {
     String glTypeName;
+    String glMutableTypeName;
 
     String glslDefinitionSnippet;
     std::vector<const GLTypeSpec *> memberTypeDependencies;
