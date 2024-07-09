@@ -14,7 +14,7 @@ class StringId
     friend std::hash<StringId>;
 
     std::size_t m_hash;
-#ifndef NDEBUG
+#ifdef VITRAE_DEBUG_STRINGIDS
     char *m_str;
 #endif
 
@@ -29,7 +29,7 @@ class StringId
         for (char c : str)
             m_hash = (m_hash ^ c) * 0x100000001b3ULL;
 
-#ifndef NDEBUG
+#ifdef VITRAE_DEBUG_STRINGIDS
         m_str = new char[str.size() + 1];
         std::copy(str.begin(), str.end(), m_str);
         m_str[str.size()] = '\0';
@@ -38,7 +38,7 @@ class StringId
     constexpr StringId(StringId &&id)
     {
         m_hash = id.m_hash;
-#ifndef NDEBUG
+#ifdef VITRAE_DEBUG_STRINGIDS
         m_str = id.m_str;
         id.m_str = nullptr;
 #endif
@@ -46,13 +46,13 @@ class StringId
     constexpr StringId(const StringId &id)
     {
         m_hash = id.m_hash;
-#ifndef NDEBUG
+#ifdef VITRAE_DEBUG_STRINGIDS
         m_str = new char[std::strlen(id.m_str) + 1];
         std::strcpy(m_str, id.m_str);
 #endif
     }
 
-#ifndef NDEBUG
+#ifdef VITRAE_DEBUG_STRINGIDS
     constexpr ~StringId()
     {
         if (m_str)
@@ -63,7 +63,7 @@ class StringId
     constexpr StringId &operator=(StringId id)
     {
         m_hash = id.m_hash;
-#ifndef NDEBUG
+#ifdef VITRAE_DEBUG_STRINGIDS
         m_str = new char[std::strlen(id.m_str) + 1];
         std::strcpy(m_str, id.m_str);
 #endif
