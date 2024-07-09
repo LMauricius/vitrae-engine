@@ -20,7 +20,7 @@ class StringId
 
   public:
     constexpr StringId(const char *str) : StringId(std::string_view{str}) {}
-    constexpr StringId(const std::string &str) : StringId(std::string_view{str}) {}
+    StringId(const std::string &str) : StringId(std::string_view{str}) {}
     constexpr StringId(const std::string_view str)
     {
         // fnv_hash_1a_64

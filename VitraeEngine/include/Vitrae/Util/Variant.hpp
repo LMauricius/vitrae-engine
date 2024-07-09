@@ -338,7 +338,7 @@ class Variant
      * @returns A string representation of the stored value.
      * @throws std::runtime_error If the stored type is not convertible to std::string.
      */
-    constexpr std::string toString() const { return m_table->toString(*this); }
+    std::string toString() const { return m_table->toString(*this); }
     /**
      * @returns A hash value for the stored value.
      * @throws std::runtime_error If the stored type is not hashable.
