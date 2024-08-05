@@ -101,6 +101,6 @@ AssetCollection::~AssetCollection() {}
 
 void AssetCollection::render()
 {
-    rend.render();
+    rend.update();
     comp.compose();
 }

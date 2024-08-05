@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "methodsClassic.hpp"
+#include "Methods/classic.hpp"
 #include "shadingModes.hpp"
 
 #include "Vitrae/ComponentRoot.hpp"
@@ -11,11 +11,14 @@
 #include "Vitrae/Visuals/Compositor.hpp"
 
 #include <filesystem>
+#include <mutex>
 
 using namespace Vitrae;
 
 struct AssetCollection
 {
+    std::mutex accessMutex;
+
     bool running;
 
     ComponentRoot &root;

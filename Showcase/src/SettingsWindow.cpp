@@ -4,18 +4,28 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QPushButton>
 
+#include <mutex>
+
 SettingsWindow::SettingsWindow(AssetCollection &assetCollection, Status &status)
     : QMainWindow(), ui(), m_assetCollection(assetCollection), m_status(status)
 {
     ui.setupUi(this);
 
-    connect(ui.light_dir_x, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d) { this->m_assetCollection.p_scene->light.direction.x = d; });
-    connect(ui.light_dir_y, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d) { this->m_assetCollection.p_scene->light.direction.y = d; });
-    connect(ui.light_dir_z, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
-            [this](double d) { this->m_assetCollection.p_scene->light.direction.z = d; });
+    connect(ui.light_dir_x, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double d) {
+        this->m_assetCollection.accessMutex.lock();
+        this->m_assetCollection.p_scene->light.direction.x = d;
+        this->m_assetCollection.accessMutex.unlock();
+    });
+    connect(ui.light_dir_y, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double d) {
+        std::unique_lock lock1(this->m_assetCollection.accessMutex);
+        this->m_assetCollection.p_scene->light.direction.y = d;
+    });
+    connect(ui.light_dir_z, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double d) {
+        std::unique_lock lock1(this->m_assetCollection.accessMutex);
+        this->m_assetCollection.p_scene->light.direction.z = d;
+    });
     connect(ui.light_color, &QPushButton::clicked, [this]() {
+        std::unique_lock lock1(this->m_assetCollection.accessMutex);
         QColor lightColor = QColor::fromRgbF(m_assetCollection.p_scene->light.color_primary.r,
                                              m_assetCollection.p_scene->light.color_primary.g,
                                              m_assetCollection.p_scene->light.color_primary.b);
@@ -23,6 +33,7 @@ SettingsWindow::SettingsWindow(AssetCollection &assetCollection, Status &status)
         m_assetCollection.p_scene->light.color_primary = {c.redF(), c.greenF(), c.blueF()};
     });
     connect(ui.ambient_color, &QPushButton::clicked, [this]() {
+        std::unique_lock lock1(this->m_assetCollection.accessMutex);
         QColor lightColor = QColor::fromRgbF(m_assetCollection.p_scene->light.color_ambient.r,
                                              m_assetCollection.p_scene->light.color_ambient.g,
                                              m_assetCollection.p_scene->light.color_ambient.b);

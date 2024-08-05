@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.7.0)
 
 find_package(Qt5Widgets)
 
-file(GLOB_RECURSE SrcFiles CONFIGURE_DEPENDS src/*.cpp)
-file(GLOB_RECURSE HeaderFiles CONFIGURE_DEPENDS include/*.h include/*.hpp)
+file(GLOB_RECURSE SrcFiles CONFIGURE_DEPENDS src/**.cpp)
+file(GLOB_RECURSE HeaderFiles CONFIGURE_DEPENDS include/**.h include/**.hpp)
 file(GLOB_RECURSE FormFiles CONFIGURE_DEPENDS forms/**.ui)
 
 qt5_wrap_cpp(MOC_SOURCES ${SrcFiles} ${HeaderFiles} TARGET VitraeShowcase)

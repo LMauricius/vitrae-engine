@@ -1,5 +1,6 @@
 #include <QtWidgets/QApplication>
 #include <iostream>
+#include <thread>
 
 #include "SettingsWindow.h"
 #include "Status.hpp"
@@ -32,27 +33,31 @@ int main(int argc, char **argv)
     Assets
     */
     AssetCollection collection(root, *p_rend, path, sceneScale);
+    Status status;
 
     /*
     GUI setup
     */
     QApplication app(argc, argv);
-    Status status;
     SettingsWindow settingsWindow(collection, status);
     settingsWindow.show();
 
     /*
     Render loop!
     */
-
     while (collection.running) {
         app.processEvents();
 
-        auto startTime = std::chrono::high_resolution_clock::now();
-        collection.render();
-        auto endTime = std::chrono::high_resolution_clock::now();
+        {
+            std::unique_lock lock1(collection.accessMutex);
 
-        status.update(endTime - startTime);
+            auto startTime = std::chrono::high_resolution_clock::now();
+            collection.render();
+            auto endTime = std::chrono::high_resolution_clock::now();
+
+            status.update(endTime - startTime);
+        }
+
         settingsWindow.updateValues();
     }
 

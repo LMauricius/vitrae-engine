@@ -1,7 +1,7 @@
 #pragma once
 
-#include "methodCollection.hpp"
-#include "shadingModes.hpp"
+#include "../shadingModes.hpp"
+#include "abstract.hpp"
 
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
 #include "Vitrae/Pipelines/Compositing/FrameToTexture.hpp"

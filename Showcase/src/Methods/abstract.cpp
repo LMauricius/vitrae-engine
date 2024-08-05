@@ -1,4 +1,4 @@
-#include "methodCollection.hpp"
+#include "abstract.hpp"
 
 #include "Vitrae/Assets/Mesh.hpp"
 #include "Vitrae/Visuals/Scene.hpp"
