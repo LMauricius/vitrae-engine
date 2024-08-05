@@ -12,9 +12,8 @@ SettingsWindow::SettingsWindow(AssetCollection &assetCollection, Status &status)
     ui.setupUi(this);
 
     connect(ui.light_dir_x, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double d) {
-        this->m_assetCollection.accessMutex.lock();
+        std::unique_lock lock1(this->m_assetCollection.accessMutex);
         this->m_assetCollection.p_scene->light.direction.x = d;
-        this->m_assetCollection.accessMutex.unlock();
     });
     connect(ui.light_dir_y, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double d) {
         std::unique_lock lock1(this->m_assetCollection.accessMutex);

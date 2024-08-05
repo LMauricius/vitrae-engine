@@ -201,10 +201,6 @@ void OpenGLFrameStore::WindowContextSwitcher::exitContext() {}
 
 void OpenGLFrameStore::WindowContextSwitcher::sync()
 {
-    // we need to call this somewhere, so before rendering is ok since it gets called periodically
-    // calling this multiple times when we have multiple windows shouldn't be a problem
-    glfwPollEvents();
-
     glfwSwapBuffers(window);
 }
 

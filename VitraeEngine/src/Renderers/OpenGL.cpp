@@ -108,8 +108,12 @@ OpenGLRenderer::OpenGLRenderer() : m_vertexBufferFreeIndex(0)
 
 OpenGLRenderer::~OpenGLRenderer() {}
 
-void OpenGLRenderer::setup(ComponentRoot &root)
+void OpenGLRenderer::mainThreadSetup(ComponentRoot &root)
 {
+    // threading stuff
+    m_mainThreadId = std::this_thread::get_id();
+    m_contextMutex.lock();
+
     // clang-format off
     root.setComponent<              MeshKeeper>(new  dynasma::NaiveKeeper<              MeshKeeperSeed, std::allocator<              OpenGLMesh>>());
     root.setComponent<          MaterialKeeper>(new  dynasma::NaiveKeeper<          MaterialKeeperSeed, std::allocator<                Material>>());
@@ -156,14 +160,26 @@ void OpenGLRenderer::setup(ComponentRoot &root)
     gladLoadGL(); // seems we need to do this after setting the first context... for whatev reason
 }
 
-void OpenGLRenderer::free()
+void OpenGLRenderer::mainThreadFree()
 {
     glfwTerminate();
 }
 
-void OpenGLRenderer::update()
+void OpenGLRenderer::mainThreadUpdate()
 {
     glfwPollEvents();
+}
+
+void OpenGLRenderer::anyThreadEnable()
+{
+    m_contextMutex.lock();
+    glfwMakeContextCurrent(mp_mainWindow);
+}
+
+void OpenGLRenderer::anyThreadDisable()
+{
+    glfwMakeContextCurrent(0);
+    m_contextMutex.unlock();
 }
 
 GLFWwindow *OpenGLRenderer::getWindow()

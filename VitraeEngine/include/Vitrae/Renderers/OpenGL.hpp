@@ -16,6 +16,7 @@
 #include <functional>
 #include <map>
 #include <optional>
+#include <thread>
 #include <typeindex>
 #include <vector>
 
@@ -73,9 +74,12 @@ class OpenGLRenderer : public Renderer
     OpenGLRenderer();
     ~OpenGLRenderer();
 
-    void setup(ComponentRoot &root) override;
-    void free() override;
-    void update() override;
+    void mainThreadSetup(ComponentRoot &root) override;
+    void mainThreadFree() override;
+    void mainThreadUpdate() override;
+
+    void anyThreadEnable() override;
+    void anyThreadDisable() override;
 
     GLFWwindow *getWindow();
 
@@ -103,6 +107,8 @@ class OpenGLRenderer : public Renderer
     GpuValueStorageMethod getGpuStorageMethod(const GLTypeSpec &spec) const;
 
   protected:
+    std::thread::id m_mainThreadId;
+    std::mutex m_contextMutex;
     GLFWwindow *mp_mainWindow;
 
     std::map<StringId, GLTypeSpec> m_glTypes;

@@ -15,9 +15,12 @@ class Renderer
   public:
     virtual ~Renderer() = default;
 
-    virtual void setup(ComponentRoot &root) = 0;
-    virtual void free() = 0;
-    virtual void update() = 0;
+    virtual void mainThreadSetup(ComponentRoot &root) = 0;
+    virtual void mainThreadFree() = 0;
+    virtual void mainThreadUpdate() = 0;
+
+    virtual void anyThreadEnable() = 0;
+    virtual void anyThreadDisable() = 0;
 };
 
 } // namespace Vitrae

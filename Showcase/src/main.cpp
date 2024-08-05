@@ -25,9 +25,9 @@ int main(int argc, char **argv)
     */
 
     ComponentRoot root;
-    Renderer *p_rend(new OpenGLRenderer());
+    Renderer *p_rend = new OpenGLRenderer();
     root.setComponent<Renderer>(p_rend);
-    p_rend->setup(root);
+    p_rend->mainThreadSetup(root);
 
     /*
     Assets
@@ -45,26 +45,39 @@ int main(int argc, char **argv)
     /*
     Render loop!
     */
+    p_rend->anyThreadDisable();
+    std::thread renderThread([&]() {
+        p_rend->anyThreadEnable();
+        while (collection.running) {
+            {
+                std::unique_lock lock1(collection.accessMutex);
+
+                auto startTime = std::chrono::high_resolution_clock::now();
+                collection.render();
+                auto endTime = std::chrono::high_resolution_clock::now();
+
+                status.update(endTime - startTime);
+            }
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
+        }
+        p_rend->anyThreadDisable();
+    });
+
+    /*
+    GUI loop!
+    */
     while (collection.running) {
         app.processEvents();
-
-        {
-            std::unique_lock lock1(collection.accessMutex);
-
-            auto startTime = std::chrono::high_resolution_clock::now();
-            collection.render();
-            auto endTime = std::chrono::high_resolution_clock::now();
-
-            status.update(endTime - startTime);
-        }
-
+        p_rend->mainThreadUpdate();
         settingsWindow.updateValues();
     }
+
+    renderThread.join();
 
     /*
     Free resources
     */
-    p_rend->free();
+    p_rend->mainThreadFree();
 
     return 0;
 }
