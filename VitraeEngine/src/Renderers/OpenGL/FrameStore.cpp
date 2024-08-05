@@ -51,21 +51,19 @@ OpenGLFrameStore::OpenGLFrameStore(const FrameStore::TextureBindParams &params)
 
 OpenGLFrameStore::OpenGLFrameStore(const WindowDisplayParams &params)
 {
-    GLFWwindow *window =
-        glfwCreateWindow(params.width, params.height, params.title.c_str(), nullptr, nullptr);
-    // provjeri je li se uspio napraviti prozor
-    if (window == nullptr) {
-        fprintf(stderr, "Failed to Create OpenGL Context");
-        exit(EXIT_FAILURE);
-    }
-    glfwMakeContextCurrent(window);
-    gladLoadGL(); // seems we need to do this after setting the first context... for whatev reason
+    OpenGLRenderer &rend = static_cast<OpenGLRenderer &>(params.root.getComponent<Renderer>());
 
+    GLFWwindow *window = rend.getWindow();
+
+    // reset window
+    glfwSetWindowSize(window, params.width, params.height);
+    glfwSetWindowTitle(window, params.title.c_str());
+
+    // setup members
     mp_renderComponents =
         dynasma::makeStandalone<PropertyList, std::span<const Vitrae::PropertySpec>>(
             {{PropertySpec{.name = StandardShaderPropertyNames::FRAGMENT_OUTPUT,
                            .typeInfo = StandardShaderPropertyTypes::FRAGMENT_OUTPUT}}});
-
     m_contextSwitcher = WindowContextSwitcher{window, params.onClose, params.onDrag};
 
     // register callbacks
@@ -187,7 +185,6 @@ glm::vec2 OpenGLFrameStore::WindowContextSwitcher::getSize() const
 void OpenGLFrameStore::WindowContextSwitcher::enterContext(const ScopedDict &properties,
                                                            glm::vec2 topLeft, glm::vec2 bottomRight)
 {
-    glfwMakeContextCurrent(window);
     if (auto p = properties.getPtr("vsync"); p && p->get<bool>()) {
         glfwSwapInterval(1);
     } else {

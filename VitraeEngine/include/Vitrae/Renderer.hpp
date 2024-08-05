@@ -17,7 +17,7 @@ class Renderer
 
     virtual void setup(ComponentRoot &root) = 0;
     virtual void free() = 0;
-    virtual void render() = 0;
+    virtual void update() = 0;
 };
 
 } // namespace Vitrae

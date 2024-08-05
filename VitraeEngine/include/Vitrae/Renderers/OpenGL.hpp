@@ -9,6 +9,10 @@
 #include "Vitrae/Util/StringId.hpp"
 #include "assimp/mesh.h"
 
+#include "glad/glad.h"
+// must be after glad.h
+#include "GLFW/glfw3.h"
+
 #include <functional>
 #include <map>
 #include <optional>
@@ -71,7 +75,9 @@ class OpenGLRenderer : public Renderer
 
     void setup(ComponentRoot &root) override;
     void free() override;
-    void render() override;
+    void update() override;
+
+    GLFWwindow *getWindow();
 
     void specifyGlType(const GLTypeSpec &newSpec);
     const GLTypeSpec &getGlTypeSpec(StringId glslName) const;
@@ -97,6 +103,8 @@ class OpenGLRenderer : public Renderer
     GpuValueStorageMethod getGpuStorageMethod(const GLTypeSpec &spec) const;
 
   protected:
+    GLFWwindow *mp_mainWindow;
+
     std::map<StringId, GLTypeSpec> m_glTypes;
     std::map<std::type_index, GLConversionSpec> m_glConversions;
 

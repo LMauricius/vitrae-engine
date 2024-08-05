@@ -143,6 +143,17 @@ void OpenGLRenderer::setup(ComponentRoot &root)
         {StandardMaterialTextureNames::EMISSIVE, aiTextureType_EMISSIVE,
          root.getComponent<TextureManager>().register_asset(
              {Texture::PureColorParams{.root = root, .color = {0.0f, 0.0f, 0.0f, 0.0f}}})});
+
+    /*
+    Main window
+    */
+    mp_mainWindow = glfwCreateWindow(640, 480, "", nullptr, nullptr);
+    if (mp_mainWindow == nullptr) {
+        fprintf(stderr, "Failed to Create OpenGL Context");
+        exit(EXIT_FAILURE);
+    }
+    glfwMakeContextCurrent(mp_mainWindow);
+    gladLoadGL(); // seems we need to do this after setting the first context... for whatev reason
 }
 
 void OpenGLRenderer::free()
@@ -150,7 +161,15 @@ void OpenGLRenderer::free()
     glfwTerminate();
 }
 
-void OpenGLRenderer::render() {}
+void OpenGLRenderer::update()
+{
+    glfwPollEvents();
+}
+
+GLFWwindow *OpenGLRenderer::getWindow()
+{
+    return mp_mainWindow;
+}
 
 void OpenGLRenderer::specifyGlType(const GLTypeSpec &newSpec)
 {
@@ -184,10 +203,6 @@ void OpenGLRenderer::specifyVertexBuffer(const PropertySpec &newElSpec)
     m_vertexBufferIndices.emplace(StringId(newElSpec.name), m_vertexBufferFreeIndex);
     m_vertexBufferFreeIndex += glTypeSpec.layoutIndexSize;
     m_vertexBufferSpecs.emplace(StringId(newElSpec.name), glTypeSpec);
-
-    const dynasma::LazyPtr<Task> a, b;
-
-    bool r = a < b;
 }
 
 std::size_t OpenGLRenderer::getNumVertexBuffers() const
