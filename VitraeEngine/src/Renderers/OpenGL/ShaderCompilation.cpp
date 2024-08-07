@@ -439,9 +439,9 @@ CompiledGLSLShader::CompiledGLSLShader(std::span<const CompilationSpec> compilat
 
             // debug
             std::ofstream file;
-            file.open(std::string("shader.concat.") +
-                      String(p_helper->p_method->getFriendlyName()) + +"_" +
-                      p_helper->outVarPrefix + std::to_string(desiredOutputs.getHash()) + ".glsl");
+            file.open(std::string("shaderdebug/") + String(p_helper->p_method->getFriendlyName()) +
+                      +"_" + p_helper->outVarPrefix + std::to_string(desiredOutputs.getHash()) +
+                      ".glsl");
             file << srcCode;
             file.close();
 
