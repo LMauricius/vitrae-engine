@@ -1,5 +1,9 @@
 #include "assetCollection.hpp"
 
+#include "Methods/classic.hpp"
+#include "Methods/shadowEBR.hpp"
+#include "Methods/shadowPCF.hpp"
+
 #include "Vitrae/Assets/FrameStore.hpp"
 #include "Vitrae/ComponentRoot.hpp"
 #include "Vitrae/Pipelines/Compositing/ClearRender.hpp"
@@ -19,13 +23,20 @@
 
 AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
                                  std::filesystem::path scenePath, float sceneScale)
-    : root(root), rend(rend), modeSetter(root), methodsClassic(root), running(true), comp(root)
+    : root(root), rend(rend), modeSetter(root), running(true), shouldReloadPipelines(true),
+      comp(root)
 {
     /*
     Shading setup
     */
     modeSetter.setModes(root);
-    methodsClassic.apply(comp);
+    methodCategories = {
+        {"Base shading", {std::make_shared<MethodsClassic>(root)}, 0},
+        {"Shadows",
+         {std::make_shared<MethodsShadowPCF>(root), std::make_shared<MethodsShadowEBR>(root)},
+         1},
+    };
+    reapplyChoosenMethods();
 
     /*
     Setup window
@@ -99,7 +110,43 @@ AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
 
 AssetCollection::~AssetCollection() {}
 
+void AssetCollection::reapplyChoosenMethods()
+{
+    std::vector<dynasma::FirmPtr<Method<ShaderTask>>> choosenVertexMethods;
+    std::vector<dynasma::FirmPtr<Method<ShaderTask>>> choosenFragMethods;
+    std::vector<dynasma::FirmPtr<Method<ComposeTask>>> choosenComposeMethods;
+    Vitrae::String name = "";
+
+    for (auto &category : methodCategories) {
+        choosenVertexMethods.push_back(category.methods[category.selectedIndex]->p_vertexMethod);
+        choosenFragMethods.push_back(category.methods[category.selectedIndex]->p_fragmentMethod);
+        choosenComposeMethods.push_back(category.methods[category.selectedIndex]->p_composeMethod);
+
+        name += category.methods[category.selectedIndex]->p_vertexMethod->getFriendlyName();
+        name += "_";
+    }
+
+    auto p_aggregateVertexMethod =
+        dynasma::makeStandalone<Method<ShaderTask>>(Method<ShaderTask>::MethodParams{
+            .fallbackMethods = choosenVertexMethods, .friendlyName = name});
+
+    auto p_aggregateFragmentMethod =
+        dynasma::makeStandalone<Method<ShaderTask>>(Method<ShaderTask>::MethodParams{
+            .fallbackMethods = choosenFragMethods, .friendlyName = name});
+
+    auto p_aggregateComposeMethod =
+        dynasma::makeStandalone<Method<ComposeTask>>(Method<ComposeTask>::MethodParams{
+            .fallbackMethods = choosenComposeMethods, .friendlyName = name});
+
+    comp.setDefaultShadingMethod(p_aggregateVertexMethod, p_aggregateFragmentMethod);
+    comp.setComposeMethod(p_aggregateComposeMethod);
+}
+
 void AssetCollection::render()
 {
+    if (shouldReloadPipelines) {
+        shouldReloadPipelines = false;
+        reapplyChoosenMethods();
+    }
     comp.compose();
 }

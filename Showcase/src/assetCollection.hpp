@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "Methods/classic.hpp"
+#include "Methods/abstract.hpp"
 #include "shadingModes.hpp"
 
 #include "Vitrae/ComponentRoot.hpp"
@@ -15,17 +15,25 @@
 
 using namespace Vitrae;
 
+struct MethodCategory
+{
+    std::string name;
+    std::vector<std::shared_ptr<MethodCollection>> methods;
+    std::size_t selectedIndex;
+};
+
 struct AssetCollection
 {
     std::mutex accessMutex;
 
     bool running;
+    bool shouldReloadPipelines;
 
     ComponentRoot &root;
     Renderer &rend;
 
     ShadingModeSetter modeSetter;
-    MethodsClassic methodsClassic;
+    std::vector<MethodCategory> methodCategories;
 
     dynasma::FirmPtr<FrameStore> p_windowFrame;
     dynasma::FirmPtr<Scene> p_scene;
@@ -35,5 +43,6 @@ struct AssetCollection
                     float sceneScale);
     ~AssetCollection();
 
+    void reapplyChoosenMethods();
     void render();
 };

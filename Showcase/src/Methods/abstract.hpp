@@ -18,6 +18,4 @@ struct MethodCollection
 
     MethodCollection(ComponentRoot &root);
     virtual ~MethodCollection() = default;
-
-    void apply(Compositor &comp);
 };
