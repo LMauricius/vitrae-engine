@@ -200,6 +200,8 @@ void OpenGLTexture::loadToGPU(const unsigned char *data)
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &mBorderColor[0]);
 
         glGenerateMipmap(GL_TEXTURE_2D);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
 
