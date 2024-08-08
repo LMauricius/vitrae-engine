@@ -34,7 +34,7 @@ AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
         {"Base shading", {std::make_shared<MethodsClassic>(root)}, 0},
         {"Shadows",
          {std::make_shared<MethodsShadowPCF>(root), std::make_shared<MethodsShadowEBR>(root)},
-         1},
+         0},
     };
     reapplyChoosenMethods();
 
@@ -90,12 +90,11 @@ AssetCollection::AssetCollection(ComponentRoot &root, Renderer &rend,
 
     p_scene =
         dynasma::makeStandalone<Scene>(Scene::FileLoadParams{.root = root, .filepath = scenePath});
-    p_scene->camera.position = glm::vec3(0, 0, 10.0);
+    p_scene->camera.position = glm::vec3(-15.0, 10.0, 1.3);
     p_scene->camera.scaling = glm::vec3(1, 1, 1);
     p_scene->camera.zNear = 0.05f;
     p_scene->camera.zFar = 1000.0f;
-    p_scene->camera.rotation =
-        glm::lookAt(p_scene->camera.position, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+    p_scene->camera.rotation = glm::quatLookAt(glm::vec3(0.8, -0.5, 0), glm::vec3(0, 1, 0));
     for (auto &prop : p_scene->meshProps) {
         prop.transform.position = prop.transform.position * sceneScale;
         prop.transform.scale(glm::vec3(sceneScale));

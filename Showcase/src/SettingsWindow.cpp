@@ -12,6 +12,8 @@ SettingsWindow::SettingsWindow(AssetCollection &assetCollection, Status &status)
 {
     ui.setupUi(this);
 
+    updateValues();
+
     connect(ui.light_dir_x, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double d) {
         std::unique_lock lock1(this->m_assetCollection.accessMutex);
         this->m_assetCollection.p_scene->light.direction.x = d;
@@ -73,6 +75,19 @@ void SettingsWindow::updateValues()
     ui.currentFPS->setText(QString::number(m_status.currentFPS));
 
     // update spinboxes and other controls
+    if (ui.camera_x->value() != m_assetCollection.p_scene->camera.position.x) {
+        ui.camera_x->setValue(m_assetCollection.p_scene->camera.position.x);
+    }
+    if (ui.camera_y->value() != m_assetCollection.p_scene->camera.position.y) {
+        ui.camera_y->setValue(m_assetCollection.p_scene->camera.position.y);
+    }
+    if (ui.camera_z->value() != m_assetCollection.p_scene->camera.position.z) {
+        ui.camera_z->setValue(m_assetCollection.p_scene->camera.position.z);
+    }
+    auto cameraDirVector = m_assetCollection.p_scene->camera.rotation * glm::vec3(0, 0, 1);
+    ui.camera_dir_x->setText(QString::number(cameraDirVector.x));
+    ui.camera_dir_y->setText(QString::number(cameraDirVector.y));
+    ui.camera_dir_z->setText(QString::number(cameraDirVector.z));
     if (ui.light_dir_x->value() != m_assetCollection.p_scene->light.direction.x) {
         ui.light_dir_x->setValue(m_assetCollection.p_scene->light.direction.x);
     }
